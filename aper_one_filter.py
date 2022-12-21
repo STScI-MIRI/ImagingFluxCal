@@ -15,12 +15,13 @@ from photutils.centroids import centroid_2dg
 from photutils.aperture import (
     CircularAnnulus,
     CircularAperture,
+    RectangularAperture,
     ApertureStats,
     aperture_photometry,
 )
 
 
-def aper_image(filename, aprad, annrad):
+def aper_image(filename, aprad, annrad, imgfile=None):
     """
     Measure aperture photometry on one image for target source
     """
@@ -33,8 +34,10 @@ def aper_image(filename, aprad, annrad):
     targdec = hdul[0].header["TARG_DEC"]
 
     orig_data = hdul[1].data
+    orig_err = hdul["ERR"].data
     orig_data[orig_data == 0.0] = np.NaN
     orig_data /= photmjysr
+    orig_err /= photmjysr
 
     w = WCS(hdul[1].header)
     coord = SkyCoord(targra, targdec, unit="deg")
@@ -62,7 +65,12 @@ def aper_image(filename, aprad, annrad):
 
     # recutout the region around the star
     cutout = Cutout2D(orig_data, ncoord, (imsize, imsize), wcs=w)
+    cutout_err = Cutout2D(orig_err, ncoord, (imsize, imsize), wcs=w)
     data = cutout.data
+    data_err = cutout_err.data
+
+    # define for plotting
+    extract_aper = RectangularAperture(npix_coord, imsize, imsize)
 
     # find the "exact peak" to center the apertures
     # peaksize = 4
@@ -75,23 +83,42 @@ def aper_image(filename, aprad, annrad):
     annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
 
     # do the aperture photometry
-    phot = aperture_photometry(data, aper)
+    phot = aperture_photometry(data, aper, error=data_err)
     sigclip = SigmaClip(sigma=3.0, maxiters=10)
     bkg = ApertureStats(data, annulus_aperture, sigma_clip=sigclip)
     tot_bkg = bkg.mean * aper.area
+    tot_bkg_err = bkg.std * np.sqrt(aper.area)
     phot["total bkg"] = tot_bkg
     phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - tot_bkg
-    print(phot)
+    phot["aperture_sum_bkgsub_err"] = np.sqrt(
+        (phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)
+    )
 
-    # show an image of the source and apertures used
-    norm = simple_norm(data, "sqrt", percent=99.9)
-    plt.imshow(data, norm=norm, interpolation="nearest")
-    plt.title(f"{targname} / {filter}")
-    aper.plot(color="white", lw=2, label="Photometry aperture")
-    annulus_aperture.plot(color="blue", lw=2, label="Background annulus")
-    plt.show()
+    if imgfile is not None:
+        # show an image of the source and apertures used
+        fontsize = 14
+        font = {"size": fontsize}
+        plt.rc("font", **font)
+        plt.rc("lines", linewidth=2)
+        plt.rc("axes", linewidth=2)
+        plt.rc("xtick.major", width=2)
+        plt.rc("ytick.major", width=2)
+        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 6))
+
+        norm = simple_norm(orig_data, "sqrt", percent=99)
+        ax[0].imshow(orig_data, norm=norm, interpolation="nearest", origin="lower")
+        extract_aper.plot(ax=ax[0], color="white")
+        norm = simple_norm(data, "sqrt", percent=99.9)
+        ax[1].imshow(data, norm=norm, interpolation="nearest", origin="lower")
+        aper.plot(ax=ax[1], color="white", lw=2, label="Photometry aperture")
+        annulus_aperture.plot(ax=ax[1], color="blue", lw=2, label="Background annulus")
+        # plt.show()
+        fig.suptitle(f"{targname} / {filter}")
+        plt.savefig(imgfile)
 
     hdul.close()
+
+    return phot
 
 
 if __name__ == "__main__":
@@ -114,4 +141,7 @@ if __name__ == "__main__":
     aprad = 5.0
     annrad = [10.0, 15.0]
     for cfile in mosfiles:
-        one_res = aper_image(cfile, aprad, annrad)
+        one_res = aper_image(
+            cfile, aprad, annrad, imgfile=cfile.replace(".fits", "_absfluxapers.png")
+        )
+        print(one_res)
