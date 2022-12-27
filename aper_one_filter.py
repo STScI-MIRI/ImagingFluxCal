@@ -10,7 +10,7 @@ from astropy.coordinates import SkyCoord
 from astropy.nddata import Cutout2D
 from astropy.stats import sigma_clipped_stats, SigmaClip
 import astropy.units as u
-from astropy.table import vstack
+from astropy.table import QTable, vstack, hstack
 
 from photutils.detection import find_peaks
 from photutils.centroids import centroid_2dg
@@ -92,9 +92,13 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     phot = aperture_photometry(data, aper, error=data_err)
     # modify the properites of the output table
     phot.remove_column("id")
+    # start with separate table to ensure they are the 1st two columns
+    tphot = QTable()
+    tphot["name"] = [targname]
+    tphot["filter"] = filter
+    phot = hstack([tphot, phot])
+    # now add more info
     phot["aperture_sum"] *= u.DN / u.s
-    phot["name"] = targname
-    phot["filter"] = filter
     phot["xcenter"] = full_coord[0] * u.pixel
     phot["ycenter"] = full_coord[1] * u.pixel
     sigclip = SigmaClip(sigma=3.0, maxiters=10)
