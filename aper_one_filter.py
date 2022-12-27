@@ -108,8 +108,8 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     phot["aperture_sum_bkgsub_err"] = np.sqrt(
         (phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)
     ) * u.DN / u.s
-    phot["x_pix_offset_from_expected"] = xoff * u.pixel
-    phot["y_pix_offset_from_expected"] = yoff * u.pixel
+    phot["x_offset_from_expected"] = xoff * u.pixel
+    phot["y_offset_from_expected"] = yoff * u.pixel
 
     if imgfile is not None:
         # show an image of the source and apertures used
