@@ -9,6 +9,8 @@ from astropy.visualization import simple_norm
 from astropy.coordinates import SkyCoord
 from astropy.nddata import Cutout2D
 from astropy.stats import sigma_clipped_stats, SigmaClip
+import astropy.units as u
+from astropy.table import vstack
 
 from photutils.detection import find_peaks
 from photutils.centroids import centroid_2dg
@@ -61,7 +63,7 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     npix_coord = w.world_to_pixel(ncoord)
     xoff = pix_coord[0] - npix_coord[0]
     yoff = pix_coord[1] - npix_coord[1]
-    print("pixel offsets from expected position: ", xoff, yoff)
+    # print("pixel offsets from expected position: ", xoff, yoff)
 
     # recutout the region around the star
     cutout = Cutout2D(orig_data, ncoord, (imsize, imsize), wcs=w)
@@ -79,20 +81,35 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     # print(centroid_2dg(data[xy1:xy2, xy1:xy2]))
     pix_coord = centroid_2dg(data)
 
+    # convert pix_coord in cutout to coordinates in the original image
+    tcoord = cutout.wcs.pixel_to_world(pix_coord[0], pix_coord[1])
+    full_coord = w.world_to_pixel(tcoord)
+
     aper = CircularAperture(pix_coord, r=aprad)
     annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
 
     # do the aperture photometry
     phot = aperture_photometry(data, aper, error=data_err)
+    # modify the properites of the output table
+    phot.remove_column("id")
+    phot["aperture_sum"] *= u.DN / u.s
+    phot["name"] = targname
+    phot["filter"] = filter
+    phot["xcenter"] = full_coord[0] * u.pixel
+    phot["ycenter"] = full_coord[1] * u.pixel
     sigclip = SigmaClip(sigma=3.0, maxiters=10)
     bkg = ApertureStats(data, annulus_aperture, sigma_clip=sigclip)
     tot_bkg = bkg.mean * aper.area
     tot_bkg_err = bkg.std * np.sqrt(aper.area)
-    phot["total bkg"] = tot_bkg
-    phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - tot_bkg
+    phot["mean_bkg"] = bkg.mean * u.DN / u.s
+    phot["aperture_area"] = aper.area
+    phot["total_bkg"] = tot_bkg * u.DN / u.s
+    phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - phot["total_bkg"]
     phot["aperture_sum_bkgsub_err"] = np.sqrt(
         (phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)
-    )
+    ) * u.DN / u.s
+    phot["x_pix_offset_from_expected"] = xoff * u.pixel
+    phot["y_pix_offset_from_expected"] = yoff * u.pixel
 
     if imgfile is not None:
         # show an image of the source and apertures used
@@ -143,8 +160,16 @@ if __name__ == "__main__":
 
     aprad = 5.0
     annrad = [10.0, 15.0]
+    mres = None
     for cfile in mosfiles:
         one_res = aper_image(
             cfile, aprad, annrad, imgfile=cfile.replace(".fits", "_absfluxapers.png")
         )
-        print(one_res)
+        if mres is None:
+            mres = one_res
+        else:
+            mres = vstack([mres, one_res])
+
+    # save table
+    mres.write(f"{args.dir}/{args.filter}_phot.fits", overwrite=True)
+    print(mres)
