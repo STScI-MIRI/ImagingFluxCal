@@ -114,6 +114,7 @@ def aper_image(filename, aprad, annrad, imgfile=None):
         annulus_aperture.plot(ax=ax[1], color="blue", lw=2, label="Background annulus")
         # plt.show()
         fig.suptitle(f"{targname} / {filter}")
+        plt.tight_layout()
         plt.savefig(imgfile)
 
     hdul.close()
@@ -132,6 +133,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dir",
+        choices=["HotStars", "ADwarfs", "SolarAnalogs"],
+        default="ADwarfs",
         help="directory to process",
     )
     args = parser.parse_args()
