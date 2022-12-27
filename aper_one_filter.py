@@ -95,7 +95,8 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     # start with separate table to ensure they are the 1st two columns
     tphot = QTable()
     tphot["name"] = [targname]
-    tphot["filter"] = filter
+    tphot["filter"] = filter.upper()
+    tphot["subarray"] = hdul[0].header["SUBARRAY"]
     phot = hstack([tphot, phot])
     # now add more info
     phot["aperture_sum"] *= u.DN / u.s

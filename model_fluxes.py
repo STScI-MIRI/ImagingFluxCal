@@ -63,8 +63,8 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
     rwaves = {}
     for cband in bandpasses.keys():
         rwave, cwave, ceff = bandpasses[cband]
-        rwaves[cband] = rwave
-        bfluxes[cband] = [compute_bandflux(mwave, mflux, cwave, ceff)]
+        rwaves[cband.upper()] = rwave
+        bfluxes[cband.upper()] = [compute_bandflux(mwave, mflux, cwave, ceff)]
 
     if imgfile is not None:
         # show an image of the source and apertures used
