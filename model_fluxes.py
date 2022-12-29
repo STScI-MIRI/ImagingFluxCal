@@ -12,11 +12,16 @@ from astropy.units import UnitsWarning
 from jwstabsfluxcal.Webb.read_webb import read_miri
 
 
-model_names = {"1743045": "2MASS J17430448+6655015",
+model_names = {"g191b2b": "G 191-B2B",
+               "gd71": "GD 71",
+               "1743045": "2MASS J17430448+6655015",
                "1802271": "2MASS J18022716+6043356",
                "bd60d1753": "BD+60 1753",
                "hd180609": "HD 180609",
-               "hd2811": "HD 2811"}
+               "hd2811": "HD 2811",
+               "p177d": "GSPC P177-D",
+               "p330e": "GSPC P330-E",
+               "hd167060": "HD 167060"}
 
 
 def compute_bandflux(wave, flux_source, bwave, bandpass):
