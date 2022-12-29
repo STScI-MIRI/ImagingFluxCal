@@ -4,11 +4,10 @@ import numpy as np
 from astropy.table import QTable
 
 
-if __name__ == '__main__':
-
-    dir = "ADwarfs"
-    filter = "F770W"
-
+def get_calfactors(dir, filter):
+    """
+    Read in the observed and mdoel fluxes and computer the calibration factors
+    """
     # read in observed fluxes
     obstab = QTable.read(f"{dir}/{filter}_phot.fits")
     # read in model fluxes
@@ -29,6 +28,16 @@ if __name__ == '__main__':
         mfluxes.append(mflux.value)
         cfactors.append(cfactor)
         cfactors_unc.append(cfactor_unc)
+
+    return (cfactors, cfactors_unc, mfluxes)
+
+
+if __name__ == '__main__':
+
+    dir = "ADwarfs"
+    filter = "F770W"
+
+    cfactors, cfactors_unc, mfluxes = get_calfactors(dir, filter)
 
     # make plot
     fontsize = 14

@@ -13,7 +13,7 @@ import astropy.units as u
 from astropy.table import QTable, vstack, hstack
 
 from photutils.detection import find_peaks
-from photutils.centroids import centroid_2dg
+from photutils.centroids import centroid_com
 from photutils.aperture import (
     CircularAnnulus,
     CircularAperture,
@@ -44,8 +44,9 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     w = WCS(hdul[1].header)
     coord = SkyCoord(targra, targdec, unit="deg")
     pix_coord = w.world_to_pixel(coord)
+    # print(pix_coord)
 
-    imsize = annrad[1] * 3.0
+    imsize = annrad[1] * 6.0
     cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
     data = cutout.data
 
@@ -57,7 +58,9 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     # print(tbl[:10])  # print only the first 10 peaks
 
     # get the new coordinates of the star in the original image
-    ncoord = cutout.wcs.pixel_to_world(tbl["x_peak"][0], tbl["y_peak"][0])
+    # use the brightest source for the new center
+    sindx = np.flip(np.argsort(tbl["peak_value"]))
+    ncoord = cutout.wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
 
     # offset from expected position
     npix_coord = w.world_to_pixel(ncoord)
@@ -66,6 +69,7 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     # print("pixel offsets from expected position: ", xoff, yoff)
 
     # recutout the region around the star
+    imsize = annrad[1] * 3.0  # use a smaller size for the refined cutout
     cutout = Cutout2D(orig_data, ncoord, (imsize, imsize), wcs=w)
     cutout_err = Cutout2D(orig_err, ncoord, (imsize, imsize), wcs=w)
     data = cutout.data
@@ -79,7 +83,11 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     # xy1 = int(0.5 * imsize - peaksize)
     # xy2 = int(0.5 * imsize + peaksize)
     # print(centroid_2dg(data[xy1:xy2, xy1:xy2]))
-    pix_coord = centroid_2dg(data)
+    # print(npix_coord)
+    # pix_coord = centroid_2dg(data)
+    # pix_coord = centroid_1dg(data)
+    pix_coord = centroid_com(data)
+    # pix_coord = npix_coord
 
     # convert pix_coord in cutout to coordinates in the original image
     tcoord = cutout.wcs.pixel_to_world(pix_coord[0], pix_coord[1])
