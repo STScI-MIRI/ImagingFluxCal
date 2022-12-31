@@ -46,11 +46,21 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     w = WCS(hdul[1].header)
     coord = SkyCoord(targra, targdec, unit="deg")
     pix_coord = w.world_to_pixel(coord)
-    # print(pix_coord)
+    # check if outside the image
+    if ((pix_coord[0] < 0) | (pix_coord[0] > orig_data.shape[0])) | (
+        (pix_coord[1] < 0) | (pix_coord[1] > orig_data.shape[1])
+    ):
+        # this indicates something bad happened, currently only seen with SUB64
+        # just use the full image in this case
+        data = orig_data
+        data_wcs = w
+    else:
+        imsize = annrad[1] * 6.0
+        cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
+        data = cutout.data
+        data_wcs = cutout.wcs
 
-    imsize = annrad[1] * 6.0
-    cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
-    data = cutout.data
+    fits.writeto("test.fits", data, overwrite=True)
 
     # find the star
     mean, median, std = sigma_clipped_stats(data, sigma=3.0)
@@ -62,7 +72,7 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     # get the new coordinates of the star in the original image
     # use the brightest source for the new center
     sindx = np.flip(np.argsort(tbl["peak_value"]))
-    ncoord = cutout.wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
+    ncoord = data_wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
 
     # offset from expected position
     npix_coord = w.world_to_pixel(ncoord)
@@ -120,9 +130,9 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     phot["aperture_area"] = aper.area
     phot["total_bkg"] = tot_bkg * u.DN / u.s
     phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - phot["total_bkg"]
-    phot["aperture_sum_bkgsub_err"] = np.sqrt(
-        (phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)
-    ) * u.DN / u.s
+    phot["aperture_sum_bkgsub_err"] = (
+        np.sqrt((phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)) * u.DN / u.s
+    )
     phot["x_offset_from_expected"] = xoff * u.pixel
     phot["y_offset_from_expected"] = yoff * u.pixel
 
@@ -160,7 +170,7 @@ if __name__ == "__main__":
         "--filter",
         help="filter to process",
         default="F770W",
-        choices=["F560W", "F770W", "F770W_subarray"],
+        choices=["F560W", "F770W", "F770W_subarray", "F1500W"],
     )
     parser.add_argument(
         "--dir",

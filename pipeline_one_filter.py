@@ -57,7 +57,7 @@ if __name__ == '__main__':
         "--filter",
         help="filter to process",
         default="F770W",
-        choices=["F560W", "F770W", "F770W_subarray"],
+        choices=["F560W", "F770W", "F770W_subarray", "F1500W"],
     )
     parser.add_argument(
         "--dir",

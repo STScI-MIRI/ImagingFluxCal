@@ -51,7 +51,7 @@ if __name__ == "__main__":
         "--filter",
         help="filter to process",
         default="F770W",
-        choices=["F560W", "F770W", "F770W_subarray"],
+        choices=["F560W", "F770W", "F770W_subarray", "F1500W"],
     )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -83,6 +83,7 @@ if __name__ == "__main__":
         if exists(f"{dir}/{filter}_phot.fits"):
             cfacs = get_calfactors(dir, filter)
             for cfactor, cfactor_unc, mflux, subarray in cfacs:
+                # print(cfactor, mflux)
 
                 ax.errorbar(
                     [mflux * 1e3],
