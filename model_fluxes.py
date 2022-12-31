@@ -15,6 +15,7 @@ from jwstabsfluxcal.Webb.read_webb import read_miri
 model_names = {"g191b2b": "G 191-B2B",
                "gd71": "GD 71",
                "1743045": "2MASS J17430448+6655015",
+               "1757132": "2MASS J17571324+6703409",
                "1802271": "2MASS J18022716+6043356",
                "bd60d1753": "BD+60 1753",
                "hd180609": "HD 180609",

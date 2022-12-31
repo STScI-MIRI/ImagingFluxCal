@@ -29,6 +29,8 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     """
     hdul = fits.open(filename)
     targname = hdul[0].header["TARGNAME"]
+    if targname == "J1757132":
+        targname = "2MASS J17571324+6703409"
     filter = hdul[0].header["FILTER"]
     photmjysr = hdul[1].header["PHOTMJSR"]
     print(targname, filter)
@@ -158,8 +160,7 @@ if __name__ == "__main__":
         "--filter",
         help="filter to process",
         default="F770W",
-        choices=["F560W", "F770W"],
-        nargs=1,
+        choices=["F560W", "F770W", "F770W_subarray"],
     )
     parser.add_argument(
         "--dir",
@@ -170,6 +171,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mosfiles = glob.glob(f"{args.dir}/{args.filter}/*/miri*_i2d.fits")
+    print(f"{args.dir}/{args.filter}/*/miri*_i2d.fits")
 
     aprad = 5.0
     annrad = [10.0, 15.0]

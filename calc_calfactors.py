@@ -1,3 +1,4 @@
+from os.path import exists
 import argparse
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
@@ -21,6 +22,7 @@ def get_calfactors(dir, filter):
     cfactors_unc = []
     subarrs = []
     for k, cname in enumerate(obstab["name"]):
+        cfilter = obstab["filter"][k]
         oflux = obstab["aperture_sum_bkgsub"][k]
         oflux_unc = obstab["aperture_sum_bkgsub_err"][k]
 
@@ -28,7 +30,7 @@ def get_calfactors(dir, filter):
         if len(mindx) < 1:
             print(f"Model fluxes for {cname} not present")
             exit()
-        mflux = modtab[filter][mindx[0]]
+        mflux = modtab[cfilter][mindx[0]]
 
         cfactor = mflux.value / oflux.value
         cfactor_unc = (oflux_unc / oflux) * cfactor
@@ -45,6 +47,12 @@ def get_calfactors(dir, filter):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--filter",
+        help="filter to process",
+        default="F770W",
+        choices=["F560W", "F770W", "F770W_subarray"],
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -61,7 +69,7 @@ if __name__ == "__main__":
 
     dirs = ["HotStars", "ADwarfs", "SolarAnalogs"]
     pcols = ["b", "g", "r"]
-    filter = "F770W"
+    filter = args.filter
 
     psubsym = {
         "FULL": "o",
@@ -72,20 +80,21 @@ if __name__ == "__main__":
     }
 
     for k, dir in enumerate(dirs):
-        cfacs = get_calfactors(dir, filter)
-        for cfactor, cfactor_unc, mflux, subarray in cfacs:
+        if exists(f"{dir}/{filter}_phot.fits"):
+            cfacs = get_calfactors(dir, filter)
+            for cfactor, cfactor_unc, mflux, subarray in cfacs:
 
-            ax.errorbar(
-                [mflux],
-                [cfactor],
-                yerr=[cfactor_unc],
-                fmt=f"{pcols[k]}{psubsym[subarray]}",
-                alpha=0.5,
-                markersize=10,
-            )
+                ax.errorbar(
+                    [mflux * 1e3],
+                    [cfactor],
+                    yerr=[cfactor_unc],
+                    fmt=f"{pcols[k]}{psubsym[subarray]}",
+                    alpha=0.5,
+                    markersize=10,
+                )
 
     ax.set_xscale("log")
-    ax.set_xlabel("Flux [Jy]")
+    ax.set_xlabel("Flux [mJy]")
     ax.set_ylabel("Calibration Factors [Jy / (DN/s)]")
     ax.set_title(f"{filter} (fixed aperture, no aperture correction)")
 

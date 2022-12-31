@@ -19,23 +19,34 @@ def sort_uncal(subdir, filter):
     filenames = []
     objects = []
     filters = []
+    obssets = []
     for cfile in rfiles:
         filenames.append(cfile)
         chdr = fits.getheader(cfile, 0)
-        objects.append(chdr["TARGNAME"])
+        ctargname = chdr["TARGNAME"]
+        objects.append(ctargname)
         cfilter = chdr["FILTER"]
         filters.append(cfilter)
-        if cfilter != filter:
+        obssets.append((cfile.split("/")[2]).split("_")[0])
+        if cfilter != filter.split("_")[0]:
             print("filter does not match")
             print(f"expected: {filter}, actual: {cfilter}")
             exit()
+    filenames = np.array(filenames)
+    objects = np.array(objects)
+    filters = np.array(filters)
+    obssets = np.array(obssets)
 
-    # get the filenames for each unique object
+    # get the filenames for each unique object/obsset combination
     uobj, rind = np.unique(objects, return_inverse=True)
     setobj = {}
     for k, cobj in enumerate(uobj):
-        gvals, = np.where(k == rind)
-        setobj[cobj] = [filenames[j] for j in gvals]
+        gvals = cobj == objects
+        # create a seperate set for each unique set of observations
+        usets, sind = np.unique(obssets[gvals], return_inverse=True)
+        for m, cset in enumerate(usets):
+            gvals = (cobj == objects) & (cset == obssets)
+            setobj[f"{cobj}_set{m+1}"] = filenames[gvals]
 
     return setobj
 
@@ -46,11 +57,12 @@ if __name__ == '__main__':
         "--filter",
         help="filter to process",
         default="F770W",
-        choices=["F560W", "F770W"],
-        nargs=1,
+        choices=["F560W", "F770W", "F770W_subarray"],
     )
     parser.add_argument(
         "--dir",
+        choices=["HotStars", "ADwarfs", "SolarAnalogs"],
+        default="ADwarfs",
         help="directory to process",
     )
     args = parser.parse_args()
