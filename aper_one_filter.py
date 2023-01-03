@@ -11,6 +11,7 @@ from astropy.nddata import Cutout2D
 from astropy.stats import sigma_clipped_stats, SigmaClip
 import astropy.units as u
 from astropy.table import QTable, vstack, hstack
+from astropy.wcs.utils import proj_plane_pixel_area
 
 from photutils.detection import find_peaks
 from photutils.centroids import centroid_com
@@ -23,7 +24,7 @@ from photutils.aperture import (
 )
 
 
-def aper_image(filename, aprad, annrad, imgfile=None):
+def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     """
     Measure aperture photometry on one image for target source
     """
@@ -121,6 +122,15 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     tphot["name"] = [targname]
     tphot["filter"] = filter.upper()
     tphot["subarray"] = hdul[0].header["SUBARRAY"]
+    tphot["ngroups"] = hdul[0].header["NGROUPS"]
+    tphot["tgroup"] = hdul[0].header["TGROUP"]
+    tphot["timemid"] = hdul[0].header["EXPMID"] * u.day
+    tphot["aprad"] = aprad
+    tphot["apcorr"] = apcor
+    tphot["annrad1"] = annrad[0]
+    tphot["annrad2"] = annrad[1]
+    pixarea = proj_plane_pixel_area(w) * u.deg * u.deg
+    tphot["pixarea"] = pixarea.to(u.steradian)
     phot = hstack([tphot, phot])
 
     # now add more info
@@ -143,9 +153,6 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     )
     phot["x_offset_from_expected"] = xoff * u.pixel
     phot["y_offset_from_expected"] = yoff * u.pixel
-    phot["ngroups"] = hdul[0].header["NGROUPS"]
-    phot["tgroup"] = hdul[0].header["TGROUP"]
-    phot["timemid"] = hdul[0].header["EXPMID"] * u.day
 
     if imgfile is not None:
         # show an image of the source and apertures used
@@ -185,12 +192,27 @@ def aper_one_filter(subdir, filter):
     mosfiles = glob.glob(f"{subdir}/{filter}/*/miri*_i2d.fits")
     print(f"{subdir}/{filter}/*/miri*_i2d.fits")
 
-    aprad = 5.0
-    annrad = [10.0, 15.0]
+    # get the aper info from the apcor reference file
+    tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
+    gval = (
+        (tab["filter"] == filter.split("_")[0])
+        & (tab["eefraction"] == 0.7)
+        & (tab["subarray"] == "FULL")
+    )
+    aprad = tab["radius"][gval][0]
+    annrad = [tab["skyin"][gval][0], tab["skyout"][gval][0]]
+    apcor = tab["apcorr"][gval][0]
+    # aprad = 5.0
+    # annrad = [10.0, 15.0]
+
     mres = None
     for cfile in mosfiles:
         one_res = aper_image(
-            cfile, aprad, annrad, imgfile=cfile.replace(".fits", "_absfluxapers.png")
+            cfile,
+            aprad,
+            annrad,
+            apcor,
+            imgfile=cfile.replace(".fits", "_absfluxapers.png"),
         )
         if mres is None:
             mres = one_res

@@ -25,6 +25,8 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
         cfilter = obstab["filter"][k]
         oflux = obstab["aperture_sum_bkgsub"][k]
         oflux_unc = obstab["aperture_sum_bkgsub_err"][k]
+        apcorr = obstab["apcorr"][k]
+        pixarea = obstab["pixarea"][k]
 
         (mindx,) = np.where(modtab["name"] == cname)
         if len(mindx) < 1:
@@ -37,7 +39,7 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
         else:
             xval = mflux * 1e3
 
-        cfactor = mflux.value / oflux.value
+        cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
         cfactor_unc = (oflux_unc / oflux) * cfactor
         xvals.append(xval.value)
         cfactors.append(cfactor)
@@ -113,12 +115,18 @@ if __name__ == "__main__":
     allfacs = np.concatenate(allfacs)
     medval = np.nanmedian(allfacs)
 
+    # get the current pipeline calibration factor and plot
+    cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
+    pipe_cfactor = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
+    ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
+
+    # now make the plot nice
     if args.xaxisval == "timemid":
         ax.set_xlabel("Time [MJD]")
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
-    ax.set_ylabel("Calibration Factors [Jy / (DN/s)]")
+    ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
     ax.set_title(f"{filter} (fixed aperture, no aperture correction)")
 
     def val2per(val):
