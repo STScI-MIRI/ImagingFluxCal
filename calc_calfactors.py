@@ -39,7 +39,7 @@ def get_calfactors(dir, filter):
         cfactors_unc.append(cfactor_unc)
         subarrs.append(obstab["subarray"][k])
 
-    res = zip(cfactors, cfactors_unc, mfluxes, subarrs)
+    res = (cfactors, cfactors_unc, mfluxes, subarrs)
 
     return res
 
@@ -51,7 +51,11 @@ if __name__ == "__main__":
         "--filter",
         help="filter to process",
         default="F770W",
-        choices=["F560W", "F770W", "F770W_subarray", "F1500W"],
+        # fmt: off
+        choices=["F560W", "F770W", "F770W_subarray", "F770W_repeat", "F1000W",
+                 "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
+                 "F1065C", "F1140C", "F1550C", "F2300C"],
+        # fmt: on
     )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -79,11 +83,14 @@ if __name__ == "__main__":
         "SUB64": "*",
     }
 
+    allfacs = []
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
             cfacs = get_calfactors(dir, filter)
-            for cfactor, cfactor_unc, mflux, subarray in cfacs:
-                # print(cfactor, mflux)
+            allfacs.append(cfacs[0])
+            for cfactor, cfactor_unc, mflux, subarray in zip(
+                cfacs[0], cfacs[1], cfacs[2], cfacs[3]
+            ):
 
                 ax.errorbar(
                     [mflux * 1e3],
@@ -93,11 +100,22 @@ if __name__ == "__main__":
                     alpha=0.5,
                     markersize=10,
                 )
+    allfacs = np.concatenate(allfacs)
+    medval = np.nanmedian(allfacs)
 
     ax.set_xscale("log")
     ax.set_xlabel("Flux [mJy]")
     ax.set_ylabel("Calibration Factors [Jy / (DN/s)]")
     ax.set_title(f"{filter} (fixed aperture, no aperture correction)")
+
+    def val2per(val):
+        return (val / medval) * 100.0 - 100.
+
+    def per2val(per):
+        return ((per + 100) / 100.0) * medval
+
+    secax = ax.secondary_yaxis("right", functions=(val2per, per2val))
+    secax.set_ylabel("percentage")
 
     first_legend = [
         Patch(facecolor=ccol, edgecolor=ccol, label=cdir, alpha=0.5)

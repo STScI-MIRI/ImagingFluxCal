@@ -105,27 +105,35 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     tcoord = cutout.wcs.pixel_to_world(pix_coord[0], pix_coord[1])
     full_coord = w.world_to_pixel(tcoord)
 
+    # define apertures
     aper = CircularAperture(pix_coord, r=aprad)
     annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
 
     # do the aperture photometry
     phot = aperture_photometry(data, aper, error=data_err)
+    phot_stats = ApertureStats(data, aper, sigma_clip=None)
+
     # modify the properites of the output table
     phot.remove_column("id")
-    # start with separate table to ensure they are the 1st two columns
+
+    # start with separate table to ensure specific columns are in the first columns
     tphot = QTable()
     tphot["name"] = [targname]
     tphot["filter"] = filter.upper()
     tphot["subarray"] = hdul[0].header["SUBARRAY"]
     phot = hstack([tphot, phot])
+
     # now add more info
     phot["aperture_sum"] *= u.DN / u.s
-    phot["xcenter"] = full_coord[0] * u.pixel
-    phot["ycenter"] = full_coord[1] * u.pixel
+    phot["xcenter_full"] = full_coord[0] * u.pixel
+    phot["ycenter_full"] = full_coord[1] * u.pixel
+
+    # do background subtraction
     sigclip = SigmaClip(sigma=3.0, maxiters=10)
     bkg = ApertureStats(data, annulus_aperture, sigma_clip=sigclip)
     tot_bkg = bkg.mean * aper.area
     tot_bkg_err = bkg.std * np.sqrt(aper.area)
+    phot["pix_max"] = phot_stats.max * u.DN / u.s
     phot["mean_bkg"] = bkg.mean * u.DN / u.s
     phot["aperture_area"] = aper.area
     phot["total_bkg"] = tot_bkg * u.DN / u.s
@@ -135,6 +143,9 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     )
     phot["x_offset_from_expected"] = xoff * u.pixel
     phot["y_offset_from_expected"] = yoff * u.pixel
+    phot["ngroups"] = hdul[0].header["NGROUPS"]
+    phot["tgroup"] = hdul[0].header["TGROUP"]
+    phot["timemid"] = hdul[0].header["EXPMID"]
 
     if imgfile is not None:
         # show an image of the source and apertures used
@@ -154,34 +165,25 @@ def aper_image(filename, aprad, annrad, imgfile=None):
         ax[1].imshow(data, norm=norm, interpolation="nearest", origin="lower")
         aper.plot(ax=ax[1], color="white", lw=2, label="Photometry aperture")
         annulus_aperture.plot(ax=ax[1], color="blue", lw=2, label="Background annulus")
-        # plt.show()
+        ax[1].plot(phot["xcenter"][0], phot["ycenter"][0], "b+")
+        ax[1].plot([phot_stats.centroid[0]], [phot_stats.centroid[1]], "k+")
+
         fig.suptitle(f"{targname} / {filter}")
         plt.tight_layout()
         plt.savefig(imgfile)
-
+        # plt.show()
     hdul.close()
 
     return phot
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--filter",
-        help="filter to process",
-        default="F770W",
-        choices=["F560W", "F770W", "F770W_subarray", "F1500W"],
-    )
-    parser.add_argument(
-        "--dir",
-        choices=["HotStars", "ADwarfs", "SolarAnalogs"],
-        default="ADwarfs",
-        help="directory to process",
-    )
-    args = parser.parse_args()
-
-    mosfiles = glob.glob(f"{args.dir}/{args.filter}/*/miri*_i2d.fits")
-    print(f"{args.dir}/{args.filter}/*/miri*_i2d.fits")
+def aper_one_filter(subdir, filter):
+    """
+    Do aperture photometry on all mosaic files for one filter and one class
+    of stars.
+    """
+    mosfiles = glob.glob(f"{subdir}/{filter}/*/miri*_i2d.fits")
+    print(f"{subdir}/{filter}/*/miri*_i2d.fits")
 
     aprad = 5.0
     annrad = [10.0, 15.0]
@@ -196,5 +198,28 @@ if __name__ == "__main__":
             mres = vstack([mres, one_res])
 
     # save table
-    mres.write(f"{args.dir}/{args.filter}_phot.fits", overwrite=True)
+    mres.write(f"{subdir}/{filter}_phot.fits", overwrite=True)
     print(mres)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--filter",
+        help="filter to process",
+        default="F770W",
+        # fmt: off
+        choices=["F560W", "F770W", "F770W_subarray", "F770W_repeat", "F1000W",
+                 "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
+                 "F1065C", "F1140C", "F1550C", "F2300C"],
+        # fmt: on
+    )
+    parser.add_argument(
+        "--dir",
+        choices=["HotStars", "ADwarfs", "SolarAnalogs"],
+        default="ADwarfs",
+        help="directory to process",
+    )
+    args = parser.parse_args()
+
+    aper_one_filter(args.dir, args.filter)
