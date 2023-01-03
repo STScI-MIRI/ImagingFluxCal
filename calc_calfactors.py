@@ -8,7 +8,7 @@ import numpy as np
 from astropy.table import QTable
 
 
-def get_calfactors(dir, filter):
+def get_calfactors(dir, filter, xaxisval="mflux"):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -17,7 +17,7 @@ def get_calfactors(dir, filter):
     # read in model fluxes
     modtab = QTable.read("Models/model_phot.fits")
 
-    mfluxes = []
+    xvals = []
     cfactors = []
     cfactors_unc = []
     subarrs = []
@@ -32,14 +32,19 @@ def get_calfactors(dir, filter):
             exit()
         mflux = modtab[cfilter][mindx[0]]
 
+        if xaxisval == "timemid":
+            xval = obstab["timemid"][k]
+        else:
+            xval = mflux * 1e3
+
         cfactor = mflux.value / oflux.value
         cfactor_unc = (oflux_unc / oflux) * cfactor
-        mfluxes.append(mflux.value)
+        xvals.append(xval.value)
         cfactors.append(cfactor)
         cfactors_unc.append(cfactor_unc)
         subarrs.append(obstab["subarray"][k])
 
-    res = (cfactors, cfactors_unc, mfluxes, subarrs)
+    res = (cfactors, cfactors_unc, xvals, subarrs)
 
     return res
 
@@ -56,6 +61,12 @@ if __name__ == "__main__":
                  "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
                  "F1065C", "F1140C", "F1550C", "F2300C"],
         # fmt: on
+    )
+    parser.add_argument(
+        "--xaxisval",
+        help="x-axis values",
+        default="mflux",
+        choices=["mflux", "timemid"],
     )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -86,14 +97,13 @@ if __name__ == "__main__":
     allfacs = []
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
-            cfacs = get_calfactors(dir, filter)
+            cfacs = get_calfactors(dir, filter, xaxisval=args.xaxisval)
             allfacs.append(cfacs[0])
-            for cfactor, cfactor_unc, mflux, subarray in zip(
+            for cfactor, cfactor_unc, xval, subarray in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3]
             ):
-
                 ax.errorbar(
-                    [mflux * 1e3],
+                    [xval],
                     [cfactor],
                     yerr=[cfactor_unc],
                     fmt=f"{pcols[k]}{psubsym[subarray]}",
@@ -103,8 +113,11 @@ if __name__ == "__main__":
     allfacs = np.concatenate(allfacs)
     medval = np.nanmedian(allfacs)
 
-    ax.set_xscale("log")
-    ax.set_xlabel("Flux [mJy]")
+    if args.xaxisval == "timemid":
+        ax.set_xlabel("Time [MJD]")
+    else:
+        ax.set_xscale("log")
+        ax.set_xlabel("Flux [mJy]")
     ax.set_ylabel("Calibration Factors [Jy / (DN/s)]")
     ax.set_title(f"{filter} (fixed aperture, no aperture correction)")
 

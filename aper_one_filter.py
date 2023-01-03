@@ -145,7 +145,7 @@ def aper_image(filename, aprad, annrad, imgfile=None):
     phot["y_offset_from_expected"] = yoff * u.pixel
     phot["ngroups"] = hdul[0].header["NGROUPS"]
     phot["tgroup"] = hdul[0].header["TGROUP"]
-    phot["timemid"] = hdul[0].header["EXPMID"]
+    phot["timemid"] = hdul[0].header["EXPMID"] * u.day
 
     if imgfile is not None:
         # show an image of the source and apertures used
