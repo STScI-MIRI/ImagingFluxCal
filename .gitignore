@@ -1,3 +1,8 @@
 *.fits
 *.json
+*.png
+*.odp
 helpers
+ADwarfs
+SolarAnalogs
+HotStars
