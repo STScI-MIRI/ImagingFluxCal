@@ -12,6 +12,7 @@ from astropy.stats import sigma_clipped_stats, SigmaClip
 import astropy.units as u
 from astropy.table import QTable, vstack, hstack
 from astropy.wcs.utils import proj_plane_pixel_area
+from astropy.time import Time
 
 from photutils.detection import find_peaks
 from photutils.centroids import centroid_com
@@ -45,7 +46,16 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     orig_err /= photmjysr
 
     w = WCS(hdul[1].header)
-    coord = SkyCoord(targra, targdec, unit="deg")
+    orig_coord = SkyCoord(
+        targra,
+        targdec,
+        unit="deg",
+        pm_ra_cosdec=hdul[0].header["MU_RA"] * u.arcsec / u.yr,
+        pm_dec=hdul[0].header["MU_DEC"] * u.arcsec / u.yr,
+    )
+    new_obstime = Time(hdul[0].header["DATE-BEG"])
+    orig_coord.obstime = Time(hdul[0].header["MU_EPOCH"])
+    coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
     pix_coord = w.world_to_pixel(coord)
     # check if outside the image
     if ((pix_coord[0] < 0) | (pix_coord[0] > orig_data.shape[0])) | (

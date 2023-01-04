@@ -127,7 +127,7 @@ if __name__ == "__main__":
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
     ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
-    ax.set_title(f"{filter} (fixed aperture, no aperture correction)")
+    ax.set_title(f"{filter}")
 
     def val2per(val):
         return (val / medval) * 100.0 - 100.
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     plt.tight_layout()
 
-    fname = f"miri_calfactors_{filter}"
+    fname = f"miri_calfactors_{filter}_{args.xaxisval}"
     if args.png:
         fig.savefig(f"{fname}.png")
     elif args.pdf:
