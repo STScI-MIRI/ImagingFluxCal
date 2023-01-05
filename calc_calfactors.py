@@ -91,13 +91,13 @@ if __name__ == "__main__":
     psubsym = {
         "FULL": "o",
         "BRIGHTSKY": "s",
-        "SUB256": "^",
+        "SUB256": "p",
         "SUB128": "P",
         "SUB64": "*",
-        "MASK1065": "o",
-        "MASK1140": "o",
-        "MASK1550": "o",
-        "MASKLYOT": "o",
+        "MASK1065": "^",
+        "MASK1140": ">",
+        "MASK1550": "<",
+        "MASKLYOT": "v",
     }
 
     allfacs = []
@@ -151,18 +151,19 @@ if __name__ == "__main__":
 
     second_legend = []
     for ckey in psubsym.keys():
-        second_legend.append(
-            Line2D(
-                [0],
-                [0],
-                marker=psubsym[ckey],
-                color="w",
-                label=ckey,
-                markerfacecolor="k",
-                markersize=10,
-                alpha=0.5,
+        if ckey[0:4] != "MASK":
+            second_legend.append(
+                Line2D(
+                    [0],
+                    [0],
+                    marker=psubsym[ckey],
+                    color="w",
+                    label=ckey,
+                    markerfacecolor="k",
+                    markersize=10,
+                    alpha=0.5,
+                )
             )
-        )
     ax.legend(handles=second_legend, loc="upper left")
 
     plt.tight_layout()
