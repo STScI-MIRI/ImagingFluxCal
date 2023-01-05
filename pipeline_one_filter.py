@@ -51,7 +51,7 @@ def sort_uncal(subdir, filter):
     return setobj
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--filter",
@@ -69,6 +69,12 @@ if __name__ == '__main__':
         default="ADwarfs",
         help="directory to process",
     )
+    parser.add_argument(
+        "--stage",
+        help="stages to run",
+        default="all",
+        choices=["stage1", "stage2", "stage3", "all"],
+    )
     args = parser.parse_args()
 
     # get the files for each object for the specified filter
@@ -84,44 +90,69 @@ if __name__ == '__main__':
             print(f"making dir {ndir}")
             os.mkdir(ndir)
 
-        # calwebb_detector1
-        cbase = f"{ndir}/{ckey}_stage1"
-        with open(f"{cbase}.cfg", "w") as f:
-            f.write("[*]\n")
-            f.write(f"handler = file:{cbase}.log\n")
-            f.write("level = INFO\n")
+        if args.stage in ["stage1", "all"]:
+            # calwebb_detector1
+            cbase = f"{ndir}/{ckey}_stage1"
+            with open(f"{cbase}.cfg", "w") as f:
+                f.write("[*]\n")
+                f.write(f"handler = file:{cbase}.log\n")
+                f.write("level = INFO\n")
 
-        print(f"detector1 for {ckey}")
-        miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg")
+            print(f"detector1 for {ckey}")
+            miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg")
 
-        # calwebb_image2
-        cbase = f"{ndir}/{ckey}_stage2"
-        with open(f"{cbase}.cfg", "w") as f:
-            f.write("[*]\n")
-            f.write(f"handler = file:{cbase}.log\n")
-            f.write("level = INFO\n")
+        if args.stage in ["stage2", "all"]:
+            # calwebb_image2
+            cbase = f"{ndir}/{ckey}_stage2"
+            with open(f"{cbase}.cfg", "w") as f:
+                f.write("[*]\n")
+                f.write(f"handler = file:{cbase}.log\n")
+                f.write("level = INFO\n")
 
-        ratefiles = glob.glob(f"{ndir}/*_rate.fits")
-        print(f"image2 for {ckey}")
-        miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg")
+            ratefiles = glob.glob(f"{ndir}/*_rate.fits")
+            print(f"image2 for {ckey}")
+            miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg")
 
-        # calwebb_image3
-        # generate association file
-        calfiles = glob.glob(f"{ndir}/*_cal.fits")
-        miri_asn_name = f'miri_{ckey}_stage3_asn'
-        miri_asn = asn_from_list.asn_from_list(calfiles, rule=DMS_Level3_Base,
-                                               product_name=miri_asn_name)
-        miri_asn_file = f'{miri_asn_name}.json'
-        with open(miri_asn_file, 'w') as outfile:
-            name, serialized = miri_asn.dump(format='json')
-            outfile.write(serialized)
+        if args.stage in ["stage3", "all"]:
+            # calwebb_image3
+            calfiles = glob.glob(f"{ndir}/*_cal.fits")
 
-        # log file setup
-        cbase = f"{ndir}/{ckey}_stage3"
-        with open(f"{cbase}.cfg", "w") as f:
-            f.write("[*]\n")
-            f.write(f"handler = file:{cbase}.log\n")
-            f.write("level = INFO\n")
+            # for coronagraphy, need to fake the data as imaging
+            print(args.filter)
+            if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+                for cfile in calfiles:
+                    hdul = fits.open(cfile)
+                    hdul[0].header["EXP_TYPE"] = "MIR_IMAGE"
+                    hdul.writeto(
+                        cfile.replace("_cal.fits", "_newcal.fits"), overwrite=True
+                    )
+                    hdul.close()
+                calfiles = glob.glob(f"{ndir}/*_newcal.fits")
 
-        print(f"image3 for {ckey}")
-        miri_image3(miri_asn_file, ndir, logfile=f"{cbase}.cfg")
+            # generate association file
+            miri_asn_name = f"miri_{ckey}_stage3_asn"
+            miri_asn = asn_from_list.asn_from_list(
+                calfiles, rule=DMS_Level3_Base, product_name=miri_asn_name
+            )
+            miri_asn_file = f"{miri_asn_name}.json"
+            with open(miri_asn_file, "w") as outfile:
+                name, serialized = miri_asn.dump(format="json")
+                outfile.write(serialized)
+
+            # log file setup
+            cbase = f"{ndir}/{ckey}_stage3"
+            with open(f"{cbase}.cfg", "w") as f:
+                f.write("[*]\n")
+                f.write(f"handler = file:{cbase}.log\n")
+                f.write("level = INFO\n")
+
+            print(args.filter)
+            if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+                sourcecat = False
+            else:
+                sourcecat = True
+
+            print(f"image3 for {ckey}")
+            miri_image3(
+                miri_asn_file, ndir, logfile=f"{cbase}.cfg", sourcecat=sourcecat
+            )

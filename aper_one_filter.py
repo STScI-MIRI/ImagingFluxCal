@@ -204,8 +204,16 @@ def aper_one_filter(subdir, filter):
 
     # get the aper info from the apcor reference file
     tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
+    repfilter = {"F1065C": "F1130W",
+                 "F1140C": "F1130W",
+                 "F1550C": "F1500W",
+                 "F2300C": "F2100W"}
+    if filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        apfilter = repfilter[filter]
+    else:
+        apfilter = filter
     gval = (
-        (tab["filter"] == filter.split("_")[0])
+        (tab["filter"] == apfilter.split("_")[0])
         & (tab["eefraction"] == 0.7)
         & (tab["subarray"] == "FULL")
     )

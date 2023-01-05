@@ -94,6 +94,10 @@ if __name__ == "__main__":
         "SUB256": "^",
         "SUB128": "P",
         "SUB64": "*",
+        "MASK1065": "o",
+        "MASK1140": "o",
+        "MASK1550": "o",
+        "MASKLYOT": "o",
     }
 
     allfacs = []
