@@ -36,6 +36,12 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
 
         if xaxisval == "timemid":
             xval = obstab["timemid"][k]
+        elif xaxisval == "rate":
+            xval = obstab["pix_max"][k]
+        elif xaxisval == "welldepth":
+            xval = obstab["tgroup"][k] * obstab["ngroups"][k] * obstab["pix_max"][k]
+        elif xaxisval == "bkg":
+            xval = obstab["mean_bkg"][k]
         else:
             xval = mflux * 1e3
 
@@ -51,42 +57,12 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
     return res
 
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--filter",
-        help="filter to process",
-        default="F770W",
-        # fmt: off
-        choices=["F560W", "F770W", "F770W_subarray", "F770W_repeat", "F1000W",
-                 "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C"],
-        # fmt: on
-    )
-    parser.add_argument(
-        "--xaxisval",
-        help="x-axis values",
-        default="mflux",
-        choices=["mflux", "timemid"],
-    )
-    parser.add_argument("--png", help="save figure as a png file", action="store_true")
-    parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
-    args = parser.parse_args()
-
-    # make plot
-    fontsize = 14
-    font = {"size": fontsize}
-    plt.rc("font", **font)
-    plt.rc("lines", linewidth=2)
-    plt.rc("axes", linewidth=2)
-    plt.rc("xtick.major", width=2)
-    plt.rc("ytick.major", width=2)
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
-
+def plot_calfactors(ax, filter, xaxisval, showleg=True):
+    """
+    Plot the calibration factors versus the requested xaxis.
+    """
     dirs = ["HotStars", "ADwarfs", "SolarAnalogs"]
     pcols = ["b", "g", "r"]
-    filter = args.filter
 
     psubsym = {
         "FULL": "o",
@@ -103,7 +79,7 @@ if __name__ == "__main__":
     allfacs = []
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
-            cfacs = get_calfactors(dir, filter, xaxisval=args.xaxisval)
+            cfacs = get_calfactors(dir, filter, xaxisval=xaxisval)
             allfacs.append(cfacs[0])
             for cfactor, cfactor_unc, xval, subarray in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3]
@@ -125,8 +101,16 @@ if __name__ == "__main__":
     ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
 
     # now make the plot nice
-    if args.xaxisval == "timemid":
+    if xaxisval == "timemid":
         ax.set_xlabel("Time [MJD]")
+    elif xaxisval == "rate":
+        ax.set_xscale("log")
+        ax.set_xlabel("Central Pixel Rate [DN/s]")
+    elif xaxisval == "welldepth":
+        ax.set_xlabel("Central Pixel Well Depth [DN]")
+    elif xaxisval == "bkg":
+        ax.set_xscale("log")
+        ax.set_xlabel("Background [DN/s]")
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
@@ -142,33 +126,84 @@ if __name__ == "__main__":
     secax = ax.secondary_yaxis("right", functions=(val2per, per2val))
     secax.set_ylabel("percentage")
 
-    first_legend = [
-        Patch(facecolor=ccol, edgecolor=ccol, label=cdir, alpha=0.5)
-        for cdir, ccol in zip(dirs, pcols)
-    ]
-    leg1 = ax.legend(handles=first_legend, loc="upper center")
-    ax.add_artist(leg1)
+    if showleg:
 
-    second_legend = []
-    for ckey in psubsym.keys():
-        if ckey[0:4] != "MASK":
-            second_legend.append(
-                Line2D(
-                    [0],
-                    [0],
-                    marker=psubsym[ckey],
-                    color="w",
-                    label=ckey,
-                    markerfacecolor="k",
-                    markersize=10,
-                    alpha=0.5,
+        first_legend = [
+            Patch(facecolor=ccol, edgecolor=ccol, label=cdir, alpha=0.5)
+            for cdir, ccol in zip(dirs, pcols)
+        ]
+        leg1 = ax.legend(handles=first_legend, loc="upper center")
+        ax.add_artist(leg1)
+
+        second_legend = []
+        for ckey in psubsym.keys():
+            if ckey[0:4] != "MASK":
+                second_legend.append(
+                    Line2D(
+                        [0],
+                        [0],
+                        marker=psubsym[ckey],
+                        color="w",
+                        label=ckey,
+                        markerfacecolor="k",
+                        markersize=10,
+                        alpha=0.5,
+                    )
                 )
-            )
-    ax.legend(handles=second_legend, loc="upper left")
+        ax.legend(handles=second_legend, loc="upper left")
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--filter",
+        help="filter to process",
+        default="F770W",
+        # fmt: off
+        choices=["F560W", "F770W", "F770W_subarray", "F770W_repeat", "F1000W",
+                 "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
+                 "F1065C", "F1140C", "F1550C", "F2300C"],
+        # fmt: on
+    )
+    parser.add_argument(
+        "--xaxisval",
+        help="x-axis values",
+        default="mflux",
+        choices=["mflux", "timemid", "rate", "welldepth", "bkg"],
+    )
+    parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
+    parser.add_argument("--png", help="save figure as a png file", action="store_true")
+    parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
+    args = parser.parse_args()
+
+    # make plot
+    fontsize = 14
+    font = {"size": fontsize}
+    plt.rc("font", **font)
+    plt.rc("lines", linewidth=2)
+    plt.rc("axes", linewidth=2)
+    plt.rc("xtick.major", width=2)
+    plt.rc("ytick.major", width=2)
+
+    if args.multiplot:
+        fontsize = 10
+        font = {"size": fontsize}
+        plt.rc("font", **font)
+
+        fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
+        plot_calfactors(ax[0, 0], args.filter, "mflux", showleg=True)
+        plot_calfactors(ax[0, 1], args.filter, "rate", showleg=False)
+        plot_calfactors(ax[1, 0], args.filter, "welldepth", showleg=False)
+        plot_calfactors(ax[1, 1], args.filter, "bkg", showleg=False)
+        fname = f"miri_calfactors_{args.filter}_many"
+    else:
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
+        plot_calfactors(ax, args.filter, args.xaxisval)
+        fname = f"miri_calfactors_{filter}_{args.xaxisval}"
 
     plt.tight_layout()
 
-    fname = f"miri_calfactors_{filter}_{args.xaxisval}"
     if args.png:
         fig.savefig(f"{fname}.png")
     elif args.pdf:
