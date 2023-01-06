@@ -214,14 +214,14 @@ def aper_one_filter(subdir, filter):
         apfilter = filter
     gval = (
         (tab["filter"] == apfilter.split("_")[0])
-        & (tab["eefraction"] == 0.7)
+        & (tab["eefraction"] == 0.8)
         & (tab["subarray"] == "FULL")
     )
     aprad = tab["radius"][gval][0]
     annrad = [tab["skyin"][gval][0], tab["skyout"][gval][0]]
     apcor = tab["apcorr"][gval][0]
-    # aprad = 5.0
-    # annrad = [10.0, 15.0]
+    # aprad = 20.0
+    # annrad = [21.0, 23.0]
 
     mres = None
     for cfile in mosfiles:

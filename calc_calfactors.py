@@ -17,6 +17,7 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
     # read in model fluxes
     modtab = QTable.read("Models/model_phot.fits")
 
+    names = []
     xvals = []
     cfactors = []
     cfactors_unc = []
@@ -47,13 +48,13 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
 
         cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
         cfactor_unc = (oflux_unc / oflux) * cfactor
+        names.append(obstab["name"][k])
         xvals.append(xval.value)
         cfactors.append(cfactor)
         cfactors_unc.append(cfactor_unc)
         subarrs.append(obstab["subarray"][k])
 
-    res = (cfactors, cfactors_unc, xvals, subarrs)
-
+    res = (cfactors, cfactors_unc, xvals, subarrs, names)
     return res
 
 
@@ -77,10 +78,12 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True):
     }
 
     allfacs = []
+    allnames = []
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
             cfacs = get_calfactors(dir, filter, xaxisval=xaxisval)
             allfacs.append(cfacs[0])
+            allnames.append(cfacs[4])
             for cfactor, cfactor_unc, xval, subarray in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3]
             ):
@@ -94,6 +97,12 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True):
                 )
     allfacs = np.concatenate(allfacs)
     medval = np.nanmedian(allfacs)
+    allnames = np.concatenate(allnames)
+
+    # print the top 4 calibration factors with names
+    aindxs = np.flip(np.argsort(allfacs))
+    print(allfacs[aindxs[0:4]])
+    print(allnames[aindxs[0:4]])
 
     # get the current pipeline calibration factor and plot
     cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
