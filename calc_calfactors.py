@@ -49,18 +49,19 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
 
         cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
         cfactor_unc = (oflux_unc / oflux) * cfactor
-        if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
-            names.append(obstab["name"][k])
-            xvals.append(xval.value)
-            cfactors.append(cfactor)
-            cfactors_unc.append(cfactor_unc)
-            subarrs.append(obstab["subarray"][k])
+        # if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
+        names.append(obstab["name"][k])
+        xvals.append(xval.value)
+        cfactors.append(cfactor)
+        cfactors_unc.append(cfactor_unc)
+        subarrs.append(obstab["subarray"][k])
 
     res = (cfactors, cfactors_unc, xvals, subarrs, names)
     return res
 
 
-def plot_calfactors(ax, filter, xaxisval, showleg=True):
+def plot_calfactors(ax, filter, xaxisval, showleg=True,
+                    savefile=None):
     """
     Plot the calibration factors versus the requested xaxis.
     """
@@ -80,11 +81,15 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True):
     }
 
     allfacs = []
+    allfacuncs = []
     allnames = []
+    xvals = []
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
             cfacs = get_calfactors(dir, filter, xaxisval=xaxisval)
             allfacs.append(cfacs[0])
+            allfacuncs.append(cfacs[1])
+            xvals.append(cfacs[2])
             allnames.append(cfacs[4])
             for cfactor, cfactor_unc, xval, subarray in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3]
@@ -98,19 +103,30 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True):
                     markersize=10,
                 )
     allfacs = np.concatenate(allfacs)
+    allfacuncs = np.concatenate(allfacuncs)
     medval = np.nanmedian(allfacs)
     allnames = np.concatenate(allnames)
+    xvals = np.concatenate(xvals)
 
     # print the top 4 calibration factors with names
-    aindxs = np.flip(np.argsort(allfacs))
-    print(allfacs[aindxs[0:4]])
-    print(allnames[aindxs[0:4]])
+    # aindxs = np.flip(np.argsort(allfacs))
+    # print(allfacs[aindxs[0:4]])
+    # print(allnames[aindxs[0:4]])
 
     meanvals = sigma_clipped_stats(allfacs, sigma=3, maxiters=5)
     ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
-    ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
-    ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
-    print(meanvals[0], meanvals[2], 100.0 * meanvals[2] / meanvals[0])
+    # ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
+    # ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
+    # print(meanvals[0], meanvals[2], 100.0 * meanvals[2] / meanvals[0])
+
+    if savefile is not None:
+        otab = QTable()
+        otab["name"] = allnames
+        otab[f"calfac_{filter}"] = allfacs
+        otab[f"calfac_{filter}_mean_dev"] = allfacs / meanvals[0]
+        otab[f"calfac_{filter}_med_dev"] = allfacs / meanvals[1]
+        otab[f"modflux_{filter}"] = xvals
+        otab.write(savefile, overwrite=True)
 
     # get the current pipeline calibration factor and plot
     cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
@@ -203,20 +219,21 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
+    savefacs = f"CalFacs/miri_calfactors_{args.filter}.fits"
     if args.multiplot:
         fontsize = 10
         font = {"size": fontsize}
         plt.rc("font", **font)
 
         fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
-        plot_calfactors(ax[0, 0], args.filter, "mflux", showleg=True)
+        plot_calfactors(ax[0, 0], args.filter, "mflux", showleg=True, savefile=savefacs)
         plot_calfactors(ax[0, 1], args.filter, "rate", showleg=False)
         plot_calfactors(ax[1, 0], args.filter, "welldepth", showleg=False)
         plot_calfactors(ax[1, 1], args.filter, "bkg", showleg=False)
         fname = f"miri_calfactors_{args.filter}_many"
     else:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
-        plot_calfactors(ax, args.filter, args.xaxisval)
+        plot_calfactors(ax, args.filter, args.xaxisval, savefile=savefacs)
         fname = f"miri_calfactors_{filter}_{args.xaxisval}"
 
     plt.tight_layout()

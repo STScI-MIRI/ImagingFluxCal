@@ -3,3 +3,8 @@ Notes
 
 F1800W, F2100W, F2550W
   source not present for HD180609 obs
+
+Tested if large apertures provided more linear results
+  idea to see if some kind of blurring of the PSF is an issue
+    (e.g., charge spilling)
+  maybe a bit more linear, but still strong non-linearity for some high flux stars
