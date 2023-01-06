@@ -6,6 +6,7 @@ from matplotlib.lines import Line2D
 import numpy as np
 
 from astropy.table import QTable
+from astropy.stats import sigma_clipped_stats
 
 
 def get_calfactors(dir, filter, xaxisval="mflux"):
@@ -48,11 +49,12 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
 
         cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
         cfactor_unc = (oflux_unc / oflux) * cfactor
-        names.append(obstab["name"][k])
-        xvals.append(xval.value)
-        cfactors.append(cfactor)
-        cfactors_unc.append(cfactor_unc)
-        subarrs.append(obstab["subarray"][k])
+        if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
+            names.append(obstab["name"][k])
+            xvals.append(xval.value)
+            cfactors.append(cfactor)
+            cfactors_unc.append(cfactor_unc)
+            subarrs.append(obstab["subarray"][k])
 
     res = (cfactors, cfactors_unc, xvals, subarrs, names)
     return res
@@ -104,6 +106,12 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True):
     print(allfacs[aindxs[0:4]])
     print(allnames[aindxs[0:4]])
 
+    meanvals = sigma_clipped_stats(allfacs, sigma=3, maxiters=5)
+    ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
+    ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
+    ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
+    print(meanvals[0], meanvals[2], 100.0 * meanvals[2] / meanvals[0])
+
     # get the current pipeline calibration factor and plot
     cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
     pipe_cfactor = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
@@ -127,7 +135,7 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True):
     ax.set_title(f"{filter}")
 
     def val2per(val):
-        return (val / medval) * 100.0 - 100.
+        return (val / medval) * 100.0 - 100.0
 
     def per2val(per):
         return ((per + 100) / 100.0) * medval
