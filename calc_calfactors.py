@@ -20,8 +20,8 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
 
     names = []
     xvals = []
-    cfactors = []
-    cfactors_unc = []
+    cfactors = np.zeros(len(obstab["name"]))
+    cfactors_unc = np.zeros(len(obstab["name"]))
     subarrs = []
     for k, cname in enumerate(obstab["name"]):
         cfilter = obstab["filter"][k]
@@ -52,16 +52,17 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
         # if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
         names.append(obstab["name"][k])
         xvals.append(xval.value)
-        cfactors.append(cfactor)
-        cfactors_unc.append(cfactor_unc)
+        cfactors[k] = cfactor
+        cfactors_unc[k] = cfactor_unc
         subarrs.append(obstab["subarray"][k])
 
     res = (cfactors, cfactors_unc, xvals, subarrs, names)
     return res
 
 
-def plot_calfactors(ax, filter, xaxisval, showleg=True,
-                    savefile=None):
+def plot_calfactors(
+    ax, filter, xaxisval, showleg=True, savefile=None, applysubarrcor=True
+):
     """
     Plot the calibration factors versus the requested xaxis.
     """
@@ -80,6 +81,21 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True,
         "MASKLYOT": "v",
     }
 
+    efac = 1.04
+    subarr_cor = {
+        "FULL": 1.0,
+        "BRIGHTSKY": 0.92730897 * efac,
+        "SUB256": 0.97022583 * efac,
+        "SUB128": 0.95158662 * efac,
+        "SUB64": 0.98177531 * efac,
+        "MASK1065": 1.0,
+        "MASK1140": 1.0,
+        "MASK1550": 1.0,
+        "MASKLYOT": 1.0,
+    }
+
+    print(subarr_cor)
+
     allfacs = []
     allfacuncs = []
     allnames = []
@@ -87,7 +103,7 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True,
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
             cfacs = get_calfactors(dir, filter, xaxisval=xaxisval)
-            allfacs.append(cfacs[0])
+            # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
             xvals.append(cfacs[2])
             allnames.append(cfacs[4])
@@ -99,10 +115,28 @@ def plot_calfactors(ax, filter, xaxisval, showleg=True,
                     [cfactor],
                     yerr=[cfactor_unc],
                     fmt=f"{pcols[k]}{psubsym[subarray]}",
+                    alpha=0.1,
+                    markersize=10,
+                )
+                if applysubarrcor:
+                    cfactor = cfactor / subarr_cor[subarray]
+                allfacs.append(cfactor)
+                ax.errorbar(
+                    [xval],
+                    [cfactor],
+                    yerr=[cfactor_unc],
+                    fmt=f"{pcols[k]}{psubsym[subarray]}",
                     alpha=0.5,
                     markersize=10,
                 )
-    allfacs = np.concatenate(allfacs)
+                # if subarray == "FULL":
+                #    meanfull = cfactor
+            # special code to give the differneces between the subarrays
+            # print(cfacs[3])
+            # print(cfacs[0] / meanfull)
+            # exit()
+    # allfacs = np.concatenate(allfacs)
+    allfacs = np.array(allfacs)
     allfacuncs = np.concatenate(allfacuncs)
     medval = np.nanmedian(allfacs)
     allnames = np.concatenate(allnames)
@@ -205,6 +239,11 @@ if __name__ == "__main__":
         default="mflux",
         choices=["mflux", "timemid", "rate", "welldepth", "bkg"],
     )
+    parser.add_argument(
+        "--nosubarrcor",
+        help="do not apply subarray correction factors",
+        action="store_true",
+    )
     parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -226,14 +265,45 @@ if __name__ == "__main__":
         plt.rc("font", **font)
 
         fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
-        plot_calfactors(ax[0, 0], args.filter, "mflux", showleg=True, savefile=savefacs)
-        plot_calfactors(ax[0, 1], args.filter, "rate", showleg=False)
-        plot_calfactors(ax[1, 0], args.filter, "welldepth", showleg=False)
-        plot_calfactors(ax[1, 1], args.filter, "bkg", showleg=False)
+        plot_calfactors(
+            ax[0, 0],
+            args.filter,
+            "mflux",
+            showleg=True,
+            savefile=savefacs,
+            applysubarrcor=(not args.nosubarrcor),
+        )
+        plot_calfactors(
+            ax[0, 1],
+            args.filter,
+            "timemid",
+            showleg=False,
+            applysubarrcor=(not args.nosubarrcor),
+        )
+        plot_calfactors(
+            ax[1, 0],
+            args.filter,
+            "welldepth",
+            showleg=False,
+            applysubarrcor=(not args.nosubarrcor),
+        )
+        plot_calfactors(
+            ax[1, 1],
+            args.filter,
+            "bkg",
+            showleg=False,
+            applysubarrcor=(not args.nosubarrcor),
+        )
         fname = f"miri_calfactors_{args.filter}_many"
     else:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
-        plot_calfactors(ax, args.filter, args.xaxisval, savefile=savefacs)
+        plot_calfactors(
+            ax,
+            args.filter,
+            args.xaxisval,
+            savefile=savefacs,
+            applysubarrcor=(not args.nosubarrcor),
+        )
         fname = f"miri_calfactors_{filter}_{args.xaxisval}"
 
     plt.tight_layout()

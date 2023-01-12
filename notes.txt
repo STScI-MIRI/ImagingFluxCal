@@ -1,6 +1,9 @@
 
 Notes
 
+Included PID 1027 and 1028 from commissioning
+  F560W data for 1028 not included at the advice of Maca
+
 F1800W, F2100W, F2550W
   source not present for HD180609 obs
 

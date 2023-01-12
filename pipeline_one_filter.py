@@ -75,6 +75,7 @@ if __name__ == "__main__":
         default="all",
         choices=["stage1", "stage2", "stage3", "all"],
     )
+    parser.add_argument("--onlynew", help="only reduce new data", action="store_true")
     args = parser.parse_args()
 
     # get the files for each object for the specified filter
@@ -89,6 +90,11 @@ if __name__ == "__main__":
         if not os.path.exists(ndir):
             print(f"making dir {ndir}")
             os.mkdir(ndir)
+        else:
+            if args.onlynew:
+                print(f"skipping {ckey} as it has alredy been processed")
+                print(objsets[ckey])
+                continue
 
         if args.stage in ["stage1", "all"]:
             # calwebb_detector1
