@@ -50,6 +50,7 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
         cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
         cfactor_unc = (oflux_unc / oflux) * cfactor
         # if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
+        # print(obstab["name"][k], cfactor)
         names.append(obstab["name"][k])
         xvals.append(xval.value)
         cfactors[k] = cfactor
@@ -61,7 +62,13 @@ def get_calfactors(dir, filter, xaxisval="mflux"):
 
 
 def plot_calfactors(
-    ax, filter, xaxisval, showleg=True, savefile=None, applysubarrcor=True
+    ax,
+    filter,
+    xaxisval,
+    showleg=True,
+    savefile=None,
+    applysubarrcor=True,
+    showcurval=True,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -82,6 +89,7 @@ def plot_calfactors(
     }
 
     efac = 1.04
+    # efac = 1.0
     subarr_cor = {
         "FULL": 1.0,
         "BRIGHTSKY": 0.92730897 * efac,
@@ -147,11 +155,19 @@ def plot_calfactors(
     # print(allfacs[aindxs[0:4]])
     # print(allnames[aindxs[0:4]])
 
-    meanvals = sigma_clipped_stats(allfacs, sigma=3, maxiters=5)
+    # ignore the 4 "high" stars
+    gvals = []
+    for cname in allnames:
+        if cname in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
+            gvals.append(False)
+        else:
+            gvals.append(True)
+
+    meanvals = sigma_clipped_stats(allfacs[gvals], sigma=3, maxiters=5)
     ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
     # ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
     # ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
-    # print(meanvals[0], meanvals[2], 100.0 * meanvals[2] / meanvals[0])
+    print(meanvals[0], meanvals[2], 100.0 * meanvals[2] / meanvals[0])
 
     if savefile is not None:
         otab = QTable()
@@ -163,9 +179,10 @@ def plot_calfactors(
         otab.write(savefile, overwrite=True)
 
     # get the current pipeline calibration factor and plot
-    cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
-    pipe_cfactor = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
-    ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
+    if showcurval:
+        cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
+        pipe_cfactor = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
+        ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
 
     # now make the plot nice
     if xaxisval == "timemid":
@@ -194,6 +211,10 @@ def plot_calfactors(
     secax.set_ylabel("percentage")
 
     if showleg:
+
+        # make space for th legend
+        ylim = ax.get_ylim()
+        ax.set_ylim(ylim[0], ylim[1] + 0.4 * (ylim[1] - ylim[0]))
 
         first_legend = [
             Patch(facecolor=ccol, edgecolor=ccol, label=cdir, alpha=0.5)
@@ -242,6 +263,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--nosubarrcor",
         help="do not apply subarray correction factors",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--nocurval",
+        help="do not plot the current calfactor",
         action="store_true",
     )
     parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
@@ -303,8 +329,9 @@ if __name__ == "__main__":
             args.xaxisval,
             savefile=savefacs,
             applysubarrcor=(not args.nosubarrcor),
+            showcurval=(not args.nocurval),
         )
-        fname = f"miri_calfactors_{filter}_{args.xaxisval}"
+        fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 
     plt.tight_layout()
 
