@@ -11,3 +11,19 @@ Tested if large apertures provided more linear results
   idea to see if some kind of blurring of the PSF is an issue
     (e.g., charge spilling)
   maybe a bit more linear, but still strong non-linearity for some high flux stars
+
+From Ralph, stars with less than great CALSPEC Models
+  no WFC3/NIC
+    Gstars:
+    HD 37962
+    16 Cyg B (no UV)
+    HD 106252
+    HD 167060
+    NGC2605-G31
+
+    ADwarfs:
+    del UMi (no UV)
+    HD163466
+    HD2811
+
+    

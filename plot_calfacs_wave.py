@@ -25,6 +25,18 @@ if __name__ == "__main__":
     atab = None
     for cfilter in filters:
         ctab = QTable.read(f"CalFacs/miri_calfactors_{cfilter}.fits")
+
+        # merge multiple measurements of the same star
+        gvals = np.full(len(ctab), False)
+        for cname in np.unique(ctab["name"]):
+            sindxs, = np.where(ctab["name"] == cname)
+            if len(sindxs) > 1:
+                ctab[f"calfac_{cfilter}"][sindxs[0]] = np.average(ctab[f"calfac_{cfilter}"][sindxs])
+                ctab[f"calfac_{cfilter}_mean_dev"][sindxs[0]] = np.average(ctab[f"calfac_{cfilter}_mean_dev"][sindxs])
+                ctab[f"calfac_{cfilter}_med_dev"][sindxs[0]] = np.average(ctab[f"calfac_{cfilter}_med_dev"][sindxs])
+            gvals[sindxs[0]] = True
+        ctab = ctab[gvals]
+
         if atab is not None:
             atab = join(atab, ctab, join_type="outer")
         else:
@@ -60,6 +72,8 @@ if __name__ == "__main__":
     colormap = plt.cm.gist_ncar
     plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, nstars))))
 
+    lstyle = ["solid", "dotted", "dashed", "dashdot"]
+
     for k, cname in enumerate(atab["name"]):
         pfacs = []
         pwaves = []
@@ -68,7 +82,7 @@ if __name__ == "__main__":
             pfacs.append(atab[k][f"calfac_{cfilter}_med_dev"])
         pfacs = np.array(pfacs)
         if np.sum(np.isfinite(pfacs)) > 1:
-            ax.plot(pwaves, pfacs, label=cname)
+            ax.plot(pwaves, pfacs, linestyle=lstyle[k % 4], label=cname)
         else:
             ax.plot(pwaves, pfacs, "ko", label=cname)
 
