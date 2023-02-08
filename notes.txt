@@ -12,6 +12,8 @@ Tested if large apertures provided more linear results
     (e.g., charge spilling)
   maybe a bit more linear, but still strong non-linearity for some high flux stars
 
+******************
+
 From Ralph, stars with less than great CALSPEC Models
   no WFC3/NIC
     Gstars:
@@ -26,4 +28,38 @@ From Ralph, stars with less than great CALSPEC Models
     HD163466
     HD2811
 
-    
+*****************
+
+CALSPEC data used table (7 Feb 2023)
+
+name         HST                   Deviant CalFacs
+
+**hot stars**
+GD71        UV,Opt,WFC,NIC
+G191-B2B    FOS,NUV,Opt,WFC,NIC
+
+**A dwarfs**
+J17430448   UV,Opt,NIC
+J17571324   UV,Opt,WFC
+J18022716   UV,Opt,WFC,NIC         Shows larger scatter
+BD+60 1753  UV,Opt,WFC
+HD189609    UV,Opt
+HD2811      UV,Opt
+HD163466    UV,Opt
+delUMi      NUV,Opt                High 5-15%
+
+**solar analogs**
+P177-D      FOS,Opt,NIC
+P300-E      NUV,FOS,Opt,WFC,NIC
+HD167060    NUV,Opt                High ~10%
+HD37962     NUV,Opt                High 5-13%
+16CygB      NUV,Opt                High 5-15%
+
+UV = STIS FUV/NUV
+NUV = STIS NUV CCD
+FOS = 0.22-0.29 um
+Opt = STIS (all have this)
+NIC = NICMOS 1.0 -- 2.4 um
+WFC = WFC3 1.0 -- 1.7 um
+
+*****

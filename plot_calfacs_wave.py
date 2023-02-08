@@ -43,6 +43,8 @@ if __name__ == "__main__":
             atab = ctab
     nstars = len(atab)
 
+    atab.write("miri_calfactors_all.fits")
+
     # these two do not have F1500W obs, so nothing in the model column
     mindx, = np.where(atab["name"] == "GD 71")
     atab["modflux_F1500W"][mindx[0]] = 0.0

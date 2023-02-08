@@ -59,14 +59,31 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
     """
     Calculated the band fluxes for each possible filter
     """
-    # surpress the annoying units warning
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=UnitsWarning)
-        modspec = QTable.read(cfile)
 
-    mwave = (modspec["WAVELENGTH"].value * u.angstrom).to(u.micron)
-    mflux = modspec["FLUX"].value * u.erg / (u.cm * u.cm * u.s * u.angstrom)
-    mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
+    # replace with G. Rieke's models when available
+    cname = cfile.split("/")[1].split("_")[0]
+    if cname in ["xxp330e", "xx16cygb"]:
+        if cname == "16cygb":
+            gcfile = "Models/grieke_16cygb_final.csv"
+            mfac = 1e-3
+        else:
+            gcfile = "Models/grieke_p330e_final.csv"
+            mfac = 1.0
+        print(f"using grieke model for {cname}")
+        modspec = QTable.read(gcfile, format="ascii.csv")
+        mwave = modspec["wave_um"].value * u.micron
+        mflux = modspec["flux_W_cm-2_um-1"].value * u.W / (u.cm * u.cm * u.micron)
+        mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
+        mflux *= mfac
+    else:
+        # surpress the annoying units warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=UnitsWarning)
+            modspec = QTable.read(cfile)
+
+        mwave = (modspec["WAVELENGTH"].value * u.angstrom).to(u.micron)
+        mflux = modspec["FLUX"].value * u.erg / (u.cm * u.cm * u.s * u.angstrom)
+        mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
 
     # get the bandpasses
     bfluxes = QTable()
@@ -87,7 +104,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
         plt.rc("ytick.major", width=2)
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
-        gvals = (mwave > 0.6 * u.micron) & (mwave < 32.0 * u.micron)
+        gvals = (mwave > 0.01 * u.micron) & (mwave < 32.0 * u.micron)
         ax.plot(mwave[gvals], mflux[gvals] * (mwave[gvals] ** 2), "k-", alpha=0.5)
 
         for cband in bfluxes.keys():
@@ -96,6 +113,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
             )
 
         ax.set_xscale("log")
+        ax.set_yscale("log")
         ax.set_xlabel(r"wavelength [$\mu$m]")
         ax.set_ylabel(r"Flux [Jy $\mu$m$^2$]")
 
