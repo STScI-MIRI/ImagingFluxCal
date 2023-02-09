@@ -8,6 +8,7 @@ from astropy.io import fits
 from jwst.associations import asn_from_list
 from jwst.associations.lib.rules_level3_base import DMS_Level3_Base
 from helpers.miri_helpers import miri_detector1, miri_image2, miri_image3
+from helpers.miri_clean import make_sky
 
 
 def sort_uncal(subdir, filter):
@@ -76,6 +77,9 @@ if __name__ == "__main__":
         choices=["stage1", "stage2", "stage3", "all"],
     )
     parser.add_argument("--onlynew", help="only reduce new data", action="store_true")
+    parser.add_argument(
+        "--bkgsub", help="compute and subtract background image", action="store_true"
+    )
     args = parser.parse_args()
 
     # get the files for each object for the specified filter
@@ -119,12 +123,19 @@ if __name__ == "__main__":
             print(f"image2 for {ckey}")
             miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg")
 
+        if args.bkgsub:
+            calfiles = glob.glob(f"{ndir}/*mirimage_cal.fits")
+            simage = make_sky(calfiles, exclude_delta=None, sourcereg=True)
+            fits.writeto(f"{ndir}/{args.filter}_median_bkg.fits", simage, overwrite=True)
+            calext = "_skysub"
+        else:
+            calext = ""
+
         if args.stage in ["stage3", "all"]:
             # calwebb_image3
-            calfiles = glob.glob(f"{ndir}/*_cal.fits")
+            calfiles = glob.glob(f"{ndir}/*mirimage{calext}_cal.fits")
 
             # for coronagraphy, need to fake the data as imaging
-            print(args.filter)
             if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
                 for cfile in calfiles:
                     hdul = fits.open(cfile)
@@ -136,7 +147,7 @@ if __name__ == "__main__":
                 calfiles = glob.glob(f"{ndir}/*_newcal.fits")
 
             # generate association file
-            miri_asn_name = f"miri_{ckey}_stage3_asn"
+            miri_asn_name = f"miri_{ckey}_stage3_bkgsub_asn"
             miri_asn = asn_from_list.asn_from_list(
                 calfiles, rule=DMS_Level3_Base, product_name=miri_asn_name
             )

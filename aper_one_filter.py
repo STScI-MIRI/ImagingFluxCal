@@ -71,7 +71,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
         data = cutout.data
         data_wcs = cutout.wcs
 
-    fits.writeto("test.fits", data, overwrite=True)
+    # fits.writeto("test.fits", data, overwrite=True)
 
     # find the star
     mean, median, std = sigma_clipped_stats(data, sigma=3.0)
@@ -194,12 +194,17 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     return phot
 
 
-def aper_one_filter(subdir, filter):
+def aper_one_filter(subdir, filter, bkgsub=False):
     """
     Do aperture photometry on all mosaic files for one filter and one class
     of stars.
     """
-    mosfiles = glob.glob(f"{subdir}/{filter}/*/miri*_i2d.fits")
+    if bkgsub:
+        extstr = "_bkgsub"
+    else:
+        extstr = ""
+
+    mosfiles = glob.glob(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
     print(f"{subdir}/{filter}/*/miri*_i2d.fits")
 
     # get the aper info from the apcor reference file
@@ -230,7 +235,7 @@ def aper_one_filter(subdir, filter):
             aprad,
             annrad,
             apcor,
-            imgfile=cfile.replace(".fits", "_absfluxapers.png"),
+            imgfile=cfile.replace(".fits", f"{extstr}_absfluxapers.png"),
         )
         if mres is None:
             mres = one_res
@@ -238,7 +243,7 @@ def aper_one_filter(subdir, filter):
             mres = vstack([mres, one_res])
 
     # save table
-    mres.write(f"{subdir}/{filter}_phot.fits", overwrite=True)
+    mres.write(f"{subdir}/{filter}{extstr}_phot.fits", overwrite=True)
     print(mres)
 
 
@@ -260,6 +265,9 @@ if __name__ == "__main__":
         default="ADwarfs",
         help="directory to process",
     )
+    parser.add_argument(
+        "--bkgsub", help="compute and subtract background image", action="store_true"
+    )
     args = parser.parse_args()
 
-    aper_one_filter(args.dir, args.filter)
+    aper_one_filter(args.dir, args.filter, bkgsub=args.bkgsub)

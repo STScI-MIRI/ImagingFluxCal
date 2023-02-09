@@ -9,12 +9,18 @@ from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats
 
 
-def get_calfactors(dir, filter, xaxisval="mflux"):
+def get_calfactors(dir, filter, xaxisval="mflux",
+                   bkgsub=False):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
+    if bkgsub:
+        extstr = "_bkgsub"
+    else:
+        extstr = ""
+
     # read in observed fluxes
-    obstab = QTable.read(f"{dir}/{filter}_phot.fits")
+    obstab = QTable.read(f"{dir}/{filter}{extstr}_phot.fits")
     # read in model fluxes
     modtab = QTable.read("Models/model_phot.fits")
 
@@ -69,6 +75,7 @@ def plot_calfactors(
     savefile=None,
     applysubarrcor=True,
     showcurval=True,
+    bkgsub=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -102,7 +109,7 @@ def plot_calfactors(
         "MASKLYOT": 1.0,
     }
 
-    print(subarr_cor)
+    # print(subarr_cor)
 
     allfacs = []
     allfacuncs = []
@@ -110,7 +117,8 @@ def plot_calfactors(
     xvals = []
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
-            cfacs = get_calfactors(dir, filter, xaxisval=xaxisval)
+            cfacs = get_calfactors(dir, filter, xaxisval=xaxisval,
+                                   bkgsub=bkgsub)
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
             xvals.append(cfacs[2])
@@ -255,6 +263,9 @@ if __name__ == "__main__":
         # fmt: on
     )
     parser.add_argument(
+        "--bkgsub", help="compute and subtract background image", action="store_true"
+    )
+    parser.add_argument(
         "--xaxisval",
         help="x-axis values",
         default="mflux",
@@ -298,6 +309,7 @@ if __name__ == "__main__":
             showleg=True,
             savefile=savefacs,
             applysubarrcor=(not args.nosubarrcor),
+            bkgsub=args.bkgsub,
         )
         plot_calfactors(
             ax[0, 1],
@@ -305,6 +317,7 @@ if __name__ == "__main__":
             "timemid",
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
+            bkgsub=args.bkgsub,
         )
         plot_calfactors(
             ax[1, 0],
@@ -312,6 +325,7 @@ if __name__ == "__main__":
             "welldepth",
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
+            bkgsub=args.bkgsub,
         )
         plot_calfactors(
             ax[1, 1],
@@ -319,6 +333,7 @@ if __name__ == "__main__":
             "bkg",
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
+            bkgsub=args.bkgsub,
         )
         fname = f"miri_calfactors_{args.filter}_many"
     else:
@@ -330,6 +345,7 @@ if __name__ == "__main__":
             savefile=savefacs,
             applysubarrcor=(not args.nosubarrcor),
             showcurval=(not args.nocurval),
+            bkgsub=args.bkgsub,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 

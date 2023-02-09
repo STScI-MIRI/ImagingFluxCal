@@ -11,8 +11,13 @@ from astropy.io import fits
 from astropy.wcs import WCS
 
 # from astropy.wcs.utils import proj_plane_pixel_scales
-from regions import Regions
+from regions import Regions, CircleSkyRegion
 from astropy.coordinates import SkyCoord
+from astropy.nddata import Cutout2D
+from astropy.time import Time
+import astropy.units as u
+
+from photutils.detection import find_peaks
 
 from jwst import datamodels
 from jwst.datamodels import dqflags
@@ -433,6 +438,7 @@ def make_sky(
     exclude_above=None,
     exclude_delta=None,
     ds9regions=None,
+    sourcereg=False,
 ):
     """
     Make sky background by sigma clipping in image coordinates and subtract it
@@ -451,7 +457,52 @@ def make_sky(
     ds9regions : ds9 region file
        Exclude pixels inside ds9 regions from sky creation
     """
-    if ds9regions is not None:
+    # generate a ds9 region to exclude source
+    if sourcereg:
+        hdul = fits.open(files[0])
+        targra = hdul[0].header["TARG_RA"]
+        targdec = hdul[0].header["TARG_DEC"]
+
+        # w = WCS(hdul[1].header)
+        orig_coord = SkyCoord(
+            targra,
+            targdec,
+            unit="deg",
+            pm_ra_cosdec=hdul[0].header["MU_RA"] * u.arcsec / u.yr,
+            pm_dec=hdul[0].header["MU_DEC"] * u.arcsec / u.yr,
+        )
+        new_obstime = Time(hdul[0].header["DATE-BEG"])
+        orig_coord.obstime = Time(hdul[0].header["MU_EPOCH"])
+        coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
+
+        w = WCS(hdul[1].header)
+        orig_data = hdul[1].data
+        # pix_coord = w.world_to_pixel(coord)
+        imsize = 8. * 6.0
+        cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
+        data = cutout.data
+        data_wcs = cutout.wcs
+
+        # fits.writeto("test.fits", data, overwrite=True)
+
+        # find the star
+        mean, median, std = sigma_clipped_stats(data, sigma=3.0)
+        threshold = median + (5.0 * std)
+        tbl = find_peaks(data, threshold, box_size=11)
+        # tbl["peak_value"].info.format = "%.8g"  # for consistent table output
+        # print(tbl[:10])  # print only the first 10 peaks
+
+        # get the new coordinates of the star in the original image
+        # use the brightest source for the new center
+        sindx = np.flip(np.argsort(tbl["peak_value"]))
+        ncoord = data_wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
+
+        hdul.close()
+
+        ereg = [CircleSkyRegion(center=ncoord, radius=2. * u.arcsec)]
+        ds9regions = "good_to_go"
+
+    elif ds9regions is not None:
         ereg = Regions.read(ds9regions, format="ds9")
         # for creg in ereg:
         #     creg.radius *= 0.5
