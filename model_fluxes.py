@@ -130,7 +130,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # models to use
-    modfiles = glob.glob("Models/*_mod_*.fits")
+    # modfiles = glob.glob("Models/*_mod_*.fits")
+    modfiles = glob.glob("Models/*_stis*.fits")
 
     # bandpasses to use
     bandpasses = read_miri()
