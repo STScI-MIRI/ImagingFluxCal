@@ -128,8 +128,10 @@ if __name__ == "__main__":
             simage = make_sky(calfiles, exclude_delta=None, sourcereg=True)
             fits.writeto(f"{ndir}/{args.filter}_median_bkg.fits", simage, overwrite=True)
             calext = "_skysub"
+            mosext = "_bkgsub"
         else:
             calext = ""
+            mosext = ""
 
         if args.stage in ["stage3", "all"]:
             # calwebb_image3
@@ -147,7 +149,7 @@ if __name__ == "__main__":
                 calfiles = glob.glob(f"{ndir}/*_newcal.fits")
 
             # generate association file
-            miri_asn_name = f"miri_{ckey}_stage3_bkgsub_asn"
+            miri_asn_name = f"miri_{ckey}_stage3{mosext}_asn"
             miri_asn = asn_from_list.asn_from_list(
                 calfiles, rule=DMS_Level3_Base, product_name=miri_asn_name
             )

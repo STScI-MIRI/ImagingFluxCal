@@ -205,7 +205,9 @@ def aper_one_filter(subdir, filter, bkgsub=False):
         extstr = ""
 
     mosfiles = glob.glob(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
-    print(f"{subdir}/{filter}/*/miri*_i2d.fits")
+    if len(mosfiles) == 0:
+        print(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
+        exit()
 
     # get the aper info from the apcor reference file
     tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
@@ -243,6 +245,7 @@ def aper_one_filter(subdir, filter, bkgsub=False):
             mres = vstack([mres, one_res])
 
     # save table
+    print(f"{subdir}/{filter}{extstr}_phot.fits")
     mres.write(f"{subdir}/{filter}{extstr}_phot.fits", overwrite=True)
     print(mres)
 

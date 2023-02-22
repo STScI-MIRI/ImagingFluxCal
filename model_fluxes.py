@@ -75,6 +75,13 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
         mflux = modspec["flux_W_cm-2_um-1"].value * u.W / (u.cm * u.cm * u.micron)
         mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
         mflux *= mfac
+
+        # save the file with Jy units
+        otab = QTable()
+        otab["wave"] = mwave
+        otab["flux"] = mflux
+        otab.write(gcfile.replace(".csv", ".fits"), overwrite=True)
+        otab.write(gcfile.replace(".csv", ".dat"), format="ascii.ipac", overwrite=True)
     else:
         # surpress the annoying units warning
         with warnings.catch_warnings():
