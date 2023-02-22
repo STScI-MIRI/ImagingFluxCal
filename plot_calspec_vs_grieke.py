@@ -1,10 +1,11 @@
 import warnings
 import argparse
-# import numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
 from astropy.units import UnitsWarning
 from astropy.table import QTable
 import astropy.units as u
+from scipy import interpolate
 
 
 if __name__ == '__main__':
@@ -20,11 +21,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.star == "16cygb":
-        cfile = "Models/16cygb_stis_002.fits"
+        cfile = "Models/16cygb_stis_003.fits"
         gcfile = "Models/grieke_16cygb_final.csv"
         mfac = 1e-3
     else:
-        cfile = "Models/p330e_stiswfcnic_004.fits"
+        cfile = "Models/p330e_stiswfcnic_005.fits"
         gcfile = "Models/grieke_p330e_final.csv"
         mfac = 1.0
 
@@ -58,15 +59,29 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
-    gvals = (mwave > 5.0 * u.micron) & (mwave < 31.0 * u.micron)
+    # get ratios
+    f = interpolate.interp1d(gmwave, gmflux)
+
+    gvals = (mwave > 0.6 * u.micron) & (mwave < 31.0 * u.micron)
     ax.plot(mwave[gvals], mflux[gvals] * mwave[gvals] ** 2, "b-", label="CALSPEC")
 
-    gvals = (gmwave > 5.0 * u.micron) & (gmwave < 31.0 * u.micron)
+    gvals = (gmwave > 0.6 * u.micron) & (gmwave < 31.0 * u.micron)
     ax.plot(gmwave[gvals], gmflux[gvals] * gmwave[gvals] ** 2, "g-", label="GRIEKE")
+
+    gvals = (mwave > 0.6 * u.micron) & (mwave < 5.0 * u.micron)
+    igmflux = f(mwave)
+    ratio = mflux[gvals].value / igmflux[gvals]
+    averatio = np.average(ratio)
+    ax.text(0.4, 0.2, fr"CALSPEC/GRIEKE (0.6-5 $\mu$m) = {averatio:.3f}", transform=ax.transAxes)
+
+    gvals = (mwave > 5.0 * u.micron) & (mwave < 28 * u.micron)
+    ratio = mflux[gvals].value / igmflux[gvals]
+    averatio = np.average(ratio)
+    ax.text(0.4, 0.15, fr"CALSPEC/GRIEKE (5-28 $\mu$m) = {averatio:.3f}", transform=ax.transAxes)
 
     ax.set_xscale("log")
     ax.set_xlabel(r"wavelength [$\mu$m]")
-    ax.set_ylabel(r"Flux [Jy $\mu$m$^2$]")
+    ax.set_ylabel(r"$\lambda^2 F(\nu)$ [Jy $\mu$m$^2$]")
 
     ax.legend(fontsize=0.8 * fontsize, ncol=2)
 
