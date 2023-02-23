@@ -132,6 +132,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     tphot["name"] = [targname]
     tphot["filter"] = filter.upper()
     tphot["subarray"] = hdul[0].header["SUBARRAY"]
+    tphot["readpattern"] = hdul[0].header["READPATT"]
     tphot["ngroups"] = hdul[0].header["NGROUPS"]
     tphot["tgroup"] = hdul[0].header["TGROUP"]
     tphot["timemid"] = hdul[0].header["EXPMID"] * u.day
@@ -232,17 +233,20 @@ def aper_one_filter(subdir, filter, bkgsub=False):
 
     mres = None
     for cfile in mosfiles:
-        one_res = aper_image(
-            cfile,
-            aprad,
-            annrad,
-            apcor,
-            imgfile=cfile.replace(".fits", f"{extstr}_absfluxapers.png"),
-        )
-        if mres is None:
-            mres = one_res
+        if "2MASS J17430448+6655015_set3" not in cfile:  # not a big enough dither for bkgsub
+            one_res = aper_image(
+                cfile,
+                aprad,
+                annrad,
+                apcor,
+                imgfile=cfile.replace(".fits", f"{extstr}_absfluxapers.png"),
+            )
+            if mres is None:
+                mres = one_res
+            else:
+                mres = vstack([mres, one_res])
         else:
-            mres = vstack([mres, one_res])
+            print(cfile)
 
     # save table
     print(f"{subdir}/{filter}{extstr}_phot.fits")

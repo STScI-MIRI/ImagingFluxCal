@@ -9,8 +9,7 @@ from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats
 
 
-def get_calfactors(dir, filter, xaxisval="mflux",
-                   bkgsub=False):
+def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -110,6 +109,7 @@ def plot_calfactors(
     }
 
     # print(subarr_cor)
+    ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]
 
     allfacs = []
     allfacuncs = []
@@ -117,14 +117,13 @@ def plot_calfactors(
     xvals = []
     for k, dir in enumerate(dirs):
         if exists(f"{dir}/{filter}_phot.fits"):
-            cfacs = get_calfactors(dir, filter, xaxisval=xaxisval,
-                                   bkgsub=bkgsub)
+            cfacs = get_calfactors(dir, filter, xaxisval=xaxisval, bkgsub=bkgsub)
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
             xvals.append(cfacs[2])
             allnames.append(cfacs[4])
-            for cfactor, cfactor_unc, xval, subarray in zip(
-                cfacs[0], cfacs[1], cfacs[2], cfacs[3]
+            for cfactor, cfactor_unc, xval, subarray, cname in zip(
+                cfacs[0], cfacs[1], cfacs[2], cfacs[3], cfacs[4]
             ):
                 ax.errorbar(
                     [xval],
@@ -145,6 +144,11 @@ def plot_calfactors(
                     alpha=0.5,
                     markersize=10,
                 )
+                # plot a red circle around those not used in the average
+                if cname in ignore_names:
+                    ax.scatter(
+                        [xval], [cfactor], s=150, facecolor="none", edgecolor="m"
+                    )
                 # if subarray == "FULL":
                 #    meanfull = cfactor
             # special code to give the differneces between the subarrays
@@ -166,7 +170,7 @@ def plot_calfactors(
     # ignore the 4 "high" stars
     gvals = []
     for cname in allnames:
-        if cname in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
+        if cname in ignore_names:
             gvals.append(False)
         else:
             gvals.append(True)
@@ -228,6 +232,18 @@ def plot_calfactors(
             Patch(facecolor=ccol, edgecolor=ccol, label=cdir, alpha=0.5)
             for cdir, ccol in zip(dirs, pcols)
         ]
+        first_legend.append(
+            Line2D(
+                [0],
+                [0],
+                marker="o",
+                color="m",
+                label="Not in average",
+                markerfacecolor="none",
+                markersize=10,
+                alpha=0.5,
+            )
+        )
         leg1 = ax.legend(handles=first_legend, loc="upper center")
         ax.add_artist(leg1)
 
@@ -277,9 +293,7 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
-        "--nocurval",
-        help="do not plot the current calfactor",
-        action="store_true",
+        "--nocurval", help="do not plot the current calfactor", action="store_true",
     )
     parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")

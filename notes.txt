@@ -63,3 +63,14 @@ NIC = NICMOS 1.0 -- 2.4 um
 WFC = WFC3 1.0 -- 1.7 um
 
 *****
+
+Readout patterns
+
+Most taken in FASTR1
+A couple of datasets in FAST, including one in the subarray transfer
+  - need to investigate to confirm no impact
+  - does not seem to be for the subarray transfer (SUB128 in FAST)
+
+Some datasets in SLOWR1
+  - likely from commissioning data (confirm)
+  - F1500W
