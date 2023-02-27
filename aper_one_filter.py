@@ -2,6 +2,7 @@ import glob
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import warnings
 
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -13,6 +14,8 @@ import astropy.units as u
 from astropy.table import QTable, vstack, hstack
 from astropy.wcs.utils import proj_plane_pixel_area
 from astropy.time import Time
+from astropy.wcs import FITSFixedWarning
+from astropy.utils.exceptions import ErfaWarning
 
 from photutils.detection import find_peaks
 from photutils.centroids import centroid_com
@@ -45,7 +48,10 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     orig_data /= photmjysr
     orig_err /= photmjysr
 
-    w = WCS(hdul[1].header)
+    # suppress warning given *every* time
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', FITSFixedWarning)
+        w = WCS(hdul[1].header)
     orig_coord = SkyCoord(
         targra,
         targdec,
@@ -55,7 +61,10 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     )
     new_obstime = Time(hdul[0].header["DATE-BEG"])
     orig_coord.obstime = Time(hdul[0].header["MU_EPOCH"])
-    coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
+    # suppress waring that happens every time
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', ErfaWarning)
+        coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
     pix_coord = w.world_to_pixel(coord)
     # check if outside the image
     if ((pix_coord[0] < 0) | (pix_coord[0] > orig_data.shape[0])) | (

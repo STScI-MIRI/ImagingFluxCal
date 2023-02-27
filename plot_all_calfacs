@@ -1,13 +1,9 @@
 
-python calc_calfactors.py --filter="F560W" --png --multiplot
-python calc_calfactors.py --filter="F770W" --png --multiplot
-python calc_calfactors.py --filter="F1000W" --png --multiplot
-python calc_calfactors.py --filter="F1130W" --png --multiplot
-python calc_calfactors.py --filter="F1280W" --png --multiplot
-python calc_calfactors.py --filter="F1500W" --png --multiplot
-python calc_calfactors.py --filter="F1800W" --png --multiplot
-python calc_calfactors.py --filter="F2100W" --png --multiplot
-python calc_calfactors.py --filter="F2550W" --png --multiplot
 
-python calc_calfactors.py --filter="F770W_repeat" --png --multiplot
-python calc_calfactors.py --filter="F770W_subarray" --png --multiplot
+for CBAND in F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W F770W_repeat F770W_subarray
+do
+    python calc_calfactors.py --filter=$CBAND --png
+    python calc_calfactors.py --filter=$CBAND --png --bkgsub
+    python calc_calfactors.py --filter=$CBAND --png --multiplot
+    python calc_calfactors.py --filter=$CBAND --png --bkgsub --multiplot
+done

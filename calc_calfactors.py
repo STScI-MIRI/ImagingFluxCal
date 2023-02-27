@@ -125,6 +125,7 @@ def plot_calfactors(
             for cfactor, cfactor_unc, xval, subarray, cname in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3], cfacs[4]
             ):
+                print(cname, xval, cfactor)
                 ax.errorbar(
                     [xval],
                     [cfactor],
@@ -179,7 +180,15 @@ def plot_calfactors(
     ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
     # ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
     # ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
-    print(meanvals[0], meanvals[2], 100.0 * meanvals[2] / meanvals[0])
+    perstd = 100.0 * meanvals[2] / meanvals[0]
+    # print(meanvals[0], meanvals[2], perstd)
+
+    ax.text(
+        0.7,
+        0.02,
+        fr"{meanvals[0]:.3f} $\pm$ {meanvals[2]:.3f} ({perstd:.1f}%)",
+        transform=ax.transAxes,
+    )
 
     if savefile is not None:
         otab = QTable()
@@ -237,13 +246,15 @@ def plot_calfactors(
                 [0],
                 [0],
                 marker="o",
-                color="m",
+                color="w",
                 label="Not in average",
                 markerfacecolor="none",
                 markersize=10,
                 alpha=0.5,
             )
         )
+        first_legend.append(Line2D([0], [0], marker='o', color='w', label='Scatter',
+                            markerfacecolor='g', markersize=15))
         leg1 = ax.legend(handles=first_legend, loc="upper center")
         ax.add_artist(leg1)
 
@@ -365,6 +376,8 @@ if __name__ == "__main__":
 
     plt.tight_layout()
 
+    if args.bkgsub:
+        fname = f"{fname}_bkgsub"
     if args.png:
         fig.savefig(f"{fname}.png")
     elif args.pdf:
