@@ -160,7 +160,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     phot["total_bkg"] = tot_bkg * u.DN / u.s
     phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - phot["total_bkg"]
     phot["aperture_sum_bkgsub_err"] = (
-        np.sqrt((phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)) * u.DN / u.s
+        np.sqrt((phot["aperture_sum_err"] ** 2) + (tot_bkg_err ** 2)) * u.DN / u.s
     )
     phot["x_offset_from_expected"] = xoff * u.pixel
     phot["y_offset_from_expected"] = yoff * u.pixel
@@ -212,10 +212,12 @@ def aper_one_filter(subdir, filter, bkgsub=False):
 
     # get the aper info from the apcor reference file
     tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
-    repfilter = {"F1065C": "F1130W",
-                 "F1140C": "F1130W",
-                 "F1550C": "F1500W",
-                 "F2300C": "F2100W"}
+    repfilter = {
+        "F1065C": "F1130W",
+        "F1140C": "F1130W",
+        "F1550C": "F1500W",
+        "F2300C": "F2100W",
+    }
     if filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
         apfilter = repfilter[filter]
     else:
@@ -233,7 +235,9 @@ def aper_one_filter(subdir, filter, bkgsub=False):
 
     mres = None
     for cfile in mosfiles:
-        if "2MASS J17430448+6655015_set3" not in cfile:  # not a big enough dither for bkgsub
+        if ("2MASS J17430448+6655015_set3" not in cfile) & (
+            "BD+60 1753_set3" not in cfile
+        ):  # not a big enough dither for bkgsub
             one_res = aper_image(
                 cfile,
                 aprad,

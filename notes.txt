@@ -7,6 +7,9 @@ Included PID 1027 and 1028 from commissioning
 F1800W, F2100W, F2550W
   source not present for HD180609 obs
 
+F2100W
+  source not present for BD+60 1753_set4
+
 Tested if large apertures provided more linear results
   idea to see if some kind of blurring of the PSF is an issue
     (e.g., charge spilling)
