@@ -50,7 +50,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
 
     # suppress warning given *every* time
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', FITSFixedWarning)
+        warnings.simplefilter("ignore", FITSFixedWarning)
         w = WCS(hdul[1].header)
     orig_coord = SkyCoord(
         targra,
@@ -63,7 +63,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     orig_coord.obstime = Time(hdul[0].header["MU_EPOCH"])
     # suppress waring that happens every time
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', ErfaWarning)
+        warnings.simplefilter("ignore", ErfaWarning)
         coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
     pix_coord = w.world_to_pixel(coord)
     # check if outside the image
@@ -204,7 +204,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     return phot
 
 
-def aper_one_filter(subdir, filter, bkgsub=False):
+def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.8):
     """
     Do aperture photometry on all mosaic files for one filter and one class
     of stars.
@@ -233,12 +233,13 @@ def aper_one_filter(subdir, filter, bkgsub=False):
         apfilter = filter
     gval = (
         (tab["filter"] == apfilter.split("_")[0])
-        & (tab["eefraction"] == 0.8)
+        & (tab["eefraction"] == eefraction)
         & (tab["subarray"] == "FULL")
     )
     aprad = tab["radius"][gval][0]
     annrad = [tab["skyin"][gval][0], tab["skyout"][gval][0]]
     apcor = tab["apcorr"][gval][0]
+    print(aprad, annrad, apcor)
     # aprad = 20.0
     # annrad = [21.0, 23.0]
 
@@ -252,7 +253,9 @@ def aper_one_filter(subdir, filter, bkgsub=False):
                 aprad,
                 annrad,
                 apcor,
-                imgfile=cfile.replace(".fits", f"{extstr}_absfluxapers.png"),
+                imgfile=cfile.replace(
+                    ".fits", f"{extstr}_eefrac{eefraction}_absfluxapers.png"
+                ),
             )
             if mres is None:
                 mres = one_res
@@ -262,8 +265,9 @@ def aper_one_filter(subdir, filter, bkgsub=False):
             print(cfile)
 
     # save table
-    print(f"{subdir}/{filter}{extstr}_phot.fits")
-    mres.write(f"{subdir}/{filter}{extstr}_phot.fits", overwrite=True)
+    mres.write(
+        f"{subdir}/{filter}{extstr}_eefrac{eefraction}_phot.fits", overwrite=True
+    )
     print(mres)
 
 
@@ -286,8 +290,11 @@ if __name__ == "__main__":
         help="directory to process",
     )
     parser.add_argument(
+        "--eefrac", default=0.8, help="Enclosed energy fraction to use", type=float,
+    )
+    parser.add_argument(
         "--bkgsub", help="compute and subtract background image", action="store_true"
     )
     args = parser.parse_args()
 
-    aper_one_filter(args.dir, args.filter, bkgsub=args.bkgsub)
+    aper_one_filter(args.dir, args.filter, bkgsub=args.bkgsub, eefraction=args.eefrac)

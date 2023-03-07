@@ -9,7 +9,7 @@ from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats
 
 
-def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False):
+def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, eefraction=0.8):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -19,7 +19,7 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False):
         extstr = ""
 
     # read in observed fluxes
-    obstab = QTable.read(f"{dir}/{filter}{extstr}_phot.fits")
+    obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
     modtab = QTable.read("Models/model_phot.fits")
 
@@ -75,6 +75,7 @@ def plot_calfactors(
     applysubarrcor=True,
     showcurval=True,
     bkgsub=False,
+    eefraction=0.8,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -109,15 +110,18 @@ def plot_calfactors(
     }
 
     # print(subarr_cor)
-    ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]
+    ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 180609"]
 
     allfacs = []
     allfacuncs = []
     allnames = []
     xvals = []
     for k, dir in enumerate(dirs):
-        if exists(f"{dir}/{filter}_phot.fits"):
-            cfacs = get_calfactors(dir, filter, xaxisval=xaxisval, bkgsub=bkgsub)
+        print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
+        if exists(f"{dir}/{filter}_eefrac{eefraction}_phot.fits"):
+            cfacs = get_calfactors(
+                dir, filter, xaxisval=xaxisval, bkgsub=bkgsub, eefraction=eefraction
+            )
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
             xvals.append(cfacs[2])
@@ -220,7 +224,7 @@ def plot_calfactors(
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
     ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
-    ax.set_title(f"{filter}")
+    ax.set_title(f"{filter} / EEFRAC {args.eefrac}")
 
     def val2per(val):
         return (val / medval) * 100.0 - 100.0
@@ -292,6 +296,9 @@ if __name__ == "__main__":
         "--bkgsub", help="compute and subtract background image", action="store_true"
     )
     parser.add_argument(
+        "--eefrac", default=0.8, help="Enclosed energy fraction to use", type=float,
+    )
+    parser.add_argument(
         "--xaxisval",
         help="x-axis values",
         default="mflux",
@@ -334,6 +341,7 @@ if __name__ == "__main__":
             savefile=savefacs,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            eefraction=args.eefrac,
         )
         plot_calfactors(
             ax[0, 1],
@@ -342,6 +350,7 @@ if __name__ == "__main__":
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            eefraction=args.eefrac,
         )
         plot_calfactors(
             ax[1, 0],
@@ -350,6 +359,7 @@ if __name__ == "__main__":
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            eefraction=args.eefrac,
         )
         plot_calfactors(
             ax[1, 1],
@@ -358,6 +368,7 @@ if __name__ == "__main__":
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            eefraction=args.eefrac,
         )
         fname = f"miri_calfactors_{args.filter}_many"
     else:
@@ -370,16 +381,18 @@ if __name__ == "__main__":
             applysubarrcor=(not args.nosubarrcor),
             showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
+            eefraction=args.eefrac,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 
     plt.tight_layout()
 
+    fname = f"{fname}_eefrac{args.eefrac}"
     if args.bkgsub:
         fname = f"{fname}_bkgsub"
     if args.png:
-        fig.savefig(f"{fname}.png")
+        fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:
-        fig.savefig(f"{fname}.pdf")
+        fig.savefig(f"Figs/{fname}.pdf")
     else:
         plt.show()
