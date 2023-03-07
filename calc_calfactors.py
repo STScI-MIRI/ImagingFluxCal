@@ -148,7 +148,7 @@ def plot_calfactors(
                 # plot a red circle around those not used in the average
                 if cname in ignore_names:
                     ax.scatter(
-                        [xval], [cfactor], s=150, facecolor="none", edgecolor="m"
+                        [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
                 # if subarray == "FULL":
                 #    meanfull = cfactor
@@ -249,12 +249,11 @@ def plot_calfactors(
                 color="w",
                 label="Not in average",
                 markerfacecolor="none",
-                markersize=10,
+                markeredgecolor="m",
+                markersize=13,
                 alpha=0.5,
             )
         )
-        first_legend.append(Line2D([0], [0], marker='o', color='w', label='Scatter',
-                            markerfacecolor='g', markersize=15))
         leg1 = ax.legend(handles=first_legend, loc="upper center")
         ax.add_artist(leg1)
 
