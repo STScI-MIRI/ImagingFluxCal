@@ -76,6 +76,11 @@ if __name__ == "__main__":
         default="all",
         choices=["stage1", "stage2", "stage3", "all"],
     )
+    parser.add_argument(
+        "--flatfile",
+        help="specific flat file to use",
+        default=None,
+    )
     parser.add_argument("--onlynew", help="only reduce new data", action="store_true")
     parser.add_argument(
         "--bkgsub", help="compute and subtract background image", action="store_true"
@@ -121,7 +126,8 @@ if __name__ == "__main__":
 
             ratefiles = glob.glob(f"{ndir}/*_rate.fits")
             print(f"image2 for {ckey}")
-            miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg")
+            miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg",
+                        flatfile=args.flatfile)
 
         if args.bkgsub:
             calfiles = glob.glob(f"{ndir}/*mirimage_cal.fits")
