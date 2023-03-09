@@ -6,6 +6,7 @@ Included PID 1027 and 1028 from commissioning
 
 F1800W, F2100W, F2550W
   source not present for HD180609 obs
+  near the edge in other filters - may not be accurate
 
 F2100W
   source not present for BD+60 1753_set4

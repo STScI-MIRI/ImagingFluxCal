@@ -97,12 +97,13 @@ def plot_calfactors(
 
     efac = 1.04
     # efac = 1.0
+    # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 0.92730897 * efac,
-        "SUB256": 0.97022583 * efac,
-        "SUB128": 0.95158662 * efac,
-        "SUB64": 0.98177531 * efac,
+        "BRIGHTSKY": 0.93862651 * efac,
+        "SUB256": 0.98265799 * efac,
+        "SUB128": 0.96159878 * efac,
+        "SUB64": 0.97713754 * efac,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
@@ -154,11 +155,12 @@ def plot_calfactors(
                     ax.scatter(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
-                # if subarray == "FULL":
-                #    meanfull = cfactor
+                if subarray == "FULL":
+                   meanfull = cfactor
             # special code to give the differneces between the subarrays
-            # print(cfacs[3])
-            # print(cfacs[0] / meanfull)
+            if args.nosubarrcor:
+                print(cfacs[3])
+                print(cfacs[0] / meanfull)
             # exit()
     # allfacs = np.concatenate(allfacs)
     allfacs = np.array(allfacs)

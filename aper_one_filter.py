@@ -16,6 +16,7 @@ from astropy.wcs.utils import proj_plane_pixel_area
 from astropy.time import Time
 from astropy.wcs import FITSFixedWarning
 from astropy.utils.exceptions import ErfaWarning
+from astropy.io.fits.verify import VerifyWarning
 
 from photutils.detection import find_peaks
 from photutils.centroids import centroid_com
@@ -245,29 +246,26 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.8):
 
     mres = None
     for cfile in mosfiles:
-        if ("2MASS J17430448+6655015_set3" not in cfile) & (
-            "BD+60 1753_set3" not in cfile
-        ):  # not a big enough dither for bkgsub
-            one_res = aper_image(
-                cfile,
-                aprad,
-                annrad,
-                apcor,
-                imgfile=cfile.replace(
-                    ".fits", f"{extstr}_eefrac{eefraction}_absfluxapers.png"
-                ),
-            )
-            if mres is None:
-                mres = one_res
-            else:
-                mres = vstack([mres, one_res])
+        one_res = aper_image(
+            cfile,
+            aprad,
+            annrad,
+            apcor,
+            imgfile=cfile.replace(
+                ".fits", f"{extstr}_eefrac{eefraction}_absfluxapers.png"
+            ),
+        )
+        if mres is None:
+            mres = one_res
         else:
-            print(cfile)
+            mres = vstack([mres, one_res])
 
     # save table
-    mres.write(
-        f"{subdir}/{filter}{extstr}_eefrac{eefraction}_phot.fits", overwrite=True
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", VerifyWarning)
+        mres.write(
+            f"{subdir}/{filter}{extstr}_eefrac{eefraction}_phot.fits", overwrite=True
+        )
     print(mres)
 
 
@@ -285,7 +283,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dir",
-        choices=["HotStars", "ADwarfs", "SolarAnalogs"],
+        choices=["HotStars", "ADwarfs", "SolarAnalogs", "all"],
         default="ADwarfs",
         help="directory to process",
     )
@@ -297,4 +295,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    aper_one_filter(args.dir, args.filter, bkgsub=args.bkgsub, eefraction=args.eefrac)
+    if args.dir == "all":
+        dirlist = ["HotStars", "ADwarfs", "SolarAnalogs"]
+    else:
+        dirlist = [args.dir]
+
+    for sdir in dirlist:
+        aper_one_filter(sdir, args.filter, bkgsub=args.bkgsub, eefraction=args.eefrac)

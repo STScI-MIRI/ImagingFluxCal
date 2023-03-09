@@ -7,3 +7,9 @@ do
     python calc_calfactors.py --filter=$CBAND --png --multiplot
     python calc_calfactors.py --filter=$CBAND --png --bkgsub --multiplot
 done
+
+for CBAND in F770W_repeat F770W_subarray
+do
+  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png
+  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png --bkgsub
+done

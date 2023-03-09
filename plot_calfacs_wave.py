@@ -43,7 +43,7 @@ if __name__ == "__main__":
             atab = ctab
     nstars = len(atab)
 
-    atab.write("miri_calfactors_all.fits")
+    atab.write("miri_calfactors_all.fits", overwrite=True)
 
     # these two do not have F1500W obs, so nothing in the model column
     mindx, = np.where(atab["name"] == "GD 71")
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     plt.tight_layout()
 
-    fname = "miri_calfactors_allwaves"
+    fname = "Figs/miri_calfactors_allwaves"
     if args.png:
         fig.savefig(f"{fname}.png")
     elif args.pdf:

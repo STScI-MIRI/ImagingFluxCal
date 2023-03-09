@@ -12,21 +12,24 @@ from astropy.units import UnitsWarning
 from jwstabsfluxcal.Webb.read_webb import read_miri
 
 
-model_names = {"g191b2b": "G 191-B2B",
-               "gd71": "GD 71",
-               "1743045": "2MASS J17430448+6655015",
-               "1757132": "2MASS J17571324+6703409",
-               "1802271": "2MASS J18022716+6043356",
-               "bd60d1753": "BD+60 1753",
-               "hd163466": "HD 163466",
-               "hd167060": "HD 167060",
-               "hd180609": "HD 180609",
-               "hd37962": "HD 37962",
-               "hd2811": "HD 2811",
-               "p177d": "GSPC P177-D",
-               "p330e": "GSPC P330-E",
-               "16cygb": "16 Cyg B",
-               "delumi": "del UMi"}
+model_names = {
+    "g191b2b": "G 191-B2B",
+    "gd71": "GD 71",
+    "1743045": "2MASS J17430448+6655015",
+    "1757132": "2MASS J17571324+6703409",
+    "1802271": "2MASS J18022716+6043356",
+    "bd60d1753": "BD+60 1753",
+    "hd163466": "HD 163466",
+    "hd167060": "HD 167060",
+    "hd180609": "HD 180609",
+    "hd37962": "HD 37962",
+    "hd2811": "HD 2811",
+    "p177d": "GSPC P177-D",
+    "p330e": "GSPC P330-E",
+    "16cygb": "16 Cyg B",
+    "delumi": "del UMi",
+    "10lac": "10 Lac",
+}
 
 
 def compute_bandflux(wave, flux_source, bwave, bandpass):
@@ -143,12 +146,26 @@ if __name__ == "__main__":
     # bandpasses to use
     bandpasses = read_miri()
 
+    # save the band response functions
+    for cband in bandpasses.keys():
+        rwave, cwave, ceff = bandpasses[cband]
+        otab = QTable()
+        otab["wave"] = cwave
+        otab["bandpass"] = ceff
+        otab.write(
+            f"Models/bandpass_{cband}.dat",
+            format="ascii.commented_header",
+            overwrite=True,
+        )
+
     mmods = []
     for cfile in modfiles:
         ntab = QTable()
         ntab["name"] = [model_names[(cfile.split("/")[1]).split("_")[0]]]
         print(f"working on {cfile}")
-        onemod = get_band_fluxes(cfile, bandpasses, cfile.replace(".fits", "_absfluxbands.png"))
+        onemod = get_band_fluxes(
+            cfile, bandpasses, cfile.replace(".fits", "_absfluxbands.png")
+        )
         onemod = hstack([ntab, onemod])
 
         onemod["modfile"] = cfile
