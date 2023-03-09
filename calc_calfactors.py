@@ -156,7 +156,7 @@ def plot_calfactors(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
                 if subarray == "FULL":
-                   meanfull = cfactor
+                    meanfull = cfactor
             # special code to give the differneces between the subarrays
             if args.nosubarrcor:
                 print(cfacs[3])
@@ -197,6 +197,16 @@ def plot_calfactors(
     )
 
     if savefile is not None:
+        atab = QTable()
+        atab[f"avecalfac_{filter}"] = [meanvals[0]]
+        atab[f"avecalfac_unc_{filter}"] = [meanvals[2] / np.sqrt(len(allfacs[gvals]))]
+        atab[f"avecalfac_std_{filter}"] = [meanvals[2]]
+        atab.write(
+            savefile.replace(".fits", "_ave.dat"),
+            format="ascii.commented_header",
+            overwrite=True,
+        )
+
         otab = QTable()
         otab["name"] = allnames
         otab[f"calfac_{filter}"] = allfacs
@@ -328,7 +338,11 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    savefacs = f"CalFacs/miri_calfactors_{args.filter}.fits"
+    if args.bkgsub:
+        extstr = "_bkgsub"
+    else:
+        extstr = ""
+    savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
     if args.multiplot:
         fontsize = 10
         font = {"size": fontsize}
