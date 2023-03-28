@@ -199,6 +199,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
         fig.suptitle(f"{targname} / {filter}")
         plt.tight_layout()
         plt.savefig(imgfile)
+        plt.close(fig)
         # plt.show()
     hdul.close()
 
