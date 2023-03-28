@@ -59,7 +59,7 @@ if __name__ == "__main__":
     model_eenergy = ee(cradii * mod_pixscale)
     psf.close()
 
-    annrad = np.array([max(cradii) * 1.1, max(cradii) * 1.2])
+    annrad = np.array([max(cradii) * 1.1, max(cradii) * 1.4])
 
     # get the
     tmp, ncenter = aper_image(
