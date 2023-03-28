@@ -220,7 +220,7 @@ def aper_image(
     hdul.close()
 
     if return_center:
-        return (phot, ncoord)
+        return (phot, tcoord)
     else:
         return phot
 
