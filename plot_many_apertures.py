@@ -29,7 +29,9 @@ if __name__ == "__main__":
     cfilter = args.filter
     filename = (
         f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_asn_i2d.fits"
-        # "ADwarfs/F1000W/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
+    )
+    filename_bkg = (
+        f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
     )
 
     filter_fwhm = {
@@ -59,11 +61,14 @@ if __name__ == "__main__":
 
     annrad = np.array([max(cradii) * 1.1, max(cradii) * 1.2])
     apsum = np.zeros(len(cradii))
+    apsum_bkg = np.zeros(len(cradii))
     for k, crad in enumerate(cradii):
         if args.saveimg:
             imgfile = filename.replace(".fits", f"_manyap_{crad}.png")
+            imgfile_bkg = filename_bkg.replace(".fits", f"_manyap_{crad}.png")
         else:
             imgfile = None
+            imgfile_bkg = None
 
         cphot = aper_image(
             filename,
@@ -72,20 +77,33 @@ if __name__ == "__main__":
             1.0,
             imgfile=imgfile,
         )
+
+        cphot_bkg = aper_image(
+            filename_bkg,
+            crad,
+            annrad,
+            1.0,
+            imgfile=imgfile_bkg,
+        )
         apsum[k] = cphot["aperture_sum_bkgsub"][0].value
-        print(crad, apsum[k])
+        apsum_bkg[k] = cphot_bkg["aperture_sum_bkgsub"][0].value
+        print(crad, apsum[k], apsum_bkg[k])
 
     # calculate enclosed energy
     eenergy = apsum / np.max(apsum)
+    eenergy_bkg = apsum_bkg / np.max(apsum)
 
     # find the values at a fixed radius and adjust the empirical
     # to match webbpsf
-    pix_rad = 30.0
+    pix_rad = 10. * filter_fwhm[cfilter]
     obs_val = np.interp([pix_rad], cradii, eenergy)
+    obs_val_bkg = np.interp([pix_rad], cradii, eenergy_bkg)
     mod_val = np.interp([pix_rad], cradii, model_eenergy)
+    print("normalizing at (rad, obs, mod)", pix_rad, obs_val, mod_val)
 
     eenergy_orig = np.array(eenergy)
     eenergy += mod_val - obs_val
+    eenergy_bkg += mod_val - obs_val_bkg
 
     print("obs:", np.interp([0.8, 0.85], eenergy, cradii))
     print("model:", np.interp([0.8, 0.85], model_eenergy, cradii))
@@ -101,9 +119,10 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
-    ax.plot(cradii, eenergy_orig, "bo", label="Observed", alpha=0.25)
-    ax.plot(cradii, eenergy, "bo", label="Observed (corrected)")
-    ax.plot(cradii, model_eenergy, "gs", label="WebbPSF")
+    # ax.plot(cradii, eenergy_orig, "bo", label="Observed", alpha=0.25)
+    ax.plot(cradii, eenergy, "bo", alpha=0.5, label="Observed (corrected)")
+    ax.plot(cradii, eenergy_bkg, "ro", alpha=0.5, label="Observed w/ bkgsub (corrected)")
+    ax.plot(cradii, model_eenergy, "gs", alpha=0.5, label="WebbPSF")
     ax.plot([np.min(cradii), np.max(cradii)], [1.0, 1.0], "k:")
 
     ax.set_xlabel("radius [pixels]")
