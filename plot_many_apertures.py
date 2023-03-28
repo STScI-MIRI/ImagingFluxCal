@@ -59,7 +59,13 @@ if __name__ == "__main__":
     model_eenergy = ee(cradii * mod_pixscale)
     psf.close()
 
-    annrad = np.array([max(cradii) * 1.1, max(cradii) * 1.4])
+    if cfilter == "F2550W":
+        minbkg = 1.0
+        maxbkg = 1.1
+    else:
+        minbkg = 1.1
+        maxbkg = 1.4
+    annrad = np.array([max(cradii) * minbkg, max(cradii) * maxbkg])
 
     # get the
     tmp, ncenter = aper_image(
