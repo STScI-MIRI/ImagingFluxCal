@@ -30,9 +30,7 @@ if __name__ == "__main__":
     filename = (
         f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_asn_i2d.fits"
     )
-    filename_bkg = (
-        f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
-    )
+    filename_bkg = f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
 
     filter_fwhm = {
         "F560W": 1.0,
@@ -55,11 +53,24 @@ if __name__ == "__main__":
     psf = fits.open(f"PSFs/miri_{cfilter}_psf.fits")
     mod_pixscale = psf[0].header["PIXELSCL"] * psf[0].header["DET_SAMP"]
     ee = webbpsf.measure_ee(psf)
-    cradii = np.logspace(np.log10(1.0), np.log10(20.0 * filter_fwhm[cfilter]), 50)
+    cradii = np.logspace(
+        np.log10(0.5 * filter_fwhm[cfilter]), np.log10(20.0 * filter_fwhm[cfilter]), 50
+    )
     model_eenergy = ee(cradii * mod_pixscale)
     psf.close()
 
     annrad = np.array([max(cradii) * 1.1, max(cradii) * 1.2])
+
+    # get the
+    tmp, ncenter = aper_image(
+        filename_bkg,
+        filter_fwhm[cfilter] * 5.,
+        annrad,
+        1.0,
+        imgfile=filename.replace(".fits", "_manyap_centerap.png"),
+        return_center=True,
+    )
+
     apsum = np.zeros(len(cradii))
     apsum_bkg = np.zeros(len(cradii))
     for k, crad in enumerate(cradii):
@@ -76,6 +87,7 @@ if __name__ == "__main__":
             annrad,
             1.0,
             imgfile=imgfile,
+            override_center=ncenter,
         )
 
         cphot_bkg = aper_image(
@@ -84,6 +96,7 @@ if __name__ == "__main__":
             annrad,
             1.0,
             imgfile=imgfile_bkg,
+            override_center=ncenter,
         )
         apsum[k] = cphot["aperture_sum_bkgsub"][0].value
         apsum_bkg[k] = cphot_bkg["aperture_sum_bkgsub"][0].value
@@ -95,7 +108,7 @@ if __name__ == "__main__":
 
     # find the values at a fixed radius and adjust the empirical
     # to match webbpsf
-    pix_rad = 10. * filter_fwhm[cfilter]
+    pix_rad = 10.0 * filter_fwhm[cfilter]
     obs_val = np.interp([pix_rad], cradii, eenergy)
     obs_val_bkg = np.interp([pix_rad], cradii, eenergy_bkg)
     mod_val = np.interp([pix_rad], cradii, model_eenergy)

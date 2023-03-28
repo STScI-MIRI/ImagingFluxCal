@@ -29,7 +29,15 @@ from photutils.aperture import (
 )
 
 
-def aper_image(filename, aprad, annrad, apcor, imgfile=None):
+def aper_image(
+    filename,
+    aprad,
+    annrad,
+    apcor,
+    imgfile=None,
+    return_center=False,
+    override_center=None,
+):
     """
     Measure aperture photometry on one image for target source
     """
@@ -66,34 +74,39 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ErfaWarning)
         coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
+
     pix_coord = w.world_to_pixel(coord)
-    # check if outside the image
-    if ((pix_coord[0] < 0) | (pix_coord[0] > orig_data.shape[0])) | (
-        (pix_coord[1] < 0) | (pix_coord[1] > orig_data.shape[1])
-    ):
-        # this indicates something bad happened, currently only seen with SUB64
-        # just use the full image in this case
-        data = orig_data
-        data_wcs = w
+    if override_center is None:
+        # check if outside the image
+        if ((pix_coord[0] < 0) | (pix_coord[0] > orig_data.shape[0])) | (
+            (pix_coord[1] < 0) | (pix_coord[1] > orig_data.shape[1])
+        ):
+            # this indicates something bad happened, currently only seen with SUB64
+            # just use the full image in this case
+            data = orig_data
+            data_wcs = w
+        else:
+            imsize = annrad[1] * 6.0
+            cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
+            data = cutout.data
+            data_wcs = cutout.wcs
+
+        # fits.writeto("test.fits", data, overwrite=True)
+
+        # find the star
+        mean, median, std = sigma_clipped_stats(data, sigma=3.0)
+        threshold = median + (5.0 * std)
+        tbl = find_peaks(data, threshold, box_size=11)
+        # tbl["peak_value"].info.format = "%.8g"  # for consistent table output
+        # print(tbl[:10])  # print only the first 10 peaks
+
+        # get the new coordinates of the star in the original image
+        # use the brightest source for the new center
+        sindx = np.flip(np.argsort(tbl["peak_value"]))
+        ncoord = data_wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
+
     else:
-        imsize = annrad[1] * 6.0
-        cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
-        data = cutout.data
-        data_wcs = cutout.wcs
-
-    # fits.writeto("test.fits", data, overwrite=True)
-
-    # find the star
-    mean, median, std = sigma_clipped_stats(data, sigma=3.0)
-    threshold = median + (5.0 * std)
-    tbl = find_peaks(data, threshold, box_size=11)
-    # tbl["peak_value"].info.format = "%.8g"  # for consistent table output
-    # print(tbl[:10])  # print only the first 10 peaks
-
-    # get the new coordinates of the star in the original image
-    # use the brightest source for the new center
-    sindx = np.flip(np.argsort(tbl["peak_value"]))
-    ncoord = data_wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
+        ncoord = override_center
 
     # offset from expected position
     npix_coord = w.world_to_pixel(ncoord)
@@ -119,11 +132,14 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     # print(npix_coord)
     # pix_coord = centroid_2dg(data)
     # pix_coord = centroid_1dg(data)
-    pix_coord = centroid_com(data)
-    # pix_coord = npix_coord
+    if override_center is None:
+        pix_coord = centroid_com(data)
 
-    # convert pix_coord in cutout to coordinates in the original image
-    tcoord = cutout.wcs.pixel_to_world(pix_coord[0], pix_coord[1])
+        # convert pix_coord in cutout to coordinates in the original image
+        tcoord = cutout.wcs.pixel_to_world(pix_coord[0], pix_coord[1])
+    else:
+        tcoord = ncoord
+        pix_coord = cutout.wcs.world_to_pixel(tcoord)
     full_coord = w.world_to_pixel(tcoord)
 
     # define apertures
@@ -170,7 +186,7 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
     phot["total_bkg"] = tot_bkg * u.DN / u.s
     phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - phot["total_bkg"]
     phot["aperture_sum_bkgsub_err"] = (
-        np.sqrt((phot["aperture_sum_err"] ** 2) + (tot_bkg_err ** 2)) * u.DN / u.s
+        np.sqrt((phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)) * u.DN / u.s
     )
     phot["x_offset_from_expected"] = xoff * u.pixel
     phot["y_offset_from_expected"] = yoff * u.pixel
@@ -203,7 +219,10 @@ def aper_image(filename, aprad, annrad, apcor, imgfile=None):
         # plt.show()
     hdul.close()
 
-    return phot
+    if return_center:
+        return (phot, ncoord)
+    else:
+        return phot
 
 
 def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.8):
@@ -289,7 +308,10 @@ if __name__ == "__main__":
         help="directory to process",
     )
     parser.add_argument(
-        "--eefrac", default=0.8, help="Enclosed energy fraction to use", type=float,
+        "--eefrac",
+        default=0.8,
+        help="Enclosed energy fraction to use",
+        type=float,
     )
     parser.add_argument(
         "--bkgsub", help="compute and subtract background image", action="store_true"
