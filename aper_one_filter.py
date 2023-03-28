@@ -132,14 +132,14 @@ def aper_image(
     # print(npix_coord)
     # pix_coord = centroid_2dg(data)
     # pix_coord = centroid_1dg(data)
-    if override_center is None:
-        pix_coord = centroid_com(data)
-
-        # convert pix_coord in cutout to coordinates in the original image
-        tcoord = cutout.wcs.pixel_to_world(pix_coord[0], pix_coord[1])
-    else:
-        tcoord = ncoord
-        pix_coord = cutout.wcs.world_to_pixel(tcoord)
+    # if override_center is None:
+    #     pix_coord = centroid_com(data)
+    #
+    #     # convert pix_coord in cutout to coordinates in the original image
+    #     tcoord = cutout.wcs.pixel_to_world(pix_coord[0], pix_coord[1])
+    # else:
+    tcoord = ncoord
+    pix_coord = cutout.wcs.world_to_pixel(tcoord)
     full_coord = w.world_to_pixel(tcoord)
 
     # define apertures
