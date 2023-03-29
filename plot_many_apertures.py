@@ -54,7 +54,7 @@ if __name__ == "__main__":
     mod_pixscale = psf[0].header["PIXELSCL"] * psf[0].header["DET_SAMP"]
     ee = webbpsf.measure_ee(psf)
     cradii = np.logspace(
-        np.log10(0.5 * filter_fwhm[cfilter]), np.log10(20.0 * filter_fwhm[cfilter]), 50
+        np.log10(0.1 * filter_fwhm[cfilter]), np.log10(20.0 * filter_fwhm[cfilter]), 50
     )
     model_eenergy = ee(cradii * mod_pixscale)
     psf.close()
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # get the
     tmp, ncenter = aper_image(
         filename_bkg,
-        filter_fwhm[cfilter] * 5.,
+        filter_fwhm[cfilter] * 5.0,
         annrad,
         1.0,
         imgfile=filename.replace(".fits", "_manyap_centerap.png"),
@@ -124,8 +124,21 @@ if __name__ == "__main__":
     eenergy += mod_val - obs_val
     eenergy_bkg += mod_val - obs_val_bkg
 
-    print("obs:", np.interp([0.8, 0.85], eenergy, cradii))
-    print("model:", np.interp([0.8, 0.85], model_eenergy, cradii))
+    ee_vals = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85])
+    # get the radii at fixed enclosed energy
+    obs_rad_ee = np.interp(ee_vals, eenergy, cradii)
+    mod_rad_ee = np.interp(ee_vals, model_eenergy, cradii)
+
+    apcor_vals = ee_vals[0:-1] * 0.0
+    print(apcor_vals)
+    bkg_pix_val = (ee_vals[-1] - ee_vals[-2]) / (np.pi * (obs_rad_ee[-1] ** 2 - obs_rad_ee[-2] ** 2))
+    for k, cee in enumerate(ee_vals[0:-1]):
+        ee_w_bkg = ee_vals[k] - bkg_pix_val * np.pi * obs_rad_ee[k] ** 2
+        apcor_vals[k] = 1.0 / ee_w_bkg
+
+    print("apeture corrections for bkg from 0.8 to 0.85 EE")
+    print(ee_vals[0:-1])
+    print(apcor_vals)
 
     # make plot
     fontsize = 14
@@ -139,9 +152,11 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
     # ax.plot(cradii, eenergy_orig, "bo", label="Observed", alpha=0.25)
-    ax.plot(cradii, eenergy, "bo", alpha=0.5, label="Observed (corrected)")
-    ax.plot(cradii, eenergy_bkg, "ro", alpha=0.5, label="Observed w/ bkgsub (corrected)")
-    ax.plot(cradii, model_eenergy, "gs", alpha=0.5, label="WebbPSF")
+    ax.plot(cradii, eenergy, "b-", alpha=0.5, label="Observed (corrected)")
+    ax.plot(
+        cradii, eenergy_bkg, "r-", alpha=0.5, label="Observed w/ bkgsub (corrected)"
+    )
+    ax.plot(cradii, model_eenergy, "g-", alpha=0.5, label="WebbPSF")
     ax.plot([np.min(cradii), np.max(cradii)], [1.0, 1.0], "k:")
 
     ax.set_xlabel("radius [pixels]")

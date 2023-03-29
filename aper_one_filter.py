@@ -19,7 +19,7 @@ from astropy.utils.exceptions import ErfaWarning
 from astropy.io.fits.verify import VerifyWarning
 
 from photutils.detection import find_peaks
-from photutils.centroids import centroid_com
+# from photutils.centroids import centroid_com
 from photutils.aperture import (
     CircularAnnulus,
     CircularAperture,
