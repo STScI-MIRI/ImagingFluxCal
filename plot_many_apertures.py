@@ -130,7 +130,6 @@ if __name__ == "__main__":
     mod_rad_ee = np.interp(ee_vals, model_eenergy, cradii)
 
     apcor_vals = ee_vals[0:-1] * 0.0
-    print(apcor_vals)
     bkg_pix_val = (ee_vals[-1] - ee_vals[-2]) / (np.pi * (obs_rad_ee[-1] ** 2 - obs_rad_ee[-2] ** 2))
     for k, cee in enumerate(ee_vals[0:-1]):
         ee_w_bkg = ee_vals[k] - bkg_pix_val * np.pi * obs_rad_ee[k] ** 2
