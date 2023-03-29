@@ -32,21 +32,21 @@ if __name__ == "__main__":
     )
     filename_bkg = f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
 
+    # Dictionary for the filter FWHM size in pixels. Taken from JDox, to be updated
     filter_fwhm = {
-        "F560W": 1.0,
-        "F770W": 2.27,
-        "F1000W": 2.91,
-        "F1130W": 3.27,
-        "F1280W": 3.73,
-        "F1500W": 4.36,
-        "F1800W": 5.27,
-        "F2100W": 6.09,
-        "F2550W": 7.45,
-        "F2550WR": 7.45,
-        "F1065C": 2.91,
-        "F1140C": 3.27,
-        "F1550C": 4.36,
-        "F2300C": 6.50,
+        "F560W": 1.636,
+        "F770W": 2.187,
+        "F1000W": 2.888,
+        "F1065C": 2.910,
+        "F1130W": 3.318,
+        "F1140C": 3.270,
+        "F1280W": 3.713,
+        "F1500W": 4.354,
+        "F1550C": 4.360,
+        "F1800W": 5.224,
+        "F2100W": 5.989,
+        "F2300C": 6.090,
+        "F2550W": 7.312,
     }
 
     # Calculate encircled energy as a function of distance for the PSF
@@ -130,7 +130,9 @@ if __name__ == "__main__":
     mod_rad_ee = np.interp(ee_vals, model_eenergy, cradii)
 
     apcor_vals = ee_vals[0:-1] * 0.0
-    bkg_pix_val = (ee_vals[-1] - ee_vals[-2]) / (np.pi * (obs_rad_ee[-1] ** 2 - obs_rad_ee[-2] ** 2))
+    bkg_pix_val = (ee_vals[-1] - ee_vals[-2]) / (
+        np.pi * (obs_rad_ee[-1] ** 2 - obs_rad_ee[-2] ** 2)
+    )
     for k, cee in enumerate(ee_vals[0:-1]):
         ee_w_bkg = ee_vals[k] - bkg_pix_val * np.pi * obs_rad_ee[k] ** 2
         apcor_vals[k] = 1.0 / ee_w_bkg
