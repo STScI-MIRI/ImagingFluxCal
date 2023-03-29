@@ -2,6 +2,7 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
+from astropy.table import QTable
 
 import webbpsf
 
@@ -124,6 +125,18 @@ if __name__ == "__main__":
     eenergy += mod_val - obs_val
     eenergy_bkg += mod_val - obs_val_bkg
 
+    # create the table to save the ee values
+    atab = QTable()
+    atab["radius"] = cradii
+    atab["ee"] = eenergy
+    atab["ee_bkg"] = eenergy_bkg
+    atab["ee_model"] = model_eenergy
+    atab.write(
+        filename.replace(".fits", "_ee.dat"),
+        format="ascii.commented_header",
+        overwrite=True,
+    )
+
     ee_vals = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85])
     # get the radii at fixed enclosed energy
     obs_rad_ee = np.interp(ee_vals, eenergy, cradii)
@@ -140,6 +153,17 @@ if __name__ == "__main__":
     print("apeture corrections for bkg from 0.8 to 0.85 EE")
     print(ee_vals[0:-1])
     print(apcor_vals)
+
+    # create the table to save the values in
+    atab = QTable()
+    atab["ee"] = ee_vals
+    atab["radii"] = obs_rad_ee
+    atab["apcor"] = np.concatenate([apcor_vals, [1.0]])
+    atab.write(
+        filename.replace(".fits", "_apcor.dat"),
+        format="ascii.commented_header",
+        overwrite=True,
+    )
 
     # make plot
     fontsize = 14
