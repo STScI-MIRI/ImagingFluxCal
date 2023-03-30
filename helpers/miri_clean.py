@@ -459,6 +459,23 @@ def make_sky(
     """
     # generate a ds9 region to exclude source
     if sourcereg:
+        # in 0.11 arcsec pixels
+        filter_fwhm = {
+            "F560W": 1.636,
+            "F770W": 2.187,
+            "F1000W": 2.888,
+            "F1065C": 2.910,
+            "F1130W": 3.318,
+            "F1140C": 3.270,
+            "F1280W": 3.713,
+            "F1500W": 4.354,
+            "F1550C": 4.360,
+            "F1800W": 5.224,
+            "F2100W": 5.989,
+            "F2300C": 6.090,
+            "F2550W": 7.312,
+        }
+
         hdul = fits.open(files[0])
         targra = hdul[0].header["TARG_RA"]
         targdec = hdul[0].header["TARG_DEC"]
@@ -478,7 +495,7 @@ def make_sky(
         w = WCS(hdul[1].header)
         orig_data = hdul[1].data
         # pix_coord = w.world_to_pixel(coord)
-        imsize = 8. * 6.0
+        imsize = 10. * filter_fwhm[hdul[0].header["FILTER"]]
         cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
         data = cutout.data
         data_wcs = cutout.wcs
@@ -499,7 +516,7 @@ def make_sky(
 
         hdul.close()
 
-        ereg = [CircleSkyRegion(center=ncoord, radius=2. * u.arcsec)]
+        ereg = [CircleSkyRegion(center=ncoord, radius=filter_fwhm[hdul[0].header["FILTER"]] * 0.11 * 6 * u.arcsec)]
         ds9regions = "good_to_go"
 
     elif ds9regions is not None:

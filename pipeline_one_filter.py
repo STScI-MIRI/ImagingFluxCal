@@ -152,9 +152,15 @@ if __name__ == "__main__":
 
                 # for coronagraphy, need to fake the data as imaging
                 if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+                    nfilt = {"F1065C": "F1000W",
+                             "F1140C": "F1130W",
+                             "F1550C": "F1500W",
+                             "F2300C": "F2100W"}
                     for cfile in calfiles:
                         hdul = fits.open(cfile)
                         hdul[0].header["EXP_TYPE"] = "MIR_IMAGE"
+                        if args.filter == "F1065C":
+                            hdul[0].header["FILTER"] = nfilt[args.filter]
                         hdul.writeto(
                             cfile.replace("_cal.fits", "_newcal.fits"), overwrite=True
                         )
@@ -186,5 +192,5 @@ if __name__ == "__main__":
 
                 print(f"image3 for {ckey}")
                 miri_image3(
-                    miri_asn_file, ndir, logfile=f"{cbase}.cfg", sourcecat=sourcecat
+                    miri_asn_file, ndir, logfile=f"{cbase}.cfg", sourcecat=sourcecat,
                 )

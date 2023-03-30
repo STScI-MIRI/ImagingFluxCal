@@ -11,6 +11,17 @@ from aper_one_filter import aper_image
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--dataset",
+        default="BD+60 1753_set1",
+        help="use this MOS file instead of BD+60 1753_set1",
+    )
+    parser.add_argument(
+        "--dir",
+        choices=["HotStars", "ADwarfs", "SolarAnalogs", "all"],
+        default="ADwarfs",
+        help="directory to process",
+    )
+    parser.add_argument(
         "--filter",
         help="filter to process",
         default="F770W",
@@ -29,11 +40,12 @@ if __name__ == "__main__":
 
     cfilter = args.filter
     filename = (
-        f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_asn_i2d.fits"
+        f"{args.dir}/{cfilter}/{args.dataset}/miri_{args.dataset}_stage3_asn_i2d.fits"
     )
-    filename_bkg = f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
+    print(f"mosaic filename = {filename}")
+    filename_bkg = filename.replace("stage3", "stage3_bkgsub")
 
-    # Dictionary for the filter FWHM size in pixels. Taken from JDox, to be updated
+    # in 0.11 arcsec pixels
     filter_fwhm = {
         "F560W": 1.636,
         "F770W": 2.187,
@@ -60,12 +72,15 @@ if __name__ == "__main__":
     model_eenergy = ee(cradii * mod_pixscale)
     psf.close()
 
+    norm_factor = 10.0
+    minbkg = 1.1
+    maxbkg = 1.4
     if cfilter == "F2550W":
         minbkg = 1.0
         maxbkg = 1.1
-    else:
-        minbkg = 1.1
-        maxbkg = 1.4
+        norm_factor = 5.0
+    elif cfilter == "F2100W":
+        norm_factor = 5.0
     annrad = np.array([max(cradii) * minbkg, max(cradii) * maxbkg])
 
     # get the
@@ -89,12 +104,7 @@ if __name__ == "__main__":
             imgfile_bkg = None
 
         cphot = aper_image(
-            filename,
-            crad,
-            annrad,
-            1.0,
-            imgfile=imgfile,
-            override_center=ncenter,
+            filename, crad, annrad, 1.0, imgfile=imgfile, override_center=ncenter,
         )
 
         cphot_bkg = aper_image(
@@ -115,7 +125,7 @@ if __name__ == "__main__":
 
     # find the values at a fixed radius and adjust the empirical
     # to match webbpsf
-    pix_rad = 10.0 * filter_fwhm[cfilter]
+    pix_rad = norm_factor * filter_fwhm[cfilter]
     obs_val = np.interp([pix_rad], cradii, eenergy)
     obs_val_bkg = np.interp([pix_rad], cradii, eenergy_bkg)
     mod_val = np.interp([pix_rad], cradii, model_eenergy)
@@ -151,6 +161,7 @@ if __name__ == "__main__":
         apcor_vals[k] = 1.0 / ee_w_bkg
 
     print("apeture corrections for bkg from 0.8 to 0.85 EE")
+    print(obs_rad_ee)
     print(ee_vals[0:-1])
     print(apcor_vals)
 
