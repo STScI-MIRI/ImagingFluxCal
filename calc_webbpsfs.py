@@ -42,6 +42,23 @@ if __name__ == '__main__':
     miri = webbpsf.MIRI()
     miri.options['parity'] = parity
     miri.filter = cfilter
+
+    shiftx = 74.0
+    shifty = 72.0
+    if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        miri.options['parity'] = 'odd'
+        miri.options['source_offset_x'] = shiftx*0.11
+        miri.options['source_offset_y'] = -shifty*0.11
+
+        if cfilter in ["F1065C", "F1140C", "F1550C"]:
+            miri.pupil_mask = 'MASKFQPM'
+            print(cfilter[1:-1])
+            exit()
+            miri.image_mask = f'FQP{cfilter[1:-1]}'
+        elif cfilter == "F2300C":
+            miri.pupil_mask = 'MASKLYOT'
+            miri.image_mask = 'LYOT2300'
+
     psf = miri.calc_psf(fov_arcsec=fov, oversample=samp, add_distortion=False)
     psf.writeto(f"PSFs/miri_{cfilter}_psf.fits", overwrite=True)
 

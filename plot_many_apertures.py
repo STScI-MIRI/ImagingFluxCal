@@ -132,8 +132,8 @@ if __name__ == "__main__":
     print("normalizing at (rad, obs, mod)", pix_rad, obs_val, mod_val)
 
     eenergy_orig = np.array(eenergy)
-    eenergy += mod_val - obs_val
-    eenergy_bkg += mod_val - obs_val_bkg
+    eenergy *= mod_val / obs_val
+    eenergy_bkg *= mod_val / obs_val_bkg
 
     # create the table to save the ee values
     atab = QTable()
@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
-    # ax.plot(cradii, eenergy_orig, "bo", label="Observed", alpha=0.25)
+    ax.plot(cradii, eenergy_orig, "b:", label="Observed", alpha=0.25)
     ax.plot(cradii, eenergy, "b-", alpha=0.5, label="Observed (corrected)")
     ax.plot(
         cradii, eenergy_bkg, "r-", alpha=0.5, label="Observed w/ bkgsub (corrected)"
