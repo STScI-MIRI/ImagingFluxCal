@@ -65,7 +65,11 @@ if __name__ == "__main__":
     # Calculate encircled energy as a function of distance for the PSF
     psf = fits.open(f"PSFs/miri_{cfilter}_psf.fits")
     mod_pixscale = psf[0].header["PIXELSCL"] * psf[0].header["DET_SAMP"]
-    ee = webbpsf.measure_ee(psf)
+    if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        wcenter = (896, 315)
+    else:
+        wcenter = None
+    ee = webbpsf.measure_ee(psf, center=wcenter)
     cradii = np.logspace(
         np.log10(0.1 * filter_fwhm[cfilter]), np.log10(20.0 * filter_fwhm[cfilter]), 50
     )
