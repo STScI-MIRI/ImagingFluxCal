@@ -56,7 +56,13 @@ if __name__ == "__main__":
         elif cfilter == "F2300C":
             miri.pupil_mask = "MASKLYOT"
             miri.image_mask = "LYOT2300"
-        psf = miri.calc_psf(fov_pixels=300, oversample=samp, add_distortion=False)
+
+        psf = miri.calc_psf(
+            fov_pixels=300,
+            oversample=samp,
+            add_distortion=False,
+            normalize="exit_pupil",
+        )
     else:
         psf = miri.calc_psf(fov_arcsec=fov, oversample=samp, add_distortion=False)
     psf.writeto(f"PSFs/miri_{cfilter}_psf.fits", overwrite=True)
