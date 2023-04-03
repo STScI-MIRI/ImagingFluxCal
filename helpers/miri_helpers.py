@@ -51,6 +51,10 @@ def miri_detector1(
     # miri1.jump.save_results = True
     det1_dict["jump"] = {"rejection_threshold": jump_sigma,
                          "maximum_cores": cpufraction}
+    det1_dict["jump"]["after_jump_flag_dn1"] = 0.0
+    det1_dict["jump"]["after_jump_flag_time1"] = 0.0
+    det1_dict["jump"]["after_jump_flag_dn2"] = 0.0
+    det1_dict["jump"]["after_jump_flag_time2"] = 0.0
     if after_jump:
         det1_dict["jump"]["after_jump_flag_dn1"] = 10.0
         det1_dict["jump"]["after_jump_flag_time1"] = 15 * 2.8
