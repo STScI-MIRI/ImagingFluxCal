@@ -1,30 +1,30 @@
-python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set1
-python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set2
-python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set3
-python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set4
+python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set1 --png
+python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set2 --png
+python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set3 --png
+python plot_many_apertures.py --filter=F560W --dataset=BD+60\ 1753_set4 --png
 
-python plot_many_apertures.py --filter=F770W --dataset=BD+60\ 1753_set1
-python plot_many_apertures.py --filter=F770W --dataset=BD+60\ 1753_set2
-python plot_many_apertures.py --filter=F770W --dataset=BD+60\ 1753_set3
+python plot_many_apertures.py --filter=F770W --dataset=BD+60\ 1753_set1 --png
+python plot_many_apertures.py --filter=F770W --dataset=BD+60\ 1753_set2 --png
+python plot_many_apertures.py --filter=F770W --dataset=BD+60\ 1753_set3 --png
 
-python plot_many_apertures.py --filter=F1000W --dataset=BD+60\ 1753_set1
-python plot_many_apertures.py --filter=F1000W --dataset=BD+60\ 1753_set2
-python plot_many_apertures.py --filter=F1000W --dataset=BD+60\ 1753_set3
+python plot_many_apertures.py --filter=F1000W --dataset=BD+60\ 1753_set1 --png
+python plot_many_apertures.py --filter=F1000W --dataset=BD+60\ 1753_set2 --png
+python plot_many_apertures.py --filter=F1000W --dataset=BD+60\ 1753_set3 --png
 
-python plot_many_apertures.py --filter=F1130W --dataset=BD+60\ 1753_set1
+python plot_many_apertures.py --filter=F1130W --dataset=BD+60\ 1753_set1 --png
 
-python plot_many_apertures.py --filter=F1280W --dataset=BD+60\ 1753_set1
+python plot_many_apertures.py --filter=F1280W --dataset=BD+60\ 1753_set1 --png
 
-python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set1
-python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set2
-python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set3
-python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set4
-python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set6
+python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set1 --png
+python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set2 --png
+python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set3 --png
+python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set4 --png
+#python plot_many_apertures.py --filter=F1500W --dataset=BD+60\ 1753_set6 --png
 
-python plot_many_apertures.py --filter=F1800W --dataset=BD+60\ 1753_set1
-python plot_many_apertures.py --filter=F1800W --dataset=BD+60\ 1753_set2
-python plot_many_apertures.py --filter=F1800W --dataset=BD+60\ 1753_set4
+python plot_many_apertures.py --filter=F1800W --dataset=BD+60\ 1753_set1 --png
+python plot_many_apertures.py --filter=F1800W --dataset=BD+60\ 1753_set2 --png
+#python plot_many_apertures.py --filter=F1800W --dataset=BD+60\ 1753_set4 --png
 
-python plot_many_apertures.py --filter=F2100W --dataset=BD+60\ 1753_set1
+python plot_many_apertures.py --filter=F2100W --dataset=BD+60\ 1753_set1 --png
 
-python plot_many_apertures.py --filter=F2550W --dataset=BD+60\ 1753_set1
+python plot_many_apertures.py --filter=F2550W --dataset=BD+60\ 1753_set1 --png

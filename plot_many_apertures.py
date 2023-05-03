@@ -84,6 +84,8 @@ if __name__ == "__main__":
         maxbkg = 1.1
         norm_factor = 5.0
     elif cfilter == "F2100W":
+        norm_factor = 4.0
+    elif cfilter == "F1500W":
         norm_factor = 5.0
     annrad = np.array([max(cradii) * minbkg, max(cradii) * maxbkg])
 
@@ -139,11 +141,20 @@ if __name__ == "__main__":
     eenergy *= mod_val / obs_val
     eenergy_bkg *= mod_val / obs_val_bkg
 
+    # create the final ee profile
+    # observed to the pix_rad radius and model for the rest
+    fin_eenergy = np.array(eenergy)
+    gvals = cradii > pix_rad
+    fin_eenergy[gvals] = model_eenergy[gvals]
+    if cfilter == "F2550W":
+        fin_eenergy = np.array(model_eenergy)
+
     # create the table to save the ee values
     atab = QTable()
     atab["radius"] = cradii
-    atab["ee"] = eenergy
-    atab["ee_bkg"] = eenergy_bkg
+    atab["ee"] = fin_eenergy
+    atab["ee_obs"] = eenergy
+    atab["ee_obs_bkg"] = eenergy_bkg
     atab["ee_model"] = model_eenergy
     atab.write(
         filename.replace(".fits", "_ee.dat"),
@@ -192,11 +203,11 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
     ax.plot(cradii, eenergy_orig, "b:", label="Observed", alpha=0.25)
-    ax.plot(cradii, eenergy, "b-", alpha=0.5, label="Observed (corrected)")
-    ax.plot(
-        cradii, eenergy_bkg, "r-", alpha=0.5, label="Observed w/ bkgsub (corrected)"
-    )
+    # ax.plot(
+    #     cradii, eenergy_bkg, "r-", alpha=0.5, label="Observed w/ bkgsub (corrected)"
+    # )
     ax.plot(cradii, model_eenergy, "g-", alpha=0.5, label="WebbPSF")
+    ax.plot(cradii, fin_eenergy, "b-", alpha=0.5, label="Final (Obs+WebbPSF)")
     ax.plot([np.min(cradii), np.max(cradii)], [1.0, 1.0], "k:")
 
     ax.set_xlabel("radius [pixels]")
