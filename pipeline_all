@@ -12,8 +12,8 @@ do
     python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=stage3 --bkgsub
 done
 
-python pipeline_one_filter.py --filter=F770W_repeat --dir=ADwarfs --stage=all
-python pipeline_one_filter.py --filter=F770W_repeat --dir=ADwarfs --stage=stage3 --bkgsub
+#python pipeline_one_filter.py --filter=F770W_repeat --dir=ADwarfs --stage=all
+#python pipeline_one_filter.py --filter=F770W_repeat --dir=ADwarfs --stage=stage3 --bkgsub
 
-python pipeline_one_filter.py --filter=F770W_subarray --dir=ADwarfs --stage=all
-python pipeline_one_filter.py --filter=F770W_subarray --dir=ADwarfs --stage=stage3 --bkgsub
+#python pipeline_one_filter.py --filter=F770W_subarray --dir=ADwarfs --stage=all
+#python pipeline_one_filter.py --filter=F770W_subarray --dir=ADwarfs --stage=stage3 --bkgsub

@@ -534,6 +534,10 @@ def make_sky(
             istackmed = np.empty((len(files)))
         tdata = cdata.data
 
+        # determine where the bad data is
+        bvals = (cdata.dq % 2) == 1
+        tdata[bvals] = np.NaN
+
         # remove all the non imager data
         # bdata = cdata.dq & dqflags.pixel["DO_NOT_USE"] > 0
         # tdata[bdata] = np.NaN

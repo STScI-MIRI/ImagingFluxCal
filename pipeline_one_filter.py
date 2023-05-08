@@ -159,13 +159,12 @@ if __name__ == "__main__":
                     for cfile in calfiles:
                         hdul = fits.open(cfile)
                         hdul[0].header["EXP_TYPE"] = "MIR_IMAGE"
-                        if args.filter == "F1065C":
-                            hdul[0].header["FILTER"] = nfilt[args.filter]
+                        hdul[0].header["FILTER"] = nfilt[args.filter]
                         hdul.writeto(
                             cfile.replace("_cal.fits", "_newcal.fits"), overwrite=True
                         )
                         hdul.close()
-                    calfiles = glob.glob(f"{ndir}/*_newcal.fits")
+                    calfiles = glob.glob(f"{ndir}/*mirimage{calext}_newcal.fits")
 
                 # generate association file
                 miri_asn_name = f"miri_{ckey}_stage3{mosext}_asn"
