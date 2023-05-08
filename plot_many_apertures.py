@@ -85,7 +85,7 @@ if __name__ == "__main__":
         norm_factor = 5.0
     elif cfilter == "F2100W":
         norm_factor = 4.0
-    elif cfilter == "F1500W":
+    elif cfilter in ["F1140C", "F1500W"]:
         norm_factor = 5.0
     annrad = np.array([max(cradii) * minbkg, max(cradii) * maxbkg])
 
@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
     ee_vals = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85])
     # get the radii at fixed enclosed energy
-    obs_rad_ee = np.interp(ee_vals, eenergy, cradii)
+    obs_rad_ee = np.interp(ee_vals, fin_eenergy, cradii)
     mod_rad_ee = np.interp(ee_vals, model_eenergy, cradii)
 
     apcor_vals = ee_vals[0:-1] * 0.0
@@ -218,7 +218,7 @@ if __name__ == "__main__":
 
     plt.tight_layout()
 
-    fname = f"Figs/miri_many_apertures_{cfilter}"
+    fname = filename.replace(".fits", "_ee")
     if args.png:
         fig.savefig(f"{fname}.png")
     elif args.pdf:

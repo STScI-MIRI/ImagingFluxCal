@@ -1,5 +1,7 @@
 
-for CBAND in F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W
+#for CBAND in F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W
+for CBAND in F2300C F1550C F1140C F1065C
+
 do
     python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=all
     python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=all

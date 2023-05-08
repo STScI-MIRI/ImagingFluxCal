@@ -46,7 +46,17 @@ Details
    the WebbPSFs for the outer regions.
    `calc_all_ees` runs all MIRI imaging filters for BD+60 1753 observations.
 
-4. Compute the calibration factors: calc_calcfactors.py
-   Uses the results of 1 and 3 to calculate the calibration factors for all
+4. Measure the flux in a fixed aperture: aper_one_filter.py.
+   Measures the flux using an aperture and background annulus including applying
+   the aperture correction.
+   `aper_all.py` does this for all MIRI imaging filters.
+
+5. Compute the calibration factors: calc_calcfactors.py
+   Uses the results of 4 to calculate the calibration factors for all
    observed absflux stars for one filter for all three types (if present).
-   
+   Produces a table giving the calibration factors for each observation.
+   Produces plots of calibration factors versus model flux, time, well depth,
+   etc.
+
+Figures
+-------

@@ -18,6 +18,10 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
+    print("Old")
     tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
+    print(tab[(tab["subarray"] == "FULL") & (tab["filter"] == args.filter)])
 
-    print(tab[tab["filter"] == args.filter])
+    print("New")
+    tab = QTable.read("jwst_miri_apcorr_flight_8may8.fits")
+    print(tab[(tab["subarray"] == "FULL") & (tab["filter"] == args.filter)])
