@@ -85,11 +85,11 @@ if __name__ == "__main__":
         norm_factor = 5.0
     elif cfilter == "F2100W":
         norm_factor = 4.0
-    elif cfilter in ["F1140C", "F1500W"]:
+    elif cfilter in ["F1065C", "F1140C", "F1500W"]:
         norm_factor = 5.0
     annrad = np.array([max(cradii) * minbkg, max(cradii) * maxbkg])
 
-    # get the
+    # get the center for all the photometry
     tmp, ncenter = aper_image(
         filename_bkg,
         filter_fwhm[cfilter] * 5.0,
@@ -98,6 +98,10 @@ if __name__ == "__main__":
         imgfile=filename.replace(".fits", "_manyap_centerap.png"),
         return_center=True,
     )
+
+    print(filename_bkg)
+    print(ncenter)
+    exit()
 
     apsum = np.zeros(len(cradii))
     apsum_bkg = np.zeros(len(cradii))

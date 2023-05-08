@@ -31,5 +31,12 @@ python plot_many_apertures.py --filter=F2550W --dataset=BD+60\ 1753_set1 --png
 
 python plot_many_apertures.py --filter=F1065C --dataset=del\ UMi_set1 --png
 python plot_many_apertures.py --filter=F1065C --dataset=HD\ 2811_set1 --png
+python plot_many_apertures.py --filter=F1140C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png
 
-python plot_many_apertures.py --filter=F1140C --dataset=HD\ 167060_set1 --png
+python plot_many_apertures.py --filter=F1140C --dataset=del\ UMi_set1 --png
+python plot_many_apertures.py --filter=F1140C --dataset=HD\ 2811_set1 --png
+python plot_many_apertures.py --filter=F1140C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png
+
+python plot_many_apertures.py --filter=F1550C --dataset=del\ UMi_set1 --png
+python plot_many_apertures.py --filter=F1550C --dataset=HD\ 2811_set1 --png
+python plot_many_apertures.py --filter=F1550C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png

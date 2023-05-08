@@ -1,4 +1,3 @@
-import glob
 import numpy as np
 import datetime
 from astropy.table import QTable
@@ -30,8 +29,15 @@ if __name__ == "__main__":
                 f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2d_apcor.dat"
             )
 
+    # add in corongraphic obs
+    files["F1140C"] = ["ADwarfs/F1140C/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_apcor.dat",
+                       "ADwarfs/F1140C/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_apcor.dat",
+                       "SolarAnalogs/F1140C/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_apcor.dat"]
+    filters = list(dsets.keys())
+    filters.append("F1140C")
+
     data_list = []
-    for cfilter in dsets.keys():
+    for cfilter in filters:
         afiles = files[cfilter]
         # afiles = glob.glob(
         #     f"ADwarfs/{cfilter}/BD+60 1753_set?/miri_BD+60 1753_set?_stage3_asn_i2d_apcor.dat"
