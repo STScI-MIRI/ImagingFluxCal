@@ -28,7 +28,7 @@ if __name__ == '__main__':
                     targname = "2MASS J17571324+6703409"
                 name.append(targname)
                 filter.append(hdr["FILTER"])
-                pid.append(hdr["PROGRAM"])
+                pid.append(hdr["PROGRAM"][1:])
                 subarray.append(hdr["SUBARRAY"])
 
     stype = np.array(stype)
@@ -53,6 +53,9 @@ if __name__ == '__main__':
                 for csubarray in usubarrays:
                     gsubarrays = csubarray == subarray[gtype][gname][gpid]
                     ufilters = np.unique(filter[gtype][gname][gpid][gsubarrays])
+                    for tfilter in ["F770W", "F560W"]:
+                        if tfilter in ufilters:
+                            ufilters = np.concatenate(([tfilter], ufilters[0:-1]))
                     print(f"{pname} & {ppid} & {csubarray} & {', '.join(ufilters)} \\\\")
                     pname = ""
                     ppid = ""
