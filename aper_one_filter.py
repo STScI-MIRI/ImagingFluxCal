@@ -103,9 +103,9 @@ def aper_image(
         # get the new coordinates of the star in the original image
         # use the brightest source for the new center
         sindx = np.flip(np.argsort(tbl["peak_value"]))
-        print(tbl["peak_value"].data[sindx])
-        print(tbl["x_peak"].data[sindx])
-        print(tbl["y_peak"].data[sindx])
+        # print(tbl["peak_value"].data[sindx])
+        # print(tbl["x_peak"].data[sindx])
+        # print(tbl["y_peak"].data[sindx])
         ncoord = data_wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
 
     else:
@@ -263,7 +263,7 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.8):
     aprad = tab["radius"][gval][0]
     annrad = [tab["skyin"][gval][0], tab["skyout"][gval][0]]
     apcor = tab["apcorr"][gval][0]
-    print(aprad, annrad, apcor)
+    # print(aprad, annrad, apcor)
     # aprad = 20.0
     # annrad = [21.0, 23.0]
 
