@@ -516,7 +516,8 @@ def make_sky(
 
         hdul.close()
 
-        ereg = [CircleSkyRegion(center=ncoord, radius=filter_fwhm[hdul[0].header["FILTER"]] * 0.11 * 6 * u.arcsec)]
+        mrad = filter_fwhm[hdul[0].header["FILTER"]] * 0.11 * 3 * u.arcsec
+        ereg = [CircleSkyRegion(center=ncoord, radius=mrad)]
         ds9regions = "good_to_go"
 
     elif ds9regions is not None:
@@ -534,13 +535,9 @@ def make_sky(
             istackmed = np.empty((len(files)))
         tdata = cdata.data
 
-        # determine where the bad data is
-        bvals = (cdata.dq % 2) == 1
-        tdata[bvals] = np.NaN
-
         # remove all the non imager data
-        # bdata = cdata.dq & dqflags.pixel["DO_NOT_USE"] > 0
-        # tdata[bdata] = np.NaN
+        bdata = cdata.dq & dqflags.pixel["DO_NOT_USE"] > 0
+        tdata[bdata] = np.NaN
 
         if exclude_above is not None:
             tdata[tdata > exclude_above] = np.NaN
