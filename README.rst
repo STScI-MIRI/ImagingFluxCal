@@ -46,6 +46,11 @@ Details
    the WebbPSFs for the outer regions.
    `calc_all_ees` runs all MIRI imaging filters for BD+60 1753 observations.
 
+3.5. Create the aperture correction reference file: create_apcor_reffile.py
+   Uses the individual aperture corrections computed in step 3 to compute the
+   aperture corrections with uncertainties (where possible) to create the
+   apcor reference file in the correct format.
+
 4. Measure the flux in a fixed aperture: aper_one_filter.py.
    Measures the flux using an aperture and background annulus including applying
    the aperture correction.

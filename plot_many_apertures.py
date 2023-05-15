@@ -70,38 +70,30 @@ if __name__ == "__main__":
     else:
         wcenter = None
     ee = webbpsf.measure_ee(psf, center=wcenter)
-    cradii = np.logspace(
-        np.log10(0.1 * filter_fwhm[cfilter]), np.log10(20.0 * filter_fwhm[cfilter]), 50
-    )
-    model_eenergy = ee(cradii * mod_pixscale)
     psf.close()
 
-    norm_factor = 10.0
-    minbkg = 1.1
-    maxbkg = 1.4
-    if cfilter == "F2550W":
-        minbkg = 1.0
-        maxbkg = 1.1
-        norm_factor = 5.0
-    elif cfilter == "F2100W":
-        norm_factor = 4.0
-    elif cfilter in ["F1065C", "F1140C", "F1500W"]:
-        norm_factor = 5.0
+    norm_factor = 5.0
+    minbkg = 1.0
+    maxbkg = 1.2
+
+    cradii = np.logspace(
+        np.log10(0.1 * filter_fwhm[cfilter]),
+        np.log10(2 * norm_factor * filter_fwhm[cfilter]),
+        50
+    )
+    model_eenergy = ee(cradii * mod_pixscale)
+
     annrad = np.array([max(cradii) * minbkg, max(cradii) * maxbkg])
 
     # get the center for all the photometry
     tmp, ncenter = aper_image(
         filename_bkg,
         filter_fwhm[cfilter] * 5.0,
-        annrad,
+        [filter_fwhm[cfilter] * 5.0, filter_fwhm[cfilter] * 6.0],
         1.0,
         imgfile=filename.replace(".fits", "_manyap_centerap.png"),
         return_center=True,
     )
-
-    print(filename_bkg)
-    print(ncenter)
-    exit()
 
     apsum = np.zeros(len(cradii))
     apsum_bkg = np.zeros(len(cradii))
@@ -147,7 +139,10 @@ if __name__ == "__main__":
 
     # create the final ee profile
     # observed to the pix_rad radius and model for the rest
-    fin_eenergy = np.array(eenergy)
+    if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C", "F2550W"]:
+        fin_eenergy = np.array(eenergy_bkg)
+    else:
+        fin_eenergy = np.array(eenergy)
     gvals = cradii > pix_rad
     fin_eenergy[gvals] = model_eenergy[gvals]
     if cfilter == "F2550W":
@@ -207,9 +202,9 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
     ax.plot(cradii, eenergy_orig, "b:", label="Observed", alpha=0.25)
-    # ax.plot(
-    #     cradii, eenergy_bkg, "r-", alpha=0.5, label="Observed w/ bkgsub (corrected)"
-    # )
+    ax.plot(
+        cradii, eenergy_bkg, "r-", alpha=0.5, label="Observed w/ bkgsub (corrected)"
+    )
     ax.plot(cradii, model_eenergy, "g-", alpha=0.5, label="WebbPSF")
     ax.plot(cradii, fin_eenergy, "b-", alpha=0.5, label="Final (Obs+WebbPSF)")
     ax.plot([np.min(cradii), np.max(cradii)], [1.0, 1.0], "k:")
