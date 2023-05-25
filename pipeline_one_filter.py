@@ -81,11 +81,19 @@ if __name__ == "__main__":
         help="specific flat file to use",
         default=None,
     )
+    parser.add_argument("--nflats", help="use new flats", action="store_true")
     parser.add_argument("--onlynew", help="only reduce new data", action="store_true")
     parser.add_argument(
         "--bkgsub", help="compute and subtract background image", action="store_true"
     )
     args = parser.parse_args()
+
+    if args.flatfile:
+        flatfile = args.flatfile
+    elif args.nflats:
+        flatfile = f"Nicolas_Flats/skyflat_{args.filter}_median.fits"
+    else:
+        flatfile = None
 
     if args.dir == "all":
         dirlist = ["HotStars", "ADwarfs", "SolarAnalogs"]
@@ -134,7 +142,7 @@ if __name__ == "__main__":
                 ratefiles = glob.glob(f"{ndir}/*_rate.fits")
                 print(f"image2 for {ckey}")
                 miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg",
-                            flatfile=args.flatfile)
+                            flatfile=flatfile)
 
             if args.bkgsub:
                 calfiles = glob.glob(f"{ndir}/*mirimage_cal.fits")

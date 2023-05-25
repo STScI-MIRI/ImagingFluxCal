@@ -23,5 +23,5 @@ if __name__ == '__main__':
     print(tab[(tab["subarray"] == "FULL") & (tab["filter"] == args.filter)])
 
     print("New")
-    tab = QTable.read("jwst_miri_apcorr_flight_8may8.fits")
+    tab = QTable.read("jwst_miri_apcorr_flight_25may23.fits")
     print(tab[(tab["subarray"] == "FULL") & (tab["filter"] == args.filter)])

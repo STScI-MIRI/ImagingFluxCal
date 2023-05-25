@@ -63,7 +63,11 @@ if __name__ == "__main__":
     }
 
     # Calculate encircled energy as a function of distance for the PSF
-    psf = fits.open(f"PSFs/miri_{cfilter}_psf.fits")
+    if cfilter in ["F560W", "F770W"]:
+        psf_fname = f"PSFs/miri_{cfilter}_psf_wcurciform.fits"
+    else:
+        psf_fname = f"PSFs/miri_{cfilter}_psf.fits"
+    psf = fits.open(psf_fname)
     mod_pixscale = psf[0].header["PIXELSCL"] * psf[0].header["DET_SAMP"]
     if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
         wcenter = (896, 315)

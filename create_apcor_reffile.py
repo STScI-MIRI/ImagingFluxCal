@@ -98,7 +98,7 @@ if __name__ == "__main__":
     new_model.meta.subarray = "GENERIC"
     new_model.meta.reftype = "APCORR"
     new_model.meta.author = "Karl Gordon"
-    new_model.meta.pedigree = "INFLIGHT 2022-05-25 2023-05-15"
+    new_model.meta.pedigree = "INFLIGHT 2022-05-25 2023-05-25"
     new_model.meta.useafter = "2022-04-01T00:00:00"
     new_model.meta.description = "Apcorr reference file."
     entry = "The aperture corrections were computed starting from encircled-energy"
@@ -113,4 +113,4 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "the SKYIN and SKYOUT columns."
     new_model.history.append(entry)
-    new_model.save("jwst_miri_apcorr_flight_15may8.fits")
+    new_model.save("jwst_miri_apcorr_flight_25may23.fits")
