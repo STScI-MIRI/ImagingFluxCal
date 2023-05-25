@@ -7,8 +7,6 @@ from jwst.datamodels import MirImgApcorrModel
 
 if __name__ == "__main__":
 
-    subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
-
     files = {}
     star = "BD+60 1753"
     dsets = {}
@@ -31,6 +29,10 @@ if __name__ == "__main__":
     filters = list(dsets.keys())
 
     # add in corongraphic obs
+    csubarray = {"F1065C": "MASK1065",
+                 "F1140C": "MASK1140",
+                 "F1550C": "MASK1550",
+                 "F2300C": "MASKLYOT"}
     for cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
         files[cfilter] = [f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_apcor.dat",
                           f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_apcor.dat",
@@ -64,6 +66,11 @@ if __name__ == "__main__":
         # print(aradii_std)
         # print(aapcor)
         # print(aapcor_std)
+
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+            subarray_values = ["FULL", csubarray[cfilter]]
+        else:
+            subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
         for csub in subarray_values:
             for k, cee in enumerate(ees[:-1]):
@@ -113,4 +120,4 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "the SKYIN and SKYOUT columns."
     new_model.history.append(entry)
-    new_model.save("jwst_miri_apcorr_flight_25may23.fits")
+    new_model.save("ApCor/jwst_miri_apcorr_flight_25may23.fits")
