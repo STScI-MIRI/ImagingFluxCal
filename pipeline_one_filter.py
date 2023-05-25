@@ -74,7 +74,7 @@ if __name__ == "__main__":
         "--stage",
         help="stages to run",
         default="all",
-        choices=["stage1", "stage2", "stage3", "all"],
+        choices=["stage1", "stage2", "stage3", "stage23", "all"],
     )
     parser.add_argument(
         "--flatfile",
@@ -88,10 +88,18 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    # no new flats for coronagraphy
+    if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        args.nflats = None
+
     if args.flatfile:
         flatfile = args.flatfile
     elif args.nflats:
-        flatfile = f"Nicolas_Flats/skyflat_{args.filter}_median.fits"
+        print("using new flats")
+        if args.filter in ["F770W_repeat", "F770W_subarray"]:
+            flatfile = "Nicolas_Flats/skyflat_F770W_median.fits"
+        else:
+            flatfile = f"Nicolas_Flats/skyflat_{args.filter}_median.fits"
     else:
         flatfile = None
 
@@ -131,7 +139,7 @@ if __name__ == "__main__":
                 print(f"detector1 for {ckey}")
                 miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg")
 
-            if args.stage in ["stage2", "all"]:
+            if args.stage in ["stage2", "stage23", "all"]:
                 # calwebb_image2
                 cbase = f"{ndir}/{ckey}_stage2"
                 with open(f"{cbase}.cfg", "w") as f:
@@ -154,7 +162,7 @@ if __name__ == "__main__":
                 calext = ""
                 mosext = ""
 
-            if args.stage in ["stage3", "all"]:
+            if args.stage in ["stage3", "stage23", "all"]:
                 # calwebb_image3
                 calfiles = glob.glob(f"{ndir}/*mirimage{calext}_cal.fits")
 

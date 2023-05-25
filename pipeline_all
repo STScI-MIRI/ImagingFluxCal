@@ -1,19 +1,14 @@
+FSTAGE="stage23"
+EXTOPT="--nflat"
 
-for CBAND in F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W
-#for CBAND in F2300C F1550C F1140C F1065C
+for CBAND in F770W_repeat F770W_subarray F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W
 
 do
-    python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=all
-    python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=all
-    python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=all
+    python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=$FSTAGE $EXTOPT
+    python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=$FSTAGE $EXTOPT
+    python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=$FSTAGE $EXTOPT
 
-    python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=stage3 --bkgsub
-    python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=stage3 --bkgsub
-    python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=stage3 --bkgsub
+    python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=stage3 --bkgsub $EXTOPT
+    python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=stage3 --bkgsub $EXTOPT
+    python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=stage3 --bkgsub $EXTOPT
 done
-
-python pipeline_one_filter.py --filter=F770W_repeat --dir=ADwarfs --stage=all
-python pipeline_one_filter.py --filter=F770W_repeat --dir=ADwarfs --stage=stage3 --bkgsub
-
-python pipeline_one_filter.py --filter=F770W_subarray --dir=ADwarfs --stage=all
-python pipeline_one_filter.py --filter=F770W_subarray --dir=ADwarfs --stage=stage3 --bkgsub
