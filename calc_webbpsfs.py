@@ -36,7 +36,8 @@ if __name__ == "__main__":
     # Set input parameters:
     samp = 4  # psf oversample factor
     parity = "even"  # set psf model parity to 'odd' or 'even'
-    fov = 30 * 0.11 * filter_fwhm[cfilter]  # fov for the PSF model in arcsec
+    fov = 200 * 0.11 * filter_fwhm[cfilter]  # fov for the PSF model in arcsec
+    print(fov)
 
     # Create a MIRI instance and calculate PSF
     miri = webbpsf.MIRI()

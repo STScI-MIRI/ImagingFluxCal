@@ -32,6 +32,12 @@ if __name__ == "__main__":
         # fmt: on
     )
     parser.add_argument(
+        "--fwhmfac",
+        default=20.0,
+        help="FWHM factor for normlization of empirical PSF to WebbPSF PSF",
+        type=float,
+    )
+    parser.add_argument(
         "--saveimg", help="save images for each aperture", action="store_true"
     )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
@@ -76,7 +82,7 @@ if __name__ == "__main__":
     ee = webbpsf.measure_ee(psf, center=wcenter)
     psf.close()
 
-    norm_factor = 5.0
+    norm_factor = args.fwhmfac
     minbkg = 1.0
     maxbkg = 1.2
 
@@ -189,7 +195,7 @@ if __name__ == "__main__":
     atab["radii"] = obs_rad_ee
     atab["apcor"] = np.concatenate([apcor_vals, [1.0]])
     atab.write(
-        filename.replace(".fits", "_apcor.dat"),
+        filename.replace(".fits", f"fwhmfac{args.fwhmfac}_apcor.dat"),
         format="ascii.commented_header",
         overwrite=True,
     )
@@ -215,13 +221,14 @@ if __name__ == "__main__":
 
     ax.set_xlabel("radius [pixels]")
     ax.set_ylabel("Fractional enclosed energy")
-    ax.set_title(cfilter)
+    ax.set_title(f"{cfilter} / FWHMFAC = {args.fwhmfac}")
 
     ax.legend()
 
     plt.tight_layout()
 
     fname = filename.replace(".fits", "_ee")
+    fname = f"{fname}_fwhmfac{args.fwhmfac}"
     if args.png:
         fig.savefig(f"{fname}.png")
     elif args.pdf:
