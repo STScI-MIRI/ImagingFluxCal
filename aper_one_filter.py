@@ -318,7 +318,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--eefrac",
-        default=0.8,
+        default=0.7,
         help="Enclosed energy fraction to use",
         type=float,
     )
