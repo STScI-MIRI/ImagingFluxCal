@@ -229,7 +229,7 @@ def aper_image(
         return phot
 
 
-def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.8):
+def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7):
     """
     Do aperture photometry on all mosaic files for one filter and one class
     of stars.
