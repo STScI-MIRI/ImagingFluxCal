@@ -165,6 +165,7 @@ def aper_image(
     tphot["ngroups"] = hdul[0].header["NGROUPS"]
     tphot["tgroup"] = hdul[0].header["TGROUP"]
     tphot["timemid"] = hdul[0].header["EXPMID"] * u.day
+    tphot["filename"] = filename
     tphot["aprad"] = aprad
     tphot["apcorr"] = apcor
     tphot["annrad1"] = annrad[0]
