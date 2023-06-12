@@ -284,6 +284,10 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.8):
         else:
             mres = vstack([mres, one_res])
 
+    # sort by name
+    sindxs = np.argsort(mres["name"].data)
+    mres = mres[sindxs]
+
     # save table
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", VerifyWarning)

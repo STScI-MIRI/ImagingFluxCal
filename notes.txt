@@ -78,3 +78,12 @@ A couple of datasets in FAST, including one in the subarray transfer
 Some datasets in SLOWR1
   - likely from commissioning data (confirm)
   - F1500W
+
+******
+
+Well depth - looking at all the filters/data - 31 May 2023
+
+ADwarf - del UMi
+band (central pixel well depth in DN)
+Ok in F770W (33000), F1000W (20000)
+5% high F1065C (43000)
