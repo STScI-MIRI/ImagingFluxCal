@@ -9,7 +9,7 @@ from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats
 
 
-def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, eefraction=0.8):
+def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, eefraction=0.7):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -75,7 +75,7 @@ def plot_calfactors(
     applysubarrcor=True,
     showcurval=True,
     bkgsub=False,
-    eefraction=0.8,
+    eefraction=0.7,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -308,7 +308,7 @@ if __name__ == "__main__":
         "--bkgsub", help="compute and subtract background image", action="store_true"
     )
     parser.add_argument(
-        "--eefrac", default=0.8, help="Enclosed energy fraction to use", type=float,
+        "--eefrac", default=0.7, help="Enclosed energy fraction to use", type=float,
     )
     parser.add_argument(
         "--xaxisval",
