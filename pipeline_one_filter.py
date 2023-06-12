@@ -49,12 +49,6 @@ def sort_uncal(subdir, filter):
             gvals = (cobj == objects) & (cset == obssets)
             setobj[f"{cobj}_set{m+1}"] = filenames[gvals]
 
-    print(objects)
-    print(obssets)
-    print(setobj)
-
-    exit()
-
     return setobj
 
 
