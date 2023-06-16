@@ -19,6 +19,7 @@ from astropy.utils.exceptions import ErfaWarning
 from astropy.io.fits.verify import VerifyWarning
 
 from photutils.detection import find_peaks
+
 # from photutils.centroids import centroid_com
 from photutils.aperture import (
     CircularAnnulus,
@@ -106,7 +107,9 @@ def aper_image(
         # print(tbl["peak_value"].data[sindx])
         # print(tbl["x_peak"].data[sindx])
         # print(tbl["y_peak"].data[sindx])
-        ncoord = data_wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
+        ncoord = data_wcs.pixel_to_world(
+            tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]]
+        )
 
     else:
         ncoord = override_center
@@ -145,13 +148,29 @@ def aper_image(
     pix_coord = cutout.wcs.world_to_pixel(tcoord)
     full_coord = w.world_to_pixel(tcoord)
 
-    # define apertures
+    # define photometry aperture
     aper = CircularAperture(pix_coord, r=aprad)
     annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
 
     # do the aperture photometry
     phot = aperture_photometry(data, aper, error=data_err)
     phot_stats = ApertureStats(data, aper, sigma_clip=None)
+
+    # check if a final small shift is needed
+    shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0].value) +
+                 np.square(phot_stats.centroid[1] - phot["ycenter"][0].value))
+    if np.sqrt(shift_rad) > 0.01:
+        print(f"delta radius between center and centroid is {np.sqrt(shift_rad)} pixels")
+        print("shifting and re-measuring photometry")
+
+        pix_coord = phot_stats.centroid
+        # define photometry aperture
+        aper = CircularAperture(pix_coord, r=aprad)
+        annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
+
+        # do the aperture photometry
+        phot = aperture_photometry(data, aper, error=data_err)
+        phot_stats = ApertureStats(data, aper, sigma_clip=None)
 
     # modify the properites of the output table
     phot.remove_column("id")
