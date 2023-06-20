@@ -157,10 +157,14 @@ def aper_image(
     phot_stats = ApertureStats(data, aper, sigma_clip=None)
 
     # check if a final small shift is needed
-    shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0].value) +
-                 np.square(phot_stats.centroid[1] - phot["ycenter"][0].value))
+    # fmt: off
+    shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0].value)
+                 + np.square(phot_stats.centroid[1] - phot["ycenter"][0].value))
+    # fmt: on
     if np.sqrt(shift_rad) > 0.01:
-        print(f"delta radius between center and centroid is {np.sqrt(shift_rad)} pixels")
+        print(
+            f"delta radius between center and centroid is {np.sqrt(shift_rad)} pixels"
+        )
         print("shifting and re-measuring photometry")
 
         pix_coord = phot_stats.centroid
