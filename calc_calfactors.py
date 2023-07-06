@@ -9,7 +9,7 @@ from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats
 
 
-def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, eefraction=0.7):
+def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, eefraction=0.7):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -17,6 +17,8 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, eefraction=0.7):
         extstr = "_bkgsub"
     else:
         extstr = ""
+    if indivmos:
+        extstr = "_indivmos"
 
     # read in observed fluxes
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
@@ -75,6 +77,7 @@ def plot_calfactors(
     applysubarrcor=True,
     showcurval=True,
     bkgsub=False,
+    indivmos=False,
     eefraction=0.7,
 ):
     """
@@ -121,7 +124,8 @@ def plot_calfactors(
         print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
         if exists(f"{dir}/{filter}_eefrac{eefraction}_phot.fits"):
             cfacs = get_calfactors(
-                dir, filter, xaxisval=xaxisval, bkgsub=bkgsub, eefraction=eefraction
+                dir, filter, xaxisval=xaxisval, bkgsub=bkgsub, indivmos=indivmos,
+                eefraction=eefraction
             )
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
@@ -305,7 +309,12 @@ if __name__ == "__main__":
         # fmt: on
     )
     parser.add_argument(
-        "--bkgsub", help="compute and subtract background image", action="store_true"
+        "--bkgsub", help="use results from background subtraction run", action="store_true"
+    )
+    parser.add_argument(
+        "--indivmos",
+        help="use results from individual mosaics (1 per cal image) instead of combined mosaics",
+        action="store_true",
     )
     parser.add_argument(
         "--eefrac", default=0.7, help="Enclosed energy fraction to use", type=float,
@@ -342,6 +351,9 @@ if __name__ == "__main__":
         extstr = "_bkgsub"
     else:
         extstr = ""
+    if args.indivmos:
+        extstr = "_indivmos"
+
     savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
     if args.multiplot:
         fontsize = 10
@@ -357,6 +369,7 @@ if __name__ == "__main__":
             savefile=savefacs,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
             eefraction=args.eefrac,
         )
         plot_calfactors(
@@ -366,6 +379,7 @@ if __name__ == "__main__":
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
             eefraction=args.eefrac,
         )
         plot_calfactors(
@@ -375,6 +389,7 @@ if __name__ == "__main__":
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
             eefraction=args.eefrac,
         )
         plot_calfactors(
@@ -384,6 +399,7 @@ if __name__ == "__main__":
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
             eefraction=args.eefrac,
         )
         fname = f"miri_calfactors_{args.filter}_many"
@@ -397,6 +413,7 @@ if __name__ == "__main__":
             applysubarrcor=(not args.nosubarrcor),
             showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
             eefraction=args.eefrac,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
@@ -406,6 +423,8 @@ if __name__ == "__main__":
     fname = f"{fname}_eefrac{args.eefrac}"
     if args.bkgsub:
         fname = f"{fname}_bkgsub"
+    if args.indivmos:
+        fname = f"{fname}_indivmos"
     if args.png:
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:

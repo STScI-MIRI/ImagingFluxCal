@@ -213,7 +213,7 @@ def aper_image(
     phot["total_bkg"] = tot_bkg * u.DN / u.s
     phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - phot["total_bkg"]
     phot["aperture_sum_bkgsub_err"] = (
-        np.sqrt((phot["aperture_sum_err"] ** 2) + (tot_bkg_err**2)) * u.DN / u.s
+        np.sqrt((phot["aperture_sum_err"] ** 2) + (tot_bkg_err ** 2)) * u.DN / u.s
     )
     phot["x_offset_from_expected"] = xoff * u.pixel
     phot["y_offset_from_expected"] = yoff * u.pixel
@@ -252,7 +252,7 @@ def aper_image(
         return phot
 
 
-def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7):
+def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False, indivcals=False):
     """
     Do aperture photometry on all mosaic files for one filter and one class
     of stars.
@@ -262,10 +262,25 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7):
     else:
         extstr = ""
 
-    mosfiles = glob.glob(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
-    if len(mosfiles) == 0:
-        print(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
-        exit()
+    if indivcals:
+        extstar = f"{fname}_indivcals"
+    if indivmos:
+        if bkgsub:
+            print("individual mosaics for background subtracted images do not exist")
+            exit()
+
+        mosfiles = glob.glob(f"{subdir}/{filter}/*/jw*mirimage_i2d.fits")
+        extstr = "_indivmos"
+        if len(mosfiles) == 0:
+            print("no files found")
+            print(f"{subdir}/{filter}/*/jw*mirimage_i2d.fits")
+            exit()
+    else:
+        mosfiles = glob.glob(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
+        if len(mosfiles) == 0:
+            print("no files found")
+            print(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
+            exit()
 
     # get the aper info from the apcor reference file
     # tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
@@ -340,13 +355,20 @@ if __name__ == "__main__":
         help="directory to process",
     )
     parser.add_argument(
-        "--eefrac",
-        default=0.7,
-        help="Enclosed energy fraction to use",
-        type=float,
+        "--eefrac", default=0.7, help="Enclosed energy fraction to use", type=float,
     )
     parser.add_argument(
         "--bkgsub", help="compute and subtract background image", action="store_true"
+    )
+    parser.add_argument(
+        "--indivmos",
+        help="photometer the individual mosaics (1 per cal image) instead of combined mosaics",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--indivcals",
+        help="photometer the individual cal images instead of combined mosaics",
+        action="store_true",
     )
     args = parser.parse_args()
 
@@ -356,4 +378,11 @@ if __name__ == "__main__":
         dirlist = [args.dir]
 
     for sdir in dirlist:
-        aper_one_filter(sdir, args.filter, bkgsub=args.bkgsub, eefraction=args.eefrac)
+        aper_one_filter(
+            sdir,
+            args.filter,
+            bkgsub=args.bkgsub,
+            eefraction=args.eefrac,
+            indivmos=args.indivmos,
+            indivcals=args.indivcals,
+        )
