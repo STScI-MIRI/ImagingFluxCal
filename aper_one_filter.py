@@ -263,8 +263,14 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
         extstr = ""
 
     if indivcals:
-        extstar = f"{fname}_indivcals"
-    if indivmos:
+        extstr = f"{extstr}_indivcals"
+
+        mosfiles = glob.glob(f"{subdir}/{filter}/*/jw*mirimage_cal.fits")
+        if len(mosfiles) == 0:
+            print("no files found")
+            print(f"{subdir}/{filter}/*/jw*mirimage_cal.fits")
+            exit()
+    elif indivmos:
         if bkgsub:
             print("individual mosaics for background subtracted images do not exist")
             exit()

@@ -9,7 +9,7 @@ from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats
 
 
-def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, eefraction=0.7):
+def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -19,7 +19,8 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         extstr = ""
     if indivmos:
         extstr = "_indivmos"
-
+    if indivcals:
+        extstr = f"{extstr}_indivcals"
     # read in observed fluxes
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
@@ -78,6 +79,7 @@ def plot_calfactors(
     showcurval=True,
     bkgsub=False,
     indivmos=False,
+    indivcals=False,
     eefraction=0.7,
 ):
     """
@@ -124,7 +126,8 @@ def plot_calfactors(
         print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
         if exists(f"{dir}/{filter}_eefrac{eefraction}_phot.fits"):
             cfacs = get_calfactors(
-                dir, filter, xaxisval=xaxisval, bkgsub=bkgsub, indivmos=indivmos,
+                dir, filter, xaxisval=xaxisval, bkgsub=bkgsub,
+                indivmos=indivmos, indivcals=indivcals,
                 eefraction=eefraction
             )
             # allfacs.append(cfacs[0])
@@ -317,6 +320,11 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
+        "--indivcals",
+        help="use results from individual cal images instead of combined mosaics",
+        action="store_true",
+    )
+    parser.add_argument(
         "--eefrac", default=0.7, help="Enclosed energy fraction to use", type=float,
     )
     parser.add_argument(
@@ -370,6 +378,7 @@ if __name__ == "__main__":
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
+            indivcals=args.indivcals,
             eefraction=args.eefrac,
         )
         plot_calfactors(
@@ -380,6 +389,7 @@ if __name__ == "__main__":
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
+            indivcals=args.indivcals,
             eefraction=args.eefrac,
         )
         plot_calfactors(
@@ -390,6 +400,7 @@ if __name__ == "__main__":
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
+            indivcals=args.indivcals,
             eefraction=args.eefrac,
         )
         plot_calfactors(
@@ -400,6 +411,7 @@ if __name__ == "__main__":
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
+            indivcals=args.indivcals,
             eefraction=args.eefrac,
         )
         fname = f"miri_calfactors_{args.filter}_many"
@@ -414,6 +426,7 @@ if __name__ == "__main__":
             showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
+            indivcals=args.indivcals,
             eefraction=args.eefrac,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
