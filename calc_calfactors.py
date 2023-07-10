@@ -158,7 +158,8 @@ def plot_calfactors(
                     markersize=10,
                 )
                 # plot a red circle around those not used in the average
-                if cname in ignore_names:
+                if ((cname in ignore_names) or
+                    ((cname == "BD+60 1753") and (abs(xval - 60070.) < 20.))):
                     ax.scatter(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
@@ -183,8 +184,9 @@ def plot_calfactors(
 
     # ignore the 4 "high" stars
     gvals = []
-    for cname in allnames:
-        if cname in ignore_names:
+    for k, cname in enumerate(allnames):
+        if ((cname in ignore_names) or
+                    ((cname == "BD+60 1753") and (abs(xvals[k] - 60070.) < 20.))):
             gvals.append(False)
         else:
             gvals.append(True)
@@ -312,7 +314,7 @@ if __name__ == "__main__":
                  "F770W_subarray",
                  "F560W_repeat", "F770W_repeat", "F1000W_repeat",
                  "F1130W_repeat", "F1280W_repeat", "F1500W_repeat",
-                 "F1800W_repeat", "F2100W_repeat", "F2550W_repeat",]
+                 "F1800W_repeat", "F2100W_repeat", "F2550W_repeat"]
         # fmt: on
     )
     parser.add_argument(
