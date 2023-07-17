@@ -1,5 +1,5 @@
 
-for CBAND in F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W F770W_repeat F770W_subarray
+for CBAND in F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W
 do
     python calc_calfactors.py --filter=$CBAND --png
     python calc_calfactors.py --filter=$CBAND --png --bkgsub
@@ -7,8 +7,8 @@ do
     python calc_calfactors.py --filter=$CBAND --png --bkgsub --multiplot
 done
 
-for CBAND in F770W_repeat F770W_subarray
-do
-  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png
-  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png --bkgsub
-done
+#for CBAND in F770W_repeat F770W_subarray
+#do
+#  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png
+#  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png --bkgsub
+#done

@@ -11,7 +11,7 @@ if __name__ == '__main__':
         help="filter to process",
         default="F770W",
         # fmt: off
-        choices=["F560W", "F770W", "F770W_subarray", "F770W_repeat", "F1000W",
+        choices=["F560W", "F770W", "F1000W",
                  "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
                  "F1065C", "F1140C", "F1550C", "F2300C"],
         # fmt: on

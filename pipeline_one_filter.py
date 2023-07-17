@@ -61,11 +61,7 @@ if __name__ == "__main__":
         # fmt: off
         choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                  "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C",
-                 "F770W_subarray",
-                 "F560W_repeat", "F770W_repeat", "F1000W_repeat",
-                 "F1130W_repeat", "F1280W_repeat", "F1500W_repeat",
-                 "F1800W_repeat", "F2100W_repeat", "F2550W_repeat",]
+                 "F1065C", "F1140C", "F1550C", "F2300C"]
         # fmt: on
     )
     parser.add_argument(
@@ -100,10 +96,7 @@ if __name__ == "__main__":
         flatfile = args.flatfile
     elif args.nflats:
         print("using new flats")
-        if args.filter in ["F770W_repeat", "F770W_subarray"]:
-            flatfile = "Nicolas_Flats/skyflat_F770W_median.fits"
-        else:
-            flatfile = f"Nicolas_Flats/skyflat_{args.filter}_median.fits"
+        flatfile = f"Nicolas_Flats/skyflat_{args.filter}_median.fits"
     else:
         flatfile = None
 

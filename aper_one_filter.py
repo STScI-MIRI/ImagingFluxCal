@@ -47,6 +47,7 @@ def aper_image(
     if targname == "J1757132":
         targname = "2MASS J17571324+6703409"
     filter = hdul[0].header["FILTER"]
+    print(filter)
     photmjysr = hdul[1].header["PHOTMJSR"]
     print(targname, filter)
     targra = hdul[0].header["TARG_RA"]
@@ -351,11 +352,7 @@ if __name__ == "__main__":
         # fmt: off
         choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                  "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C",
-                 "F770W_subarray",
-                 "F560W_repeat", "F770W_repeat", "F1000W_repeat",
-                 "F1130W_repeat", "F1280W_repeat", "F1500W_repeat",
-                 "F1800W_repeat", "F2100W_repeat", "F2550W_repeat",]
+                 "F1065C", "F1140C", "F1550C", "F2300C"]
         # fmt: on
     )
     parser.add_argument(
