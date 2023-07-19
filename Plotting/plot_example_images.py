@@ -46,9 +46,9 @@ if __name__ == '__main__':
         filters = ["F1065C", "F1140C", "F1550C", "F2300C"]
     for k, cfilter in enumerate(filters):
         if cfilter in ["F1500W", "F1800W", "F2100W", "F2550W"]:
-            fname = f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d.fits"
+            fname = f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_bkgsub_asn_i2d.fits"
         elif cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
-            fname = f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_asn_i2d.fits"
+            fname = f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
         else:
             fname = f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_bkgsub_asn_i2d.fits"
         hdul = fits.open(fname)
