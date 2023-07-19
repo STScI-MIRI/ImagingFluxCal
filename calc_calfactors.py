@@ -9,7 +9,8 @@ from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats
 
 
-def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7):
+def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7,
+                   repeat=False, subtrans=False):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -25,6 +26,13 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
     modtab = QTable.read("Models/model_phot.fits")
+
+    if repeat:  # only use observations of BD+60 1753 and HD 2811
+        gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
+        obstab = obstab[gvals]
+    elif subtrans:  # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
+        gvals = (obstab["name"] == "2MASS J17571324+6703409") & (abs(obstab["timemid"].value - 59818.3) < 1.)
+        obstab = obstab[gvals]
 
     names = []
     xvals = []
@@ -81,11 +89,15 @@ def plot_calfactors(
     indivmos=False,
     indivcals=False,
     eefraction=0.7,
+    repeat=False,
+    subtrans=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
     """
     dirs = ["HotStars", "ADwarfs", "SolarAnalogs"]
+    if repeat or subtrans:
+        dirs = ["ADwarfs"]
     pcols = ["b", "g", "r"]
 
     psubsym = {
@@ -102,13 +114,13 @@ def plot_calfactors(
 
     efac = 1.04
     # efac = 1.0
-    # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)
+    # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)       
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 0.93862651 * efac,
-        "SUB256": 0.98265799 * efac,
-        "SUB128": 0.96159878 * efac,
-        "SUB64": 0.97713754 * efac,
+        "BRIGHTSKY": 0.93165691 * efac,
+        "SUB256": 0.98554349 * efac,
+        "SUB128": 0.95873621 * efac,
+        "SUB64": 0.98210605 * efac,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
@@ -128,7 +140,7 @@ def plot_calfactors(
             cfacs = get_calfactors(
                 dir, filter, xaxisval=xaxisval, bkgsub=bkgsub,
                 indivmos=indivmos, indivcals=indivcals,
-                eefraction=eefraction
+                eefraction=eefraction, repeat=repeat, subtrans=subtrans,
             )
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
@@ -193,6 +205,7 @@ def plot_calfactors(
 
     meanvals = sigma_clipped_stats(allfacs[gvals], sigma=3, maxiters=5)
     ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
+    medval = meanvals[0]
     # ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
     # ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
     perstd = 100.0 * meanvals[2] / meanvals[0]
@@ -343,6 +356,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--nocurval", help="do not plot the current calfactor", action="store_true",
     )
+    parser.add_argument(
+        "--repeat", help="plot the repeatability observations", action="store_true",
+    )
+    parser.add_argument(
+        "--subtrans", help="plot the subarray transfer observations", action="store_true",
+    )
     parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -363,6 +382,9 @@ if __name__ == "__main__":
         extstr = ""
     if args.indivmos:
         extstr = "_indivmos"
+    if args.repeat:
+        extstr = f"{extstr}_repeat"
+
 
     savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
     if args.multiplot:
@@ -382,6 +404,8 @@ if __name__ == "__main__":
             indivmos=args.indivmos,
             indivcals=args.indivcals,
             eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans,           
         )
         plot_calfactors(
             ax[0, 1],
@@ -393,6 +417,8 @@ if __name__ == "__main__":
             indivmos=args.indivmos,
             indivcals=args.indivcals,
             eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans, 
         )
         plot_calfactors(
             ax[1, 0],
@@ -404,6 +430,8 @@ if __name__ == "__main__":
             indivmos=args.indivmos,
             indivcals=args.indivcals,
             eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans, 
         )
         plot_calfactors(
             ax[1, 1],
@@ -415,6 +443,8 @@ if __name__ == "__main__":
             indivmos=args.indivmos,
             indivcals=args.indivcals,
             eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans, 
         )
         fname = f"miri_calfactors_{args.filter}_many"
     else:
@@ -430,6 +460,8 @@ if __name__ == "__main__":
             indivmos=args.indivmos,
             indivcals=args.indivcals,
             eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans, 
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 
@@ -440,6 +472,10 @@ if __name__ == "__main__":
         fname = f"{fname}_bkgsub"
     if args.indivmos:
         fname = f"{fname}_indivmos"
+    if args.repeat:
+        fname = f"{fname}_repeat"
+    if args.subtrans:
+        fname = f"{fname}_subtrans"
     if args.png:
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:

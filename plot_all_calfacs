@@ -5,10 +5,14 @@ do
     python calc_calfactors.py --filter=$CBAND --png --bkgsub
     python calc_calfactors.py --filter=$CBAND --png --multiplot
     python calc_calfactors.py --filter=$CBAND --png --bkgsub --multiplot
+
+    python calc_calfactors.py --filter=$CBAND --png --repeat --xaxisval=timemid --nocurval
+    python calc_calfactors.py --filter=$CBAND --png --bkgsub --repeat --xaxisval=timemid --nocurval
+    python calc_calfactors.py --filter=$CBAND --png --multiplot --repeat --xaxisval=timemid --nocurval
+    python calc_calfactors.py --filter=$CBAND --png --bkgsub --multiplot --repeat --xaxisval=timemid --nocurval
 done
 
-#for CBAND in F770W_repeat F770W_subarray
-#do
-#  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png
-#  python calc_calfactors.py --filter=$CBAND --xaxisval=timemid --png --bkgsub
-#done
+# subarray transger
+python calc_calfactors.py --filter=F770W --xaxisval=timemid --png --subtrans
+python calc_calfactors.py --filter=F770W --xaxisval=timemid --png --bkgsub --subtrans
+

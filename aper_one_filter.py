@@ -47,7 +47,6 @@ def aper_image(
     if targname == "J1757132":
         targname = "2MASS J17571324+6703409"
     filter = hdul[0].header["FILTER"]
-    print(filter)
     photmjysr = hdul[1].header["PHOTMJSR"]
     print(targname, filter)
     targra = hdul[0].header["TARG_RA"]
