@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 files[cfilter] = []
                 for cset in dsets[cfilter]:
                     files[cfilter].append(
-                        f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2d_ee.dat"
+                        f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2d_ee_fwhmfac20.0.dat"
                     )
 
     filters = list(files.keys())
@@ -84,6 +84,7 @@ if __name__ == "__main__":
 
     for k, cfilter in enumerate(filters):
         for j, cfile in enumerate(files[cfilter]):
+            print(cfilter, cfile)
             ctab = QTable.read(cfile, format="ascii.commented_header")
             ccol, cline = pcol[cfilter]
             if j == 0:

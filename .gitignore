@@ -2,6 +2,13 @@
 *.json
 *.png
 *.odp
+*.pdf
 ADwarfs
 SolarAnalogs
 HotStars
+Figs
+Models
+CalFacs
+Old
+save_helpers
+*__pycache__*

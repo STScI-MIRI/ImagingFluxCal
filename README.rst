@@ -32,31 +32,37 @@ for each observation for each star (set1, set2, ...).
 Details
 -------
 
-1. Reduce data with jwst pipeline: pipeline_one_filter.py.
+1. Reduce data with jwst pipeline: `pipeline_one_filter.py`.
    Runs all three stages of pipeline for a one type of star and one filter.
    There are some differences from the defaults for MIRI.
    `pipeline_all` runs everything for all MIRI imaging/coronagraphic filters.
 
-2. Compute WebbPSFs: calc_webbpsfs.py.
-   Runs WebbPSFs with parameters for MIRI
+2. Compute WebbPSFs: `calc_webbpsfs.py`.
+   Runs WebbPSFs with specfic parameters for MIRI.
+   Critial for coronagraphy to set the normalize="exit_pupil" to ensure the 
+   WebbPSF is normalized to a total of 1.
 
-3. Compute aperture corrections: plot_many_apertures.py.
+3. Compute encirciled energies and individual observation aperture corrections.
+   Uses `calc_encirciled_energy.py` to compute the encircled energies
    Uses observations of a bright stars and PSFs from WebbPSFs to compute aperture
    corrections.  Uses the bright star observations for the inner region and
    the WebbPSFs for the outer regions.
-   `calc_all_ees` runs all MIRI imaging filters for BD+60 1753 observations.
+   `calc_all_ees` runs all MIRI imaging filters for a defined set of observations.
+   This script varies the fwhmfac where the observed/webbpsf PSFs are merged.
 
-3.5. Create the aperture correction reference file: create_apcor_reffile.py
+4. Create the aperture correction reference file: `create_apcor_reffile.py`
    Uses the individual aperture corrections computed in step 3 to compute the
    aperture corrections with uncertainties (where possible) to create the
    apcor reference file in the correct format.
+   Manually specified set of files that have been visual vetted from the results
+   of step 3.
 
-4. Measure the flux in a fixed aperture: aper_one_filter.py.
+5. Measure the flux in a fixed aperture: aper_one_filter.py.
    Measures the flux using an aperture and background annulus including applying
    the aperture correction.
-   `aper_all.py` does this for all MIRI imaging filters.
+   `aper_all.py` does this for all MIRI imaging and coronagraphic filters.
 
-5. Compute the calibration factors: calc_calcfactors.py
+6. Compute the calibration factors: `calc_calcfactors.py`
    Uses the results of 4 to calculate the calibration factors for all
    observed absflux stars for one filter for all three types (if present).
    Produces a table giving the calibration factors for each observation.
@@ -65,3 +71,14 @@ Details
 
 Figures
 -------
+
+1. Montage of observed PSFs: `Plotting/plot_example_images.py`
+   By default makes a figure for the 9 imaging filters.  Use the option
+   `--coron` to make the figure with the 4 coronagraphic filters.
+
+2. Encirciled energy plot: `Plotting/plot_encircled_energy.py`
+   By default makes a figure showing the encircled energies for all 9
+   imaging filters, with a veritical offset between them.  Can be run
+   to give an example showing the WebbPSF model and observed results for
+   F560W and F2550W filters (use the `--example` option).
+   [Need to add the coron option]
