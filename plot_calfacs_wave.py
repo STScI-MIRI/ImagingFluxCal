@@ -83,6 +83,8 @@ if __name__ == "__main__":
             pwaves.append(waves[j])
             pfacs.append(atab[k][f"calfac_{cfilter}_med_dev"])
         pfacs = np.array(pfacs)
+        print(atab[k])
+        print(cname, pfacs, filters)
         if np.sum(np.isfinite(pfacs)) > 1:
             ax.plot(pwaves, pfacs, linestyle=lstyle[k % 4], label=cname)
         else:

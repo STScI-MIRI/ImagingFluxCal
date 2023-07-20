@@ -166,7 +166,7 @@ if __name__ == "__main__":
     atab["ee_obs_bkg"] = eenergy_bkg
     atab["ee_model"] = model_eenergy
     atab.write(
-        filename.replace(".fits", "_ee.dat"),
+        filename.replace(".fits", f"_ee_fwhmfac{args.fwhmfac}.dat"),
         format="ascii.commented_header",
         overwrite=True,
     )
