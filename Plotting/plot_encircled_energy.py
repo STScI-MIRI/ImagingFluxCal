@@ -12,6 +12,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--coron", help="plot coronagraphic filters", action="store_true"
     )
+    parser.add_argument(
+        "--filter",
+        help="filter to process",
+        default="all",
+        # fmt: off
+        choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
+                 "F1500W", "F1800W", "F2100W", "F2550W",
+                 "F1065C", "F1140C", "F1550C", "F2300C"]
+        # fmt: on
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -30,14 +40,52 @@ if __name__ == "__main__":
     pixscale = 0.110
 
     files = {}
-    dsets = {}
 
-    if args.coron:
-        for cfilter in ["F1065C", "F1140C"]:
+    dsets = {"F560W": ["1", "2", "3", "4"],
+             "F770W": ["1", "2", "3", "4", "5", "6", "7", "8", "10", "11", "12", "13", "14"],
+             "F1000W": ["1", "2", "3", "4"],
+             "F1130W": ["1", "2"],
+             "F1280W": ["1", "2"],
+             "F1500W": ["1", "2", "3", "4", "5", "6"],
+             "F1800W": ["1", "2", "3"],
+             "F2100W": ["1", "2", "3"],
+             "F2550W": ["1", "2", "3"],
+             }
+
+    dfwhmfac = {"F560W": "25.0",
+                "F770W": "25.0",
+                "F1000W": "15.0",
+                "F1130W": "10.0",
+                "F1280W": "10.0",
+                "F1500W": "10.0",
+                "F1800W": "10.0",
+                "F2100W": "5.0",
+                "F2550W": "5.0",
+                "F2300C": "10.0",
+               }
+
+    if args.filter:
+        star = "BD+60 1753"
+        cfilter = args.filter
+        files[cfilter] = []
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             files[cfilter] = [
-                f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee.dat",
-                f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee.dat",
-                f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee.dat",
+                f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+                f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+                f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+                f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+            ]
+        else:
+            for cset in dsets[cfilter]:
+                files[cfilter].append(
+                    f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"
+                )
+    elif args.coron:
+        for cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+            files[cfilter] = [
+                f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee_fwhm{dfwhmfac[cfilter]}.dat",
+                f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhm{dfwhmfac[cfilter]}.dat",
+                f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhm{dfwhmfac[cfilter]}.dat",
             ]
         # for copmarison
         # files["F1130W"] = ["ADwarfs/F1130W/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_asn_i2d_ee.dat"]
@@ -79,7 +127,7 @@ if __name__ == "__main__":
         "F1065C": ("tab:blue", "solid"),
         "F1140C": ("tab:orange", "dashed"),
         "F1550C": ("tab:green", "dotted"),
-        "F2550C": ("tab:purple", "dashdot"),
+        "F2300C": ("tab:purple", "dashdot"),
     }
 
     for k, cfilter in enumerate(filters):

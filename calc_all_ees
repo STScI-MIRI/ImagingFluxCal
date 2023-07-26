@@ -1,4 +1,4 @@
-for FWHMFAC in 10 15 20 25
+for FWHMFAC in 5 10 15 20 25
 
 do
     python calc_encircled_energy.py --filter=F560W --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
@@ -53,18 +53,22 @@ do
     python calc_encircled_energy.py --filter=F2550W --dataset=BD+60\ 1753_set2 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F2550W --dataset=BD+60\ 1753_set3 --png --fwhmfac=$FWHMFAC
 
+    python calc_encircled_energy.py --filter=F1065C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1065C --dataset=del\ UMi_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1065C --dataset=HD\ 2811_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1140C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC
 
+    python calc_encircled_energy.py --filter=F1140C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1140C --dataset=del\ UMi_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1140C --dataset=HD\ 2811_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1140C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC
 
+    python calc_encircled_energy.py --filter=F1500C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1550C --dataset=del\ UMi_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1550C --dataset=HD\ 2811_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1550C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC
 
+    python calc_encircled_energy.py --filter=F2300C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F2300C --dataset=del\ UMi_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F2300C --dataset=HD\ 2811_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F2300C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC

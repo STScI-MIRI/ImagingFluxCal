@@ -132,8 +132,8 @@ if __name__ == "__main__":
         print(crad, apsum[k], apsum_bkg[k])
 
     # calculate enclosed energy
-    eenergy = apsum / np.max(apsum)
-    eenergy_bkg = apsum_bkg / np.max(apsum)
+    eenergy = apsum / np.nanmax(apsum)
+    eenergy_bkg = apsum_bkg / np.nanmax(apsum)
 
     # find the values at a fixed radius and adjust the empirical
     # to match webbpsf
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     # create the final ee profile
     # observed to the pix_rad radius and model for the rest
-    if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C", "F2550W"]:
+    if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
         fin_eenergy = np.array(eenergy_bkg)
     else:
         fin_eenergy = np.array(eenergy)
@@ -222,6 +222,8 @@ if __name__ == "__main__":
     ax.set_xlabel("radius [pixels]")
     ax.set_ylabel("Fractional enclosed energy")
     ax.set_title(f"{cfilter} / FWHMFAC = {args.fwhmfac}")
+
+    ax.set_ylim(0.0, 1.1)
 
     ax.legend()
 

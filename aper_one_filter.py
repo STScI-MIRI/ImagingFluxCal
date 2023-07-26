@@ -158,23 +158,24 @@ def aper_image(
 
     # check if a final small shift is needed
     # fmt: off
-    shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0].value)
-                 + np.square(phot_stats.centroid[1] - phot["ycenter"][0].value))
-    # fmt: on
-    if np.sqrt(shift_rad) > 0.01:
-        print(
-            f"delta radius between center and centroid is {np.sqrt(shift_rad)} pixels"
-        )
-        print("shifting and re-measuring photometry")
+    if override_center is None:
+        shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0].value)
+                    + np.square(phot_stats.centroid[1] - phot["ycenter"][0].value))
+        # fmt: on
+        if np.sqrt(shift_rad) > 0.01:
+            print(
+                f"delta radius between center and centroid is {np.sqrt(shift_rad)} pixels"
+            )
+            print("shifting and re-measuring photometry")
 
-        pix_coord = phot_stats.centroid
-        # define photometry aperture
-        aper = CircularAperture(pix_coord, r=aprad)
-        annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
+            pix_coord = phot_stats.centroid
+            # define photometry aperture
+            aper = CircularAperture(pix_coord, r=aprad)
+            annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
 
-        # do the aperture photometry
-        phot = aperture_photometry(data, aper, error=data_err)
-        phot_stats = ApertureStats(data, aper, sigma_clip=None)
+            # do the aperture photometry
+            phot = aperture_photometry(data, aper, error=data_err)
+            phot_stats = ApertureStats(data, aper, sigma_clip=None)
 
     # modify the properites of the output table
     phot.remove_column("id")
