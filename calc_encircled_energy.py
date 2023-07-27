@@ -89,7 +89,7 @@ if __name__ == "__main__":
     cradii = np.logspace(
         np.log10(0.1 * filter_fwhm[cfilter]),
         np.log10(2 * norm_factor * filter_fwhm[cfilter]),
-        50
+        100
     )
     model_eenergy = ee(cradii * mod_pixscale)
 

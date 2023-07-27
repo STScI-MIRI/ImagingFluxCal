@@ -9,22 +9,38 @@ if __name__ == "__main__":
 
     files = {}
     star = "BD+60 1753"
-    dsets = {}
-    dsets["F560W"] = ["1", "2", "3", "4"]
-    dsets["F770W"] = ["1", "2", "3"]
-    dsets["F1000W"] = ["1", "2", "3"]
-    dsets["F1130W"] = ["1"]
-    dsets["F1280W"] = ["1"]
-    dsets["F1500W"] = ["1", "2", "3", "4"]
-    dsets["F1800W"] = ["1", "2"]
-    dsets["F2100W"] = ["1"]
-    dsets["F2550W"] = ["1"]
+
+    dsets = {"F560W": ["1", "2", "3", "4"],
+             "F770W": ["1", "2", "3", "4", "5", "6", "7", "8", "10", "11", "12", "13", "14"],
+             "F1000W": ["1", "2", "3", "4"],
+             "F1130W": ["1", "2"],
+             "F1280W": ["1", "2"],
+             "F1500W": ["1", "2", "3", "4", "5", "6"],
+             "F1800W": ["1", "2", "3"],
+             "F2100W": ["1", "2", "3"],
+             "F2550W": ["1", "2", "3"],
+             }
+
+    dfwhmfac = {"F560W": "25.0",
+                "F770W": "25.0",
+                "F1000W": "15.0",
+                "F1130W": "10.0",
+                "F1280W": "10.0",
+                "F1500W": "10.0",
+                "F1800W": "10.0",
+                "F2100W": "5.0",
+                "F2550W": "5.0",
+                "F1065C": "15.0",
+                "F1140C": "15.0",
+                "F1550C": "15.0",
+                "F2300C": "10.0",
+               }
 
     for cfilter in dsets.keys():
         files[cfilter] = []
         for cset in dsets[cfilter]:
             files[cfilter].append(
-                f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2d_apcor.dat"
+                f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat"
             )
     filters = list(dsets.keys())
 
@@ -34,17 +50,18 @@ if __name__ == "__main__":
                  "F1550C": "MASK1550",
                  "F2300C": "MASKLYOT"}
     for cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-        files[cfilter] = [f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_apcor.dat",
-                          f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_apcor.dat",
-                          f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_apcor.dat"]
+        files[cfilter] = [f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat",
+                          f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat",
+                          f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat"]
         filters.append(cfilter)
+
+    fulltab = QTable(names=("filter", "subarray", "eefraction", "radius", "radius_unc", "apcor", "apcor_unc",
+                            "skyin", "skyin_unc", "skyout", "skyout_unc"),
+                     dtype=("str", "str", "f", "f", "f", "f", "f", "f", "f", "f", "f"))
 
     data_list = []
     for cfilter in filters:
         afiles = files[cfilter]
-        # afiles = glob.glob(
-        #     f"ADwarfs/{cfilter}/BD+60 1753_set?/miri_BD+60 1753_set?_stage3_asn_i2d_apcor.dat"
-        # )
 
         nfiles = len(afiles)
         radiis = np.zeros((8, nfiles))
@@ -77,8 +94,8 @@ if __name__ == "__main__":
                 data_list.append(
                     (cfilter, csub, cee, aradii[k], aapcor[k], aradii[-2], aradii[-1])
                 )
-
-    print(data_list[0])
+                fulltab.add_row([cfilter, csub, cee, aradii[k], aradii_std[k], aapcor[k], aapcor_std[k], 
+                                 aradii[-2], aradii_std[-2], aradii[-1], aradii_std[-1]])
 
     data = np.array(
         data_list,
@@ -120,4 +137,7 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "the SKYIN and SKYOUT columns."
     new_model.history.append(entry)
-    new_model.save("ApCor/jwst_miri_apcorr_flight_25may23.fits")
+    new_model.save("ApCor/jwst_miri_apcorr_flight_27jul23.fits")
+
+    print(fulltab)
+    fulltab.write("ApCor/jwst_miri_apcorr_flight_27jul23_full.fits", overwrite=True)

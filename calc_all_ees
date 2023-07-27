@@ -56,14 +56,14 @@ do
     python calc_encircled_energy.py --filter=F1065C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1065C --dataset=del\ UMi_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1065C --dataset=HD\ 2811_set1 --png --fwhmfac=$FWHMFAC
-    python calc_encircled_energy.py --filter=F1140C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC
+    python calc_encircled_energy.py --filter=F1065C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC
 
     python calc_encircled_energy.py --filter=F1140C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1140C --dataset=del\ UMi_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1140C --dataset=HD\ 2811_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1140C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC
 
-    python calc_encircled_energy.py --filter=F1500C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
+    python calc_encircled_energy.py --filter=F1550C --dataset=BD+60\ 1753_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1550C --dataset=del\ UMi_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1550C --dataset=HD\ 2811_set1 --png --fwhmfac=$FWHMFAC
     python calc_encircled_energy.py --filter=F1550C --dir=SolarAnalogs --dataset=HD\ 167060_set1 --png --fwhmfac=$FWHMFAC
