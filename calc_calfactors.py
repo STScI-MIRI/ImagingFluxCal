@@ -28,7 +28,8 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
     modtab = QTable.read("Models/model_phot.fits")
 
     if repeat:  # only use observations of BD+60 1753 and HD 2811
-        gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
+        # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
+        gvals = (obstab["name"] == "BD+60 1753")
         obstab = obstab[gvals]
     elif subtrans:  # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
         gvals = (obstab["name"] == "2MASS J17571324+6703409") & (abs(obstab["timemid"].value - 59818.3) < 1.)
@@ -129,6 +130,11 @@ def plot_calfactors(
 
     # print(subarr_cor)
     ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 180609"]
+    modfac = {"HD 167060": 1.0/1.10,
+              "16 Cyg B": 1.0/1.08,
+              "HD 37962": 1.0/1.06,
+              "del UMi": 1.0/1.06,
+              "HD 180609": 1.0}
 
     allfacs = []
     allfacuncs = []
@@ -175,6 +181,10 @@ def plot_calfactors(
                     ax.scatter(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
+                    print(modfac[cname])
+                    ax.scatter(
+                        [xval], [cfactor * modfac[cname]], s=150, facecolor="k", edgecolor="m",
+                    )                    
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
