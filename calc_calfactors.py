@@ -131,10 +131,15 @@ def plot_calfactors(
     # print(subarr_cor)
     ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 180609"]
     modfac = {"HD 167060": 1.0/1.10,
-              "16 Cyg B": 1.0/1.08,
-              "HD 37962": 1.0/1.06,
-              "del UMi": 1.0/1.06,
+              "16 Cyg B": 1.0/1.07,
+              "HD 37962": 1.0/1.09,
+              "del UMi": 1.0/1.07,
               "HD 180609": 1.0}
+    # modfac = {"HD 167060": 1.0,
+    #           "16 Cyg B": 1.0,
+    #           "HD 37962": 1.0,
+    #           "del UMi": 1.0,
+    #           "HD 180609": 1.0}
 
     allfacs = []
     allfacuncs = []

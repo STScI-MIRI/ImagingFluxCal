@@ -69,6 +69,8 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
+    ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 180609"]
+
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
 
     colormap = plt.cm.gist_ncar
@@ -82,17 +84,25 @@ if __name__ == "__main__":
         for j, cfilter in enumerate(filters):
             pwaves.append(waves[j])
             pfacs.append(atab[k][f"calfac_{cfilter}_med_dev"])
+        pwaves = np.array(pwaves)
         pfacs = np.array(pfacs)
-        print(atab[k])
-        print(cname, pfacs, filters)
         if np.sum(np.isfinite(pfacs)) > 1:
-            ax.plot(pwaves, pfacs, linestyle=lstyle[k % 4], label=cname)
+            gvals = np.isfinite(pfacs)
+            ax.plot(pwaves[gvals], pfacs[gvals], linestyle=lstyle[k % 4], label=cname)
         else:
             ax.plot(pwaves, pfacs, "ko", label=cname)
 
+        if cname in ignore_names:
+            # determine the calfac/mean calfac ratio for bands <= F1500W
+            cvals = (pwaves < 16.) & np.isfinite(pfacs)
+            print(cname, np.average(pfacs[cvals]), np.std(pfacs[cvals]))
+            #print(pwaves[cvals])
+            #print(pfacs[cvals])
+        
+
     # ax.set_xlim(5.0, 35.0)
     ax.set_xlabel(r"$\lambda$ [$\mu$m]")
-    ax.set_ylabel("calfac / (median calfac)")
+    ax.set_ylabel("calfac / (ave calfac)")
 
     ax.legend(fontsize=0.8 * fontsize, ncol=2)
 
