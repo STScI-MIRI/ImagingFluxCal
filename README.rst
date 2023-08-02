@@ -78,7 +78,19 @@ Figures
 
 2. Encirciled energy plot: `Plotting/plot_encircled_energy.py`
    By default makes a figure showing the encircled energies for all 9
-   imaging filters, with a veritical offset between them.  Can be run
-   to give an example showing the WebbPSF model and observed results for
-   F560W and F2550W filters (use the `--example` option).
-   [Need to add the coron option]
+   imaging filters, with a veritical offset between them.  Call with
+   `--coron` to get teh coronagraphic plot.
+
+3. Example of photometry technique: `aper_one_filter.py`
+   One of the standard outputs.
+
+4. 
+
+Tables
+------
+
+1. Observation details: `Tables\create_obstable.py`
+   Output to screen.
+
+2. Aperture corrections: `create_apcor_reffile.py`
+   Portion of output to the screen.

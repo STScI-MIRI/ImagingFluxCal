@@ -104,7 +104,6 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
         bfluxes[cband.upper()] = [compute_bandflux(mwave, mflux, cwave, ceff)]
 
     if imgfile is not None:
-        # show an image of the source and apertures used
         fontsize = 14
         font = {"size": fontsize}
         plt.rc("font", **font)
@@ -123,7 +122,6 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
             )
 
         ax.set_xscale("log")
-        ax.set_yscale("log")
         ax.set_xlabel(r"wavelength [$\mu$m]")
         ax.set_ylabel(r"Flux [Jy $\mu$m$^2$]")
 
