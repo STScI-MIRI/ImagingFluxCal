@@ -84,6 +84,13 @@ if __name__ == "__main__":
         # print(aapcor)
         # print(aapcor_std)
 
+        outline = f"{cfilter}"
+        outline = f"{outline} & ${aradii[-3]:.2f} \pm {aradii_std[-3]:.2f}$"
+        outline = f"{outline} & ${aradii[-2]:.2f} \pm {aradii_std[-2]:.2f}$"
+        outline = f"{outline} & ${aradii[-1]:.2f} \pm {aradii_std[-1]:.2f}$"
+        outline = f"{outline} & ${aapcor[-3]:.3f} \pm {aapcor_std[-3]:.3f}$ \\\\"
+        print(outline)
+
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             subarray_values = ["FULL", csubarray[cfilter]]
         else:
