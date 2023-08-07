@@ -17,6 +17,3 @@ if __name__ == '__main__':
                 print(f"{ctype}/{cfilter}/")
                 aper_one_filter(ctype, cfilter)
                 aper_one_filter(ctype, cfilter, bkgsub=True)
-
-#    aper_one_filter("ADwarfs", "F770W_subarray")
-#    aper_one_filter("ADwarfs", "F770W_repeat")

@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
             if args.bkgsub:
                 calfiles = glob.glob(f"{ndir}/*mirimage_cal.fits")
-                simage = make_sky(calfiles, exclude_delta=None, sourcereg=True)
+                simage = make_sky(calfiles, exclude_delta=None, sourcereg=True, scalebkg=True)
                 fits.writeto(f"{ndir}/{args.filter}_median_bkg.fits", simage, overwrite=True)
                 calext = "_skysub"
                 mosext = "_bkgsub"
@@ -204,5 +204,5 @@ if __name__ == "__main__":
 
                 print(f"image3 for {ckey}")
                 miri_image3(
-                    miri_asn_file, ndir, logfile=f"{cbase}.cfg", sourcecat=sourcecat,
+                    miri_asn_file, ndir, logfile=f"{cbase}.cfg", sourcecat=sourcecat, matchbkg=True,
                 )
