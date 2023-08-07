@@ -40,7 +40,7 @@ if __name__ == "__main__":
                     oflux = ptab["aperture_sum_bkgsub"][gvals]
                     oflux_unc = ptab["aperture_sum_bkgsub_err"][gvals]
                     ax[k//3, k%3].errorbar(mtime, oflux / max(oflux), yerr=oflux_unc / max(oflux),
-                                        fmt=stype[cname], label=f"{cname} / {bkgtype[j]}", alpha=0.5, mfc=mfctype[j])        
+                                        fmt=stype[cname], label=f"{cname} / bkg {bkgtype[j]}", alpha=0.5, mfc=mfctype[j])        
         ax[k//3, k%3].set_title(cfilter)
         ax[k//3, k%3].set_xlim(left=0.)
         ax[k//3, k%3].set_xlim(right=500)
