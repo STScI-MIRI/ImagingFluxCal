@@ -122,6 +122,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
             )
 
         ax.set_xscale("log")
+        ax.set_yscale("log")
         ax.set_xlabel(r"wavelength [$\mu$m]")
         ax.set_ylabel(r"Flux [Jy $\mu$m$^2$]")
 
