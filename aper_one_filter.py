@@ -130,14 +130,14 @@ def aper_image(
     data_err = cutout_err.data
 
     # interpolate over NaNs if there are not too many
-    print(np.sum(isnan(data)))
+    print(filename)
+    print(np.sum(np.isnan(data)))
     if np.sum(np.isnan(data)) < 50:
         kernel = Gaussian2DKernel(x_stddev=2., y_stddev=2.)
         new_data = interpolate_replace_nans(data, kernel)
-        print(np.sum(np.isnan(data)), np.sum(np.isnam(new_data)))
-        exit()
+        print(np.sum(np.isnan(data)), np.sum(np.isnan(new_data)))
         data = new_data
-    exit()
+        data_err = interpolate_replace_nans(data_err, kernel)
 
     # define for plotting
     extract_aper = RectangularAperture(npix_coord, imsize, imsize)
