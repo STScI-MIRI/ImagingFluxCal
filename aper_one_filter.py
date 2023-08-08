@@ -348,7 +348,6 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
     mres = None
     for cfile in mosfiles:
         if indivcals:  # get the coordinates for th extraction
-            print(cfile.split("/"))
             setname = (cfile.split("/"))[2]
             setk = -1
             for testk, setfile in enumerate(mosphot["filename"]):
