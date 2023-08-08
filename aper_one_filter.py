@@ -356,9 +356,11 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
             if setk == -1:
                 print("could not find a mosaic photometry entry")
                 exit()
-        # made a coordinate object
-        loccoord = SkyCoord(ra=mosphot["ra_deg"][setk] * u.degree,
-                            dec=mosphot["dec_deg"][setk] * u.degree)
+            # made a coordinate object
+            loccoord = SkyCoord(ra=mosphot["ra_deg"][setk] * u.degree,
+                                dec=mosphot["dec_deg"][setk] * u.degree)
+        else:
+            loccoord = None
 
         one_res = aper_image(
             cfile,
