@@ -129,16 +129,6 @@ def aper_image(
     data = cutout.data
     data_err = cutout_err.data
 
-    # interpolate over NaNs if there are not too many
-    print(filename)
-    print(np.sum(np.isnan(data)))
-    if np.sum(np.isnan(data)) < 50:
-        kernel = Gaussian2DKernel(x_stddev=2., y_stddev=2.)
-        new_data = interpolate_replace_nans(data, kernel)
-        print(np.sum(np.isnan(data)), np.sum(np.isnan(new_data)))
-        data = new_data
-        data_err = interpolate_replace_nans(data_err, kernel)
-
     # define for plotting
     extract_aper = RectangularAperture(npix_coord, imsize, imsize)
 
@@ -164,12 +154,27 @@ def aper_image(
     aper = CircularAperture(pix_coord, r=aprad)
     annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
 
+    # interpolate over NaNs if there are not too many
+    # determine the number of NaNs in the central aperture
+    apermask = aper.to_mask()
+    # fits.writeto("tmp_data.fits", data, overwrite=True)
+    # fits.writeto("tmp_mask.fits", apermask.multiply(data), overwrite=True)
+
+    if np.sum(np.isnan(apermask.multiply(data))) < 10:
+        print("A few NaNs, interpolating over them")
+        kernel = Gaussian2DKernel(x_stddev=2., y_stddev=2.)
+        data = interpolate_replace_nans(data, kernel)
+        data_err = interpolate_replace_nans(data_err, kernel)
+    else:
+        # set it all to NaN to avoid it being used
+        print("Too many NaNs, NaNing whole image so that no photometry is done")
+        data *= np.NaN
+
     # do the aperture photometry
     phot = aperture_photometry(data, aper, error=data_err)
     phot_stats = ApertureStats(data, aper, sigma_clip=None)
 
     # check if a final small shift is needed
-    # fmt: off
     if override_center is None:
         shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0].value)
                     + np.square(phot_stats.centroid[1] - phot["ycenter"][0].value))
@@ -188,6 +193,12 @@ def aper_image(
             # do the aperture photometry
             phot = aperture_photometry(data, aper, error=data_err)
             phot_stats = ApertureStats(data, aper, sigma_clip=None)
+
+    # set the sum to NaN if too near the edge of the image
+    if ((aprad > pix_coord[0]) | (aprad > (orig_data.shape[0] - pix_coord[0]))
+        | (aprad > pix_coord[1]) | (aprad > (orig_data.shape[1] - pix_coord[1]))):
+        phot["aperture_sum"] = np.NaN
+        phot["aperture_sum_err"] = np.NaN
 
     # modify the properites of the output table
     phot.remove_column("id")
