@@ -133,6 +133,8 @@ def aper_image(
     if np.sum(np.isnan(data)) < 50:
         kernel = Gaussian2DKernel(x_stddev=2., y_stddev=2.)
         new_data = interpolate_replace_nans(data, kernel)
+        print(np.sum(np.isnan(data)), np.sum(np.isnam(new_data)))
+        exit()
         data = new_data
 
     # define for plotting
