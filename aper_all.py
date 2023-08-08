@@ -6,7 +6,7 @@ from aper_one_filter import aper_one_filter
 if __name__ == '__main__':
 
     types = ["HotStars", "ADwarfs", "SolarAnalogs"]
-    filters = ["F2300C", "F1550C", "F1140C", "F1065C",
+    filters = ["F1280W", "F2300C", "F1550C", "F1140C", "F1065C",
                "F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W",
                "F1800W", "F2100W", "F2550W"]
     # filters = ["F770W"]
