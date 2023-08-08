@@ -147,7 +147,8 @@ def miri_image3(miri_asn_file, output_dir, minobj=5, snr=5, fwhm=None,
     im3_dict["source_catalog"] = {"snr_threshold": snr}
 
     im3_dict["resample"] = {"kernel": "square",
-                            "pixel_scale": pixel_scale}
+                            "pixel_scale": pixel_scale,
+                            "weight_type": "exptime",}
     if crval is not None:
         im3_dict["resample"]["crval"] = crval
     if crpix is not None:
