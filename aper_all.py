@@ -18,5 +18,5 @@ if __name__ == '__main__':
                 #aper_one_filter(ctype, cfilter)
                 #aper_one_filter(ctype, cfilter, bkgsub=True)
                 aper_one_filter(ctype, cfilter, indivcals=True)
-                if cfilter not in []"F2300C", "F1550C", "F1140C", "F1065C"]:
+                if cfilter not in ["F2300C", "F1550C", "F1140C", "F1065C"]:
                     aper_one_filter(ctype, cfilter, indivmos=True)
