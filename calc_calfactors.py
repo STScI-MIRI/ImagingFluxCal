@@ -64,15 +64,16 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         else:
             xval = mflux * 1e3
 
-        cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
-        cfactor_unc = (oflux_unc / oflux) * cfactor
-        # if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
-        # print(obstab["name"][k], cfactor)
-        names.append(obstab["name"][k])
-        xvals.append(xval.value)
-        cfactors[k] = cfactor
-        cfactors_unc[k] = cfactor_unc
-        subarrs.append(obstab["subarray"][k])
+        if np.isfinite(mflux.value):
+            cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
+            cfactor_unc = (oflux_unc / oflux) * cfactor
+            # if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
+            # print(obstab["name"][k], cfactor)
+            names.append(obstab["name"][k])
+            xvals.append(xval.value)
+            cfactors[k] = cfactor
+            cfactors_unc[k] = cfactor_unc
+            subarrs.append(obstab["subarray"][k])
 
     res = (cfactors, cfactors_unc, xvals, subarrs, names)
     return res
