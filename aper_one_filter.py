@@ -299,6 +299,9 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
             print("no files found")
             print(f"{subdir}/{filter}/*/jw*mirimage_cal.fits")
             exit()
+
+        # read in the mosaic photometry file with locations of extractions 
+        mosphot = QTable.read(f"{subdir}/{filter}_eefrac{eefraction}_phot.fits")
     elif indivmos:
         if bkgsub:
             print("individual mosaics for background subtracted images do not exist")
@@ -344,14 +347,27 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
 
     mres = None
     for cfile in mosfiles:
+        if indivcals:  # get the coordinates for th extraction
+            print(cfile.split("/"))
+            setname = (cfile.split("/"))[2]
+            setk = -1
+            for testk, setfile in enumerate(mosphot["filename"]):
+                if setname in setfile:
+                    setk = testk
+            if setk == -1:
+                print("could not find a mosaic photometry entry")
+                exit()
+        # made a coordinate object
+        loccoord = SkyCoord(ra=mosphot["ra_deg"][setk] * u.degree,
+                            dec=mosphot["dec_deg"][setk] * u.degree)
+
         one_res = aper_image(
             cfile,
             aprad,
             annrad,
             apcor,
-            imgfile=cfile.replace(
-                ".fits", f"{extstr}_eefrac{eefraction}_absfluxapers.png"
-            ),
+            imgfile=cfile.replace(".fits", f"{extstr}_eefrac{eefraction}_absfluxapers.png"),
+            override_center=loccoord,
         )
         if mres is None:
             mres = one_res
