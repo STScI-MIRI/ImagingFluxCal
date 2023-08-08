@@ -115,7 +115,7 @@ def miri_image2(miri_rate_files, output_dir,
 
 def miri_image3(miri_asn_file, output_dir, minobj=5, snr=5, fwhm=None,
                 crval=None, crpix=None, rotation=None, output_shape=None,
-                align_to_gaia=False, tweakreg=False,
+                align_to_gaia=False, tweakreg=False, outlier_detection=False,
                 matchbkg=False, pixel_scale=0.11, sourcecat=True,
                 logfile=None):
     """
@@ -164,6 +164,9 @@ def miri_image3(miri_asn_file, output_dir, minobj=5, snr=5, fwhm=None,
 
     if not sourcecat:
         im3_dict["source_catalog"] = {"skip": True}
+
+    if not outlier_detection:
+        im3_dict["outlier_detection"] = {"skip": True}
 
     calwebb_image3.Image3Pipeline.call(miri_asn_file,
                                        steps=im3_dict,
