@@ -130,7 +130,7 @@ def aper_image(
     data_err = cutout_err.data
 
     # interpolate over NaNs if there are not too many
-    if np.sum(np.isnan(data)) < 10:
+    if np.sum(np.isnan(data)) < 50:
         kernel = Gaussian2DKernel(x_stddev=2., y_stddev=2.)
         new_data = interpolate_replace_nans(data, kernel)
         data = new_data
