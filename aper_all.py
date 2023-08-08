@@ -15,5 +15,7 @@ if __name__ == '__main__':
         for cfilter in filters:
             if exists(f"{ctype}/{cfilter}/"):
                 print(f"{ctype}/{cfilter}/")
-                aper_one_filter(ctype, cfilter)
-                aper_one_filter(ctype, cfilter, bkgsub=True)
+                #aper_one_filter(ctype, cfilter)
+                #aper_one_filter(ctype, cfilter, bkgsub=True)
+                aper_one_filter(ctype, cfilter, indivcals=True)
+                aper_one_filter(ctype, cfilter, indivmos=True)

@@ -65,7 +65,6 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
             xval = mflux * 1e3
 
         if np.isfinite(oflux.value):
-            print(oflux.value)
             cfactor = 1e-6 * mflux.value / (oflux.value * apcorr * pixarea.value)
             cfactor_unc = (oflux_unc / oflux) * cfactor
             # if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
