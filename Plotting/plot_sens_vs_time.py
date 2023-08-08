@@ -31,7 +31,7 @@ if __name__ == "__main__":
     mfctype = [None, "none"]
     bkgtype = ["annulus", "image+annulus"]
     for k, cfilter in enumerate(filters):
-        for j, ptype in enumerate(["_", "_bkgsub_"]):
+        for j, ptype in enumerate(["_indivcals_"]):
             ptab = QTable.read(f"ADwarfs/{cfilter}{ptype}eefrac0.7_phot.fits")
             for cname in ["BD+60 1753", "HD 2811"]:
                 gvals = ptab["name"] == cname
@@ -39,11 +39,12 @@ if __name__ == "__main__":
                     mtime = ptab["timemid"][gvals] - 59700. * u.day
                     oflux = ptab["aperture_sum_bkgsub"][gvals]
                     oflux_unc = ptab["aperture_sum_bkgsub_err"][gvals]
-                    ax[k//3, k%3].errorbar(mtime, oflux / max(oflux), yerr=oflux_unc / max(oflux),
+                    normval = np.nanmean(oflux[mtime < 100. * u.day])
+                    ax[k//3, k%3].errorbar(mtime, oflux / normval, yerr=oflux_unc / normval,
                                         fmt=stype[cname], label=f"{cname} / bkg {bkgtype[j]}", alpha=0.5, mfc=mfctype[j])        
+        ax[k//3, k%3].plot([0, 500], [1.0, 1.0], "k--", alpha=0.5)
         ax[k//3, k%3].set_title(cfilter)
         ax[k//3, k%3].set_xlim(left=0.)
-        ax[k//3, k%3].set_xlim(right=500)
 
     for k in range(3):
         ax[k, 0].set_ylabel("Rel Flux")

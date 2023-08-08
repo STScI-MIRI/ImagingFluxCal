@@ -17,6 +17,8 @@ from astropy.time import Time
 from astropy.wcs import FITSFixedWarning
 from astropy.utils.exceptions import ErfaWarning
 from astropy.io.fits.verify import VerifyWarning
+from astropy.convolution import interpolate_replace_nans
+from astropy.convolution import Gaussian2DKernel
 
 from photutils.detection import find_peaks
 
@@ -126,6 +128,12 @@ def aper_image(
     cutout_err = Cutout2D(orig_err, ncoord, (imsize, imsize), wcs=w)
     data = cutout.data
     data_err = cutout_err.data
+
+    # interpolate over NaNs if there are not too many
+    print(np.sum(np.isnan(data)))
+    exit()
+    kernel = Gaussian2DKernel(x_stddev=2., y_stddev=2.)
+    result = interpolate_replace_nans(image, kernel)
 
     # define for plotting
     extract_aper = RectangularAperture(npix_coord, imsize, imsize)
