@@ -127,6 +127,7 @@ def aper_image(
     cutout = Cutout2D(orig_data, ncoord, (imsize, imsize), wcs=w)
     cutout_err = Cutout2D(orig_err, ncoord, (imsize, imsize), wcs=w)
     data = cutout.data
+    data_wcs = cutout.wcs
     data_err = cutout_err.data
 
     # define for plotting
@@ -186,6 +187,8 @@ def aper_image(
             print("shifting and re-measuring photometry")
 
             pix_coord = phot_stats.centroid
+            ncoord = data_wcs.pixel_to_world(pix_coord[0], pix_coord[1])
+
             # define photometry aperture
             aper = CircularAperture(pix_coord, r=aprad)
             annulus_aperture = CircularAnnulus(pix_coord, r_in=annrad[0], r_out=annrad[1])
@@ -206,6 +209,8 @@ def aper_image(
     # start with separate table to ensure specific columns are in the first columns
     tphot = QTable()
     tphot["name"] = [targname]
+    tphot["ra_deg"] = [ncoord.ra.degree]
+    tphot["dec_deg"] = [ncoord.dec.degree]
     tphot["filter"] = filter.upper()
     tphot["subarray"] = hdul[0].header["SUBARRAY"]
     tphot["readpattern"] = hdul[0].header["READPATT"]

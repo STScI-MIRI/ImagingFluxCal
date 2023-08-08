@@ -38,6 +38,8 @@ if __name__ == "__main__":
                 if np.sum(gvals) > 0:
                     mtime = ptab["timemid"][gvals] - 59700. * u.day
                     oflux = ptab["aperture_sum_bkgsub"][gvals]
+                    print(cname, cfilter)
+                    print(oflux)
                     oflux_unc = ptab["aperture_sum_bkgsub_err"][gvals]
                     normval = np.nanmean(oflux[mtime < 100. * u.day])
                     ax[k//3, k%3].errorbar(mtime, oflux / normval, yerr=oflux_unc / normval,
