@@ -33,7 +33,7 @@ if __name__ == "__main__":
     for k, cfilter in enumerate(filters):
         for j, ptype in enumerate(["_", "_indivcals_"]):
             ptab = QTable.read(f"ADwarfs/{cfilter}{ptype}eefrac0.7_phot.fits")
-            for cname in ["BD+60 1753", "HD 2811"]:
+            for cname in ["BD+60 1753"]:  # , "HD 2811"]:
                 gvals = ptab["name"] == cname
                 if np.sum(gvals) > 0:
                     mtime = ptab["timemid"][gvals] - 59700. * u.day

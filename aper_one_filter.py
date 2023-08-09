@@ -161,15 +161,18 @@ def aper_image(
     # fits.writeto("tmp_data.fits", data, overwrite=True)
     # fits.writeto("tmp_mask.fits", apermask.multiply(data), overwrite=True)
 
-    if np.sum(np.isnan(apermask.multiply(data))) < 10:
+    if apermask.multiply(data) is None:
+        nan_ok = False
+    elif np.sum(np.isnan(apermask.multiply(data))) < 10:
         print("A few NaNs, interpolating over them")
         kernel = Gaussian2DKernel(x_stddev=2., y_stddev=2.)
         data = interpolate_replace_nans(data, kernel)
         data_err = interpolate_replace_nans(data_err, kernel)
+        nan_ok = True
     else:
         # set it all to NaN to avoid it being used
-        print("Too many NaNs, NaNing whole image so that no photometry is done")
-        data *= np.NaN
+        print("Too many NaNs, will set photometry to NaN")
+        nan_ok = False
 
     # do the aperture photometry
     phot = aperture_photometry(data, aper, error=data_err)
@@ -199,7 +202,8 @@ def aper_image(
 
     # set the sum to NaN if too near the edge of the image
     if ((aprad > pix_coord[0]) | (aprad > (orig_data.shape[0] - pix_coord[0]))
-        | (aprad > pix_coord[1]) | (aprad > (orig_data.shape[1] - pix_coord[1]))):
+        | (aprad > pix_coord[1]) | (aprad > (orig_data.shape[1] - pix_coord[1]))
+        | (not nan_ok)):
         phot["aperture_sum"] = np.NaN
         phot["aperture_sum_err"] = np.NaN
 
