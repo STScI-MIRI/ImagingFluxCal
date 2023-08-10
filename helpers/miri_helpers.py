@@ -94,6 +94,7 @@ def miri_detector1(
 def miri_image2(miri_rate_files, output_dir,
                 flatfile=None,
                 photomfile=None,
+                pixel_scale=0.11,
                 logfile=None):
     """
     Run CALWEBB_IMAGE2 pipeline on rate files.
@@ -104,7 +105,9 @@ def miri_image2(miri_rate_files, output_dir,
         im2_dict["flat_field"] = {"override_flat": flatfile}
     if photomfile is not None:
         im2_dict["photom"] = {"override_photom": f"./RefFiles/{photomfile}"}
-    im2_dict["resample"] = {"pixfrac": 1.0}
+    im2_dict["resample"] = {"kernel": "square",
+                            "pixel_scale": pixel_scale,
+                            "weight_type": "exptime",}
 
     calwebb_image2.Image2Pipeline.call(miri_rate_files,
                                        steps=im2_dict,

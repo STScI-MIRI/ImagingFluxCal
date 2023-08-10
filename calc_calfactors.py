@@ -6,11 +6,12 @@ from matplotlib.lines import Line2D
 import numpy as np
 
 from astropy.table import QTable
-from astropy.stats import sigma_clipped_stats
+from astropy.stats import sigma_clipped_stats, sigma_clip
+from astropy.modeling import models, fitting
 
 
 def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7,
-                   repeat=False, subtrans=False):
+                   repeat=False, subtrans=False, startday=59720.):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -75,6 +76,9 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
             cfactors_unc.append(cfactor_unc)
             subarrs.append(obstab["subarray"][k])
 
+    if xaxisval == "timemid":
+        xvals = np.array(xvals) - startday
+
     res = (np.array(cfactors), np.array(cfactors_unc), xvals, subarrs, names)
     return res
 
@@ -114,15 +118,15 @@ def plot_calfactors(
         "MASKLYOT": "v",
     }
 
-    efac = 1.04
-    # efac = 1.0
+    # efac = 1.04
+    efac = 1.0
     # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)       
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 0.93165691 * efac,
-        "SUB256": 0.98554349 * efac,
-        "SUB128": 0.95873621 * efac,
-        "SUB64": 0.98210605 * efac,
+        "BRIGHTSKY": 0.993 * efac,
+        "SUB256": 1.005 * efac,
+        "SUB128": 1.005 * efac,
+        "SUB64": 1.0111 * efac,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
@@ -131,10 +135,10 @@ def plot_calfactors(
 
     # print(subarr_cor)
     ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]
-    modfac = {"HD 167060": 1.0/1.10,
-              "16 Cyg B": 1.0/1.07,
-              "HD 37962": 1.0/1.09,
-              "del UMi": 1.0/1.07,
+    modfac = {"HD 167060": 1.0/1.086,
+              "16 Cyg B": 1.0/1.068,
+              "HD 37962": 1.0/1.056,
+              "del UMi": 1.0/1.049,
               # "HD 180609": 1.0,
               "BD+60 1753": 1.0}
     # modfac = {"HD 167060": 1.0,
@@ -142,6 +146,8 @@ def plot_calfactors(
     #           "HD 37962": 1.0,
     #           "del UMi": 1.0,
     #           "HD 180609": 1.0}
+
+    startday = 59720.
 
     allfacs = []
     allfacuncs = []
@@ -154,6 +160,7 @@ def plot_calfactors(
                 dir, filter, xaxisval=xaxisval, bkgsub=bkgsub,
                 indivmos=indivmos, indivcals=indivcals,
                 eefraction=eefraction, repeat=repeat, subtrans=subtrans,
+                startday=startday,
             )
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
@@ -162,7 +169,7 @@ def plot_calfactors(
             for cfactor, cfactor_unc, xval, subarray, cname in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3], cfacs[4]
             ):
-                print(cname, xval, cfactor)
+                # print(cname, xval, cfactor)
                 ax.errorbar(
                     [xval],
                     [cfactor],
@@ -188,10 +195,10 @@ def plot_calfactors(
                     ax.scatter(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
-                    print(modfac[cname])
-                    ax.scatter(
-                        [xval], [cfactor * modfac[cname]], s=150, facecolor="k", edgecolor="m",
-                    )                    
+                    #print(modfac[cname])
+                    # ax.scatter(
+                    #     [xval], [cfactor * modfac[cname]], s=150, facecolor="k", edgecolor="m",
+                    # )                    
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
@@ -223,16 +230,47 @@ def plot_calfactors(
     meanvals = sigma_clipped_stats(allfacs[gvals], sigma=3, maxiters=5)
     ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
     medval = meanvals[0]
+    filtered_data = sigma_clip(allfacs[gvals], sigma=3, maxiters=5)
+    ax.plot((xvals[gvals])[filtered_data.mask], (allfacs[gvals])[filtered_data.mask], "x", color='#d62728')
     # ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
     # ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
     perstd = 100.0 * meanvals[2] / meanvals[0]
     # print(meanvals[0], meanvals[2], perstd)
 
+    if xaxisval == "timemid":
+ 
+        fit = fitting.LevMarLSQFitter()
+        mod_init = models.Exponential1D(tau=-100., amplitude=-0.2) + models.Const1D(amplitude=0.70)
+        mod_init[0].amplitude.bounds = [None, 0.0]
+        mod_init[0].tau.fixed = True
+        # mod_init[1].amplitude.fixed = True
+        fitx = ((xvals[gvals])[~filtered_data.mask])
+        fity = (allfacs[gvals])[~filtered_data.mask]
+        sindxs = np.argsort(fitx)
+        mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs])
+        per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
+        per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 2)))
+
+        mod_dev = (mod_fit(fitx) - fity)
+        mod_dev = 100.0 * np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
+
+        pxvals = np.arange(min(fitx), max(fitx))
+        ax.plot(pxvals, mod_fit(pxvals), "m-")
+
+        ax.text(
+            0.95,
+            0.02,
+            fr"fit: {mod_fit[0].amplitude.value:.3f} exp(x/{mod_fit[0].tau.value:.1f}) + {mod_fit[1].amplitude.value:.3f} ({per_dev:.1f}%)",
+            transform=ax.transAxes,
+            ha="right",
+        )
+
     ax.text(
-        0.7,
-        0.02,
-        fr"{meanvals[0]:.3f} $\pm$ {meanvals[2]:.3f} ({perstd:.1f}%)",
+        0.95,
+        0.08,
+        fr"average: {meanvals[0]:.3f} $\pm$ {meanvals[2]:.3f} ({perstd:.1f}%)",
         transform=ax.transAxes,
+        ha="right",
     )
 
     if savefile is not None:
@@ -240,8 +278,16 @@ def plot_calfactors(
         atab[f"avecalfac_{filter}"] = [meanvals[0]]
         atab[f"avecalfac_unc_{filter}"] = [meanvals[2] / np.sqrt(len(allfacs[gvals]))]
         atab[f"avecalfac_std_{filter}"] = [meanvals[2]]
+        if xaxisval == "timemid":
+            atab[f"fit_exp_amp_{filter}"] = [mod_fit[0].amplitude.value]
+            atab[f"fit_exp_tau_{filter}"] = [mod_fit[0].tau.value]
+            atab[f"fit_exp_const_{filter}"] = [mod_fit[1].amplitude.value]
+            atab[f"fit_exp_std_{filter}"] = [mod_dev]
+            sext = "_fit.dat"
+        else:
+            sext = "_ave.dat"
         atab.write(
-            savefile.replace(".fits", "_ave.dat"),
+            savefile.replace(".fits", sext),
             format="ascii.commented_header",
             overwrite=True,
         )
@@ -262,7 +308,7 @@ def plot_calfactors(
 
     # now make the plot nice
     if xaxisval == "timemid":
-        ax.set_xlabel("Time [MJD]")
+        ax.set_xlabel(f"Time [MJD] - {startday}")
     elif xaxisval == "rate":
         ax.set_xscale("log")
         ax.set_xlabel("Central Pixel Rate [DN/s]")
@@ -288,7 +334,7 @@ def plot_calfactors(
 
     if showleg:
 
-        # make space for th legend
+        # make space for the legend
         ylim = ax.get_ylim()
         ax.set_ylim(ylim[0], ylim[1] + 0.4 * (ylim[1] - ylim[0]))
 
@@ -302,7 +348,7 @@ def plot_calfactors(
                 [0],
                 marker="o",
                 color="w",
-                label="Not in average",
+                label="Not in average or fit",
                 markerfacecolor="none",
                 markeredgecolor="m",
                 markersize=13,
@@ -399,6 +445,8 @@ if __name__ == "__main__":
         extstr = ""
     if args.indivmos:
         extstr = "_indivmos"
+    if args.indivcals:
+        extstr = "_indivcals"
     if args.repeat:
         extstr = f"{extstr}_repeat"
 
