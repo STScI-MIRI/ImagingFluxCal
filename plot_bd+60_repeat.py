@@ -19,7 +19,7 @@ if __name__ == "__main__":
         extstr = "_bkgsub"
     else:
         extstr = ""
-    extstr = "_repeat"
+    extstr = ""
     dir = "ADwarfs"
     sname = "BD+60 1753"
 

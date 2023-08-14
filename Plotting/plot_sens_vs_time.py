@@ -31,7 +31,7 @@ if __name__ == "__main__":
     mfctype = [None, "none"]
     bkgtype = ["annulus", "image+annulus"]
     for k, cfilter in enumerate(filters):
-        for j, ptype in enumerate(["_", "_indivcals_"]):
+        for j, ptype in enumerate(["_indivcals_"]):
             ptab = QTable.read(f"ADwarfs/{cfilter}{ptype}eefrac0.7_phot.fits")
             for cname in ["BD+60 1753"]:  # , "HD 2811"]:
                 gvals = ptab["name"] == cname
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     for k in range(3):
         ax[k, 0].set_ylabel("Rel Flux")
-        ax[2, k].set_xlabel("MJD-57900")
+        ax[2, k].set_xlabel("MJD-59700")
 
     ax[0, 1].legend(fontsize=0.7*fontsize)
     plt.tight_layout()

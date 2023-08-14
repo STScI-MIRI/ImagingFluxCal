@@ -240,7 +240,7 @@ def plot_calfactors(
     if xaxisval == "timemid":
  
         fit = fitting.LevMarLSQFitter()
-        mod_init = models.Exponential1D(tau=-100., amplitude=-0.2) + models.Const1D(amplitude=0.70)
+        mod_init = models.Exponential1D(tau=-200., amplitude=-0.2) + models.Const1D(amplitude=0.70)
         mod_init[0].amplitude.bounds = [None, 0.0]
         mod_init[0].tau.fixed = True
         # mod_init[1].amplitude.fixed = True
