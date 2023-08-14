@@ -257,10 +257,11 @@ def plot_calfactors(
         pxvals = np.arange(min(fitx), max(fitx))
         ax.plot(pxvals, mod_fit(pxvals), "m-")
 
+        per_amp = 100. * (mod_fit[0].amplitude.value / mod_fit[1].amplitude.value)
         ax.text(
             0.95,
             0.02,
-            fr"fit: {mod_fit[0].amplitude.value:.3f} exp(x/{mod_fit[0].tau.value:.1f}) + {mod_fit[1].amplitude.value:.3f} ({per_dev:.1f}%)",
+            fr"fit: {mod_fit[0].amplitude.value:.3f} exp(x/{mod_fit[0].tau.value:.1f}) + {mod_fit[1].amplitude.value:.3f} ({per_dev:.1f}%) [amp: {per_amp:.1f}%]",
             transform=ax.transAxes,
             ha="right",
         )
@@ -537,6 +538,8 @@ if __name__ == "__main__":
         fname = f"{fname}_bkgsub"
     if args.indivmos:
         fname = f"{fname}_indivmos"
+    if args.indivcals:
+        fname = f"{fname}_indivcals"
     if args.repeat:
         fname = f"{fname}_repeat"
     if args.subtrans:
