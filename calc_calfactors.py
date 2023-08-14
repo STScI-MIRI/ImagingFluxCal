@@ -252,7 +252,7 @@ def plot_calfactors(
         per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 2)))
 
         mod_dev = (mod_fit(fitx) - fity)
-        mod_dev = 100.0 * np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
+        mod_dev = np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
 
         pxvals = np.arange(min(fitx), max(fitx))
         ax.plot(pxvals, mod_fit(pxvals), "m-")
