@@ -298,7 +298,14 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
     if indivcals:
         extstr = f"{extstr}_indivcals"
 
-        mosfiles = glob.glob(f"{subdir}/{filter}/*/jw*mirimage_cal.fits")
+        if bkgsub:
+            bstr = "_skysub"
+        else:
+            bstr = ""
+
+        mosfiles = glob.glob(f"{subdir}/{filter}/*/jw*mirimage{bstr}_cal.fits")
+        print(mosfiles)
+        exit()
         if len(mosfiles) == 0:
             print("no files found")
             print(f"{subdir}/{filter}/*/jw*mirimage_cal.fits")
