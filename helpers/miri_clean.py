@@ -504,8 +504,10 @@ def make_sky(
 
         # find the star
         mean, median, std = sigma_clipped_stats(data, sigma=3.0)
+        std = min(std, 10.0)  # ensure that the std does not go too large
         threshold = median + (5.0 * std)
-        tbl = find_peaks(data, threshold, box_size=11)
+        # tbl = find_peaks(data, threshold, box_size=11)
+        tbl = find_peaks(data, threshold, box_size=filter_fwhm[hdul[0].header["FILTER"]]*2)
         # tbl["peak_value"].info.format = "%.8g"  # for consistent table output
         # print(tbl[:10])  # print only the first 10 peaks
 

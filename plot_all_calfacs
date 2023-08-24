@@ -1,5 +1,6 @@
 
 for CBAND in F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W
+
 do
     python calc_calfactors.py --filter=$CBAND --png
     python calc_calfactors.py --filter=$CBAND --png --bkgsub
@@ -13,6 +14,6 @@ do
 done
 
 # subarray transger
-python calc_calfactors.py --filter=F770W --xaxisval=timemid --png --subtrans
-python calc_calfactors.py --filter=F770W --xaxisval=timemid --png --bkgsub --subtrans
+python calc_calfactors.py --filter=F770W --xaxisval=timemid --png --subtrans --nocurval
+python calc_calfactors.py --filter=F770W --xaxisval=timemid --png --bkgsub --subtrans --nocurval
 
