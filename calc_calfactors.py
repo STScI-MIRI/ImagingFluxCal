@@ -239,7 +239,6 @@ def plot_calfactors(
     # print(meanvals[0], meanvals[2], perstd)
 
     if xaxisval == "timemid":
- 
         fit = fitting.LevMarLSQFitter()
         mod_init = models.Exponential1D(tau=-200., amplitude=-0.2) + models.Const1D(amplitude=0.70)
         mod_init[0].amplitude.bounds = [None, 0.0]
@@ -466,7 +465,6 @@ if __name__ == "__main__":
             args.filter,
             "mflux",
             showleg=True,
-            savefile=savefacs,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
@@ -479,6 +477,7 @@ if __name__ == "__main__":
             ax[0, 1],
             args.filter,
             "timemid",
+            savefile=savefacs,
             showleg=False,
             applysubarrcor=(not args.nosubarrcor),
             bkgsub=args.bkgsub,

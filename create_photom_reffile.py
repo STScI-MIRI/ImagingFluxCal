@@ -26,7 +26,11 @@ if __name__ == "__main__":
 
     print("filter, nfac, comfac, oldfac / comfac")
     for cfilter in np.flip(filters):
-        ntab = QTable.read(f"CalFacs/miri_calfactors_{cfilter}_fit.dat", format="ascii.commented_header")
+        if cfilter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
+            rstr = "_bkgsub"
+        else:
+            rstr = ""
+        ntab = QTable.read(f"CalFacs/miri_calfactors{rstr}_{cfilter}_fit.dat", format="ascii.commented_header")
         # calculate the calibration factor versus time
         amp = ntab[f"fit_exp_amp_{cfilter}"][0]
         tau = ntab[f"fit_exp_tau_{cfilter}"][0]
@@ -43,7 +47,7 @@ if __name__ == "__main__":
 
         print(cfilter, c, new_cfactor, pipe_cfactor / new_cfactor)
 
-        # use the time dependent factors for F2550W to define the ranges for the multipe
+        # use the time dependent factors for F2550W to define the ranges for the multiple
         # photom reference files
         if cfilter == "F2550W":
             val_allowed = 0.05
