@@ -13,6 +13,7 @@ def miri_detector1(
     reset=True,
     resetfile=None,
     darkfile=None,
+    rscdfile=None,
     linfile=None,
     save_jump_info=False,
     firstframe=True,
@@ -36,6 +37,10 @@ def miri_detector1(
         det1_dict["reset"] = {"skip": True}
     if resetfile is not None:
         det1_dict["reset"] = {"override_reset": f"./RefFiles/{resetfile}"}
+
+    # Use a custom RSCD file
+    if rscdfile is not None:
+        det1_dict["rscd"] = {"override_rscd": rscdfile}
 
     # Use the flight reset anomaly file
     if linfile is not None:

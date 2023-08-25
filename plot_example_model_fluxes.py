@@ -1,6 +1,8 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.ticker import ScalarFormatter
 
 from astropy.table import QTable
 import astropy.units as u
@@ -60,11 +62,15 @@ if __name__ == "__main__":
         # get the band fluxes
         bfluxes = QTable()
         rwaves = {}
+        bwidths = {}
         for cband in bandpasses.keys():
             rwave, cwave, ceff = bandpasses[cband]
             rwaves[cband.upper()] = rwave
             bfluxes[cband.upper()] = [compute_bandflux(mwave, mflux, cwave, ceff)]
-            print(cfile, cband, bfluxes[cband.upper()])
+            # bandwidth
+            intresp = np.trapz(ceff, cwave)
+            bwidth = intresp / max(ceff)
+            bwidths[cband.upper()] = bwidth
 
         gvals = (mwave > 4.5 * u.micron) & (mwave < 32.0 * u.micron)
 
@@ -74,13 +80,36 @@ if __name__ == "__main__":
         ax.plot(mwave[gvals], mflux[gvals].value * (mwave[gvals].value ** 2) / ave_mflux + offval, "k-", alpha=0.5)
 
         for cband in bfluxes.keys():
-            ax.plot(
-                rwaves[cband], bfluxes[cband].value * (rwaves[cband] ** 2) / ave_mflux + offval, "go", alpha=0.5
-            )
+            if cband in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+                ptype = "bo"
+            else:
+                ptype = "go"
+            if cband != "FND":
+                ax.errorbar(
+                    rwaves[cband], bfluxes[cband].value * (rwaves[cband] ** 2) / ave_mflux + offval,
+                    xerr=0.5 * bwidths[cband].value, fmt=ptype, alpha=0.5
+                )
 
     ax.set_xscale("log")
     ax.set_xlabel(r"wavelength [$\mu$m]")
     ax.set_ylabel(r"Normalized RJ Flux [Jy $\mu$m$^2$] + const")
+
+    ax.text(20., 1.0, "Hot Star (G191B2B)", alpha=0.7)
+    ax.text(8., 1.25, "A Dwarf (BD+60 1753)", alpha=0.7)
+    ax.text(4.5, 1.42, "Solar Analog (GSPC P330-E)", alpha=0.7)
+
+    leg = []
+    leg.append(Line2D([0], [0], marker="o", color="w", label="Imaging", markerfacecolor="g", alpha=0.5, markersize=8))
+    leg.append(Line2D([0], [0], marker="o", color="w", label="Coronagraphy", markerfacecolor="b", alpha=0.5, markersize=8))
+    ax.legend(handles=leg, loc=(0.7, 0.7))
+
+    ax.tick_params("both", length=10, width=2, which="major")
+    ax.tick_params("both", length=5, width=1, which="minor")
+
+    ax.xaxis.set_minor_formatter(ScalarFormatter())
+    ax.xaxis.set_major_formatter(ScalarFormatter())
+    ax.set_xticks([10.0])
+    ax.set_xticks([5, 6, 7, 8, 9, 12., 15.0, 20.0, 25., 30.], minor=True)
 
     plt.tight_layout()
 

@@ -92,12 +92,12 @@ if __name__ == "__main__":
         else:
             ax.plot(pwaves, pfacs, "ko", label=cname)
 
-        if cname in ignore_names:
-            # determine the calfac/mean calfac ratio for bands <= F1500W
-            cvals = (pwaves < 16.) & np.isfinite(pfacs)
-            print(cname, np.average(pfacs[cvals]), np.std(pfacs[cvals]))
-            #print(pwaves[cvals])
-            #print(pfacs[cvals])
+        #if cname in ignore_names:
+        # determine the calfac/mean calfac ratio for bands <= F1500W
+        cvals = (pwaves < 16.) & np.isfinite(pfacs)
+        print(cname, np.average(pfacs[cvals]), np.std(pfacs[cvals]))
+        #print(pwaves[cvals])
+        #print(pfacs[cvals])
         
 
     # ax.set_xlim(5.0, 35.0)

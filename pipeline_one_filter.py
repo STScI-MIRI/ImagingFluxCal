@@ -61,7 +61,8 @@ if __name__ == "__main__":
         # fmt: off
         choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                  "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C"]
+                 "F1065C", "F1140C", "F1550C", "F2300C",
+                 "F770W_subtrans", "F770W_repeat"]
         # fmt: on
     )
     parser.add_argument(
@@ -82,6 +83,7 @@ if __name__ == "__main__":
         default=None,
     )
     parser.add_argument("--nflats", help="use new flats", action="store_true")
+    parser.add_argument("--nrscd", help="use new rscd file", action="store_true")
     parser.add_argument("--onlynew", help="only reduce new data", action="store_true")
     parser.add_argument(
         "--bkgsub", help="compute and subtract background image", action="store_true"
@@ -91,6 +93,12 @@ if __name__ == "__main__":
     # no new flats for coronagraphy
     if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
         args.nflats = None
+
+    if args.nrscd:
+        print("using new rscd parameter file")
+        rscdfile = "RSCD/jwst_miri_rscd_kdg_updated.fits"
+    else:
+        rscdfile = None
 
     if args.flatfile:
         flatfile = args.flatfile
@@ -134,7 +142,7 @@ if __name__ == "__main__":
                     f.write("level = INFO\n")
 
                 print(f"detector1 for {ckey}")
-                miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg")
+                miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg", rscdfile=rscdfile)
 
             if args.stage in ["stage2", "stage23", "all"]:
                 # calwebb_image2

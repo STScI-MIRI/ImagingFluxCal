@@ -123,7 +123,7 @@ def plot_calfactors(
     # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)       
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 0.993 * efac,
+        "BRIGHTSKY": 1.0005 * efac,
         "SUB256": 1.005 * efac,
         "SUB128": 1.005 * efac,
         "SUB64": 1.0111 * efac,
@@ -134,12 +134,13 @@ def plot_calfactors(
     }
 
     # print(subarr_cor)
-    ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]
-    modfac = {"HD 167060": 1.0/1.086,
-              "16 Cyg B": 1.0/1.068,
-              "HD 37962": 1.0/1.056,
-              "del UMi": 1.0/1.049,
-              # "HD 180609": 1.0,
+    ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
+    modfac = {"HD 167060": 1.0/1.09,
+              "16 Cyg B": 1.0/1.08,
+              "HD 37962": 1.0/1.06,
+              "del UMi": 1.0/1.03,
+              "HD 106252": 1.0/1.06,
+              "HD 142331": 1.0/1.05,
               "BD+60 1753": 1.0}
     # modfac = {"HD 167060": 1.0,
     #           "16 Cyg B": 1.0,
@@ -196,9 +197,9 @@ def plot_calfactors(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
                     #print(modfac[cname])
-                    # ax.scatter(
-                    #     [xval], [cfactor * modfac[cname]], s=150, facecolor="k", edgecolor="m",
-                    # )                    
+                    ax.scatter(
+                        [xval], [cfactor * modfac[cname]], s=150, facecolor="k", edgecolor="m",
+                    )                    
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
@@ -387,7 +388,8 @@ if __name__ == "__main__":
         # fmt: off
         choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                  "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C"]
+                 "F1065C", "F1140C", "F1550C", "F2300C",
+                 "F770W_subtrans", "F770W_repeat"]
         # fmt: on
     )
     parser.add_argument(
