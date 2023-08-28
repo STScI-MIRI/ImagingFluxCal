@@ -97,6 +97,7 @@ def plot_calfactors(
     eefraction=0.7,
     repeat=False,
     subtrans=False,
+    norm=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -154,6 +155,7 @@ def plot_calfactors(
     allfacuncs = []
     allnames = []
     xvals = []
+    meanfull = None
     for k, dir in enumerate(dirs):
         print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
         if exists(f"{dir}/{filter}_eefrac{eefraction}_phot.fits"):
@@ -198,14 +200,15 @@ def plot_calfactors(
                     )
                     #print(modfac[cname])
                     ax.scatter(
-                        [xval], [cfactor * modfac[cname]], s=150, facecolor="k", edgecolor="m",
+                        [xval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
                     )                    
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
-            if args.nosubarrcor:
+            if not applysubarrcor:
                 print(cfacs[3])
-                print(cfacs[0] / meanfull)
+                if meanfull is not None:
+                    print(cfacs[0] / meanfull)
             # exit()
     # allfacs = np.concatenate(allfacs)
     allfacs = np.array(allfacs)
@@ -216,7 +219,7 @@ def plot_calfactors(
 
     # print the top 4 calibration factors with names
     # aindxs = np.flip(np.argsort(allfacs))
-    # print(allfacs[aindxs[0:4]])
+    # print(allfacs[atindxs[0:4]])
     # print(allnames[aindxs[0:4]])
 
     # ignore the 4 "high" stars
@@ -232,7 +235,8 @@ def plot_calfactors(
     ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
     medval = meanvals[0]
     filtered_data = sigma_clip(allfacs[gvals], sigma=3, maxiters=5)
-    ax.plot((xvals[gvals])[filtered_data.mask], (allfacs[gvals])[filtered_data.mask], "x", color='#d62728')
+    ax.scatter((xvals[gvals])[filtered_data.mask], (allfacs[gvals])[filtered_data.mask],
+               s=200, facecolor="none", edgecolor="m")
     # ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
     # ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
     perstd = 100.0 * meanvals[2] / meanvals[0]
@@ -240,7 +244,8 @@ def plot_calfactors(
 
     if xaxisval == "timemid":
         fit = fitting.LevMarLSQFitter()
-        mod_init = models.Exponential1D(tau=-200., amplitude=-0.2) + models.Const1D(amplitude=0.70)
+        mod_init = (models.Exponential1D(tau=-200., amplitude=-0.2) 
+                    + models.Const1D(amplitude=0.70))
         mod_init[0].amplitude.bounds = [None, 0.0]
         mod_init[0].tau.fixed = True
         # mod_init[1].amplitude.fixed = True
@@ -248,6 +253,7 @@ def plot_calfactors(
         fity = (allfacs[gvals])[~filtered_data.mask]
         sindxs = np.argsort(fitx)
         mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs])
+
         per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
         per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 2)))
 
@@ -265,6 +271,10 @@ def plot_calfactors(
             transform=ax.transAxes,
             ha="right",
         )
+
+        # now see if we can derive the function to remove the trend
+        # mod_div = (mod_fit[0].amplitude.value - mod_fit(pxvals))
+        # print(mod_div)
 
     ax.text(
         0.95,
@@ -322,7 +332,7 @@ def plot_calfactors(
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
     ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
-    ax.set_title(f"{filter} / EEFRAC {args.eefrac}")
+    ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
     def val2per(val):
         return (val / medval) * 100.0 - 100.0
