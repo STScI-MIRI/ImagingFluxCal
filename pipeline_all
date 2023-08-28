@@ -1,5 +1,5 @@
-#FSTAGE="all"
-FSTAGE="stage23"
+FSTAGE="all"
+#FSTAGE="stage23"
 #EXTOPT="--nflat"
 EXTOPT=""
 

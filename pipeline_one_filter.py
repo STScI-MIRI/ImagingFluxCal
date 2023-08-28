@@ -204,7 +204,6 @@ if __name__ == "__main__":
                     f.write(f"handler = file:{cbase}.log\n")
                     f.write("level = INFO\n")
 
-                print(args.filter)
                 if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
                     sourcecat = False
                 else:
