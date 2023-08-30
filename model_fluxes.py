@@ -10,6 +10,7 @@ import warnings
 from astropy.units import UnitsWarning
 
 from jwstabsfluxcal.Webb.read_webb import read_miri
+from jwstabsfluxcal.Spitzer.read_spitzer import read_irac
 
 
 model_names = {
@@ -138,6 +139,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--irac", help="Do irac instead of miri", action="store_true")
     args = parser.parse_args()
 
     # models to use
@@ -145,7 +147,10 @@ if __name__ == "__main__":
     modfiles = glob.glob("Models/*_stis*.fits")
 
     # bandpasses to use
-    bandpasses = read_miri()
+    if args.irac:
+        bandpasses = read_irac()
+    else:
+        bandpasses = read_miri()
 
     # save the band response functions
     for cband in bandpasses.keys():
@@ -180,5 +185,9 @@ if __name__ == "__main__":
     mmods.remove_column("col0")
 
     # save table
-    mmods.write("Models/model_phot.fits", overwrite=True)
+    if args.irac:
+        extstr = "_irac"
+    else:
+        extstr = ""
+    mmods.write(f"Models/model_phot{extstr}.fits", overwrite=True)
     print(mmods)
