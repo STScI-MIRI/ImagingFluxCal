@@ -126,6 +126,9 @@ def aper_image(
 
     # recutout the region around the star
     imsize = annrad[1] * 3.0  # use a smaller size for the refined cutout
+    #print(ncoord, imsize)
+    #print(npix_coord)
+    #print(filename)
     cutout = Cutout2D(orig_data, ncoord, (imsize, imsize), wcs=w)
     cutout_err = Cutout2D(orig_err, ncoord, (imsize, imsize), wcs=w)
     data = cutout.data
@@ -358,7 +361,7 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
 
     mres = None
     for cfile in mosfiles:
-        if indivcals:  # get the coordinates for th extraction
+        if indivcals:  # get the coordinates for the extraction
             setname = (cfile.split("/"))[2]
             setk = -1
             for testk, setfile in enumerate(mosphot["filename"]):

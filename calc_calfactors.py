@@ -11,7 +11,7 @@ from astropy.modeling import models, fitting
 
 
 def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7,
-                   repeat=False, subtrans=False, startday=59720.):
+                   repeat=False, subtrans=False, startday=59720., applytime=False):
     """
     Read in the observed and mdoel fluxes and computer the calibration factors
     """
@@ -27,6 +27,15 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
     modtab = QTable.read("Models/model_phot.fits")
+
+    # get the info to remove the time dependent variation using the repeatability fit
+    if applytime:
+        ntab = QTable.read(f"CalFacs/miri_calfactors_repeat_{filter}_fit.dat", format="ascii.commented_header")
+        # calculate the calibration factor versus time
+        amp = ntab[f"fit_exp_amp_{filter}"][0]
+        tau = ntab[f"fit_exp_tau_{filter}"][0]
+        c = ntab[f"fit_exp_const_{filter}"][0]
+        print(amp, tau, c)
 
     if repeat:  # only use observations of BD+60 1753 and HD 2811
         # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
@@ -47,6 +56,12 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         oflux_unc = obstab["aperture_sum_bkgsub_err"][k]
         apcorr = obstab["apcorr"][k]
         pixarea = obstab["pixarea"][k]
+
+        if applytime:   # fix the time dependancies
+            ncfac = (amp * np.exp((obstab["timemid"][k].value - startday)/tau)) + c
+            # correct the sensitivity loss to the startday
+            oflux *= ncfac / (c + amp)
+            print(oflux, (c + amp) / ncfac)
 
         (mindx,) = np.where(modtab["name"] == cname)
         if len(mindx) < 1:
@@ -97,7 +112,7 @@ def plot_calfactors(
     eefraction=0.7,
     repeat=False,
     subtrans=False,
-    norm=False,
+    applytime=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -165,7 +180,7 @@ def plot_calfactors(
                 dir, filter, xaxisval=xaxisval, bkgsub=bkgsub,
                 indivmos=indivmos, indivcals=indivcals,
                 eefraction=eefraction, repeat=repeat, subtrans=subtrans,
-                startday=startday,
+                startday=startday, applytime=applytime,
             )
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
@@ -201,9 +216,10 @@ def plot_calfactors(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
                     #print(modfac[cname])
-                    ax.scatter(
-                        [xval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
-                    )                    
+                    #ax.scatter(
+                    #    [xval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
+                    #)  
+                    ax.text(xval, cfactor, cname)                  
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
@@ -426,8 +442,8 @@ if __name__ == "__main__":
         choices=["mflux", "timemid", "rate", "welldepth", "bkg"],
     )
     parser.add_argument(
-        "--nosubarrcor",
-        help="do not apply subarray correction factors",
+        "--subarrcor",
+        help="Apply subarray correction factors",
         action="store_true",
     )
     parser.add_argument(
@@ -438,6 +454,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--subtrans", help="plot the subarray transfer observations", action="store_true",
+    )
+    parser.add_argument(
+        "--applytime", help="remove the time dependent variation", action="store_true",
     )
     parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
@@ -477,7 +496,7 @@ if __name__ == "__main__":
             args.filter,
             "mflux",
             showleg=True,
-            applysubarrcor=(not args.nosubarrcor),
+            applysubarrcor=args.subarrcor,
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
@@ -491,7 +510,7 @@ if __name__ == "__main__":
             "timemid",
             savefile=savefacs,
             showleg=False,
-            applysubarrcor=(not args.nosubarrcor),
+            applysubarrcor=subarrcor,
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
@@ -504,7 +523,7 @@ if __name__ == "__main__":
             args.filter,
             "welldepth",
             showleg=False,
-            applysubarrcor=(not args.nosubarrcor),
+            applysubarrcor=args.subarrcor,
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
@@ -517,7 +536,7 @@ if __name__ == "__main__":
             args.filter,
             "bkg",
             showleg=False,
-            applysubarrcor=(not args.nosubarrcor),
+            applysubarrcor=args.subarrcor,
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
@@ -533,7 +552,7 @@ if __name__ == "__main__":
             args.filter,
             args.xaxisval,
             savefile=savefacs,
-            applysubarrcor=(not args.nosubarrcor),
+            applysubarrcor=args.subarrcor,
             showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
@@ -541,6 +560,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans, 
+            applytime=args.applytime,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 
