@@ -18,7 +18,7 @@ if __name__ == "__main__":
                "F1500W", "F1800W", "F2100W", "F2550W"]
 
     # make plot
-    fontsize = 14
+    fontsize = 16
     font = {"size": fontsize}
     plt.rc("font", **font)
     plt.rc("lines", linewidth=2)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         ax.plot(pxvals, modvals + yoff, "m-")
 
         shifty = 0.05
-        ax.text(450., 1. + yoff + shifty, cfilter)
+        ax.text(425., 1. + yoff + shifty, cfilter)
         ax.text(0.0, yoff + shifty + modvals[0],
                 f"A={-1.*per_amp:.1f}% / $\sigma$={per_dev:.1f}%",
                 backgroundcolor="w",

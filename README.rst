@@ -88,6 +88,8 @@ Figures
 
 5. Time dependent sensitivity loss: `plot_repeatability.py`
 
+6. Subarray dependence: `plot_subtrans.py`
+
 Tables
 ------
 
