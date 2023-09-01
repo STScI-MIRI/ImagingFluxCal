@@ -139,10 +139,10 @@ def plot_calfactors(
     # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)       
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.0005 * efac,
+        "BRIGHTSKY": 1.002 * efac,
         "SUB256": 1.005 * efac,
         "SUB128": 1.005 * efac,
-        "SUB64": 1.0111 * efac,
+        "SUB64": 1.012 * efac,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
