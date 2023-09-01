@@ -40,7 +40,6 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         amp = ntab[f"fit_exp_amp_{filter}"][0]
         tau = ntab[f"fit_exp_tau_{filter}"][0]
         c = ntab[f"fit_exp_const_{filter}"][0]
-        print(amp, tau, c)
 
     if repeat:  # only use observations of BD+60 1753 and HD 2811
         # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
@@ -66,7 +65,6 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
             ncfac = (amp * np.exp((obstab["timemid"][k].value - startday)/tau)) + c
             # correct the sensitivity loss to the startday
             oflux *= ncfac / (c + amp)
-            print(oflux, (c + amp) / ncfac)
 
         (mindx,) = np.where(modtab["name"] == cname)
         if len(mindx) < 1:
@@ -109,7 +107,7 @@ def plot_calfactors(
     xaxisval,
     showleg=True,
     savefile=None,
-    applysubarrcor=True,
+    applysubarrcor=False,
     showcurval=True,
     bkgsub=False,
     indivmos=False,
@@ -118,7 +116,8 @@ def plot_calfactors(
     repeat=False,
     subtrans=False,
     applytime=False,
-    grieke=False
+    grieke=False,
+    shownames=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -180,7 +179,7 @@ def plot_calfactors(
     xvals = []
     meanfull = None
     for k, dir in enumerate(dirs):
-        print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
+        # print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
         if exists(f"{dir}/{filter}_eefrac{eefraction}_phot.fits"):
             cfacs = get_calfactors(
                 dir, filter, xaxisval=xaxisval, bkgsub=bkgsub,
@@ -216,7 +215,8 @@ def plot_calfactors(
                     alpha=0.5,
                     markersize=10,
                 )
-                ax.text(xval, cfactor, cname, rotation=45.) 
+                if shownames:
+                    ax.text(xval, cfactor, cname, rotation=45.) 
                 # plot a red circle around those not used in the average
                 if ((cname in ignore_names) or
                     ((cname == "BD+60 1753") and (abs(xval - 60070.) < 20.))):
@@ -230,10 +230,10 @@ def plot_calfactors(
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
-            if not applysubarrcor:
-                print(cfacs[3])
-                if meanfull is not None:
-                    print(cfacs[0] / meanfull)
+            # if not applysubarrcor:
+            #     print(cfacs[3])
+            #     if meanfull is not None:
+            #         print(cfacs[0] / meanfull)
             # exit()
     # allfacs = np.concatenate(allfacs)
     allfacs = np.array(allfacs)
