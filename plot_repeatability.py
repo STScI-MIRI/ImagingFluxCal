@@ -30,12 +30,18 @@ if __name__ == "__main__":
 
     startday = 59720.
     for k, cfilter in enumerate(filters):
+        if cfilter == "F2550W":
+            bkgsub = True
+        else:
+            bkgsub = False
+
         cfacs = get_calfactors(
             "ADwarfs",
             cfilter,
             xaxisval="timemid",
             repeat=True,
             startday=startday,
+            bkgsub=bkgsub,
         )
         yvals = cfacs[0]
         yvals_unc = cfacs[1]

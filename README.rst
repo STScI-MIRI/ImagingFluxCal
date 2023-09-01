@@ -84,7 +84,9 @@ Figures
 3. Example of photometry technique: `aper_one_filter.py`
    One of the standard outputs.
 
-4. 
+4. Example of model spectra and photometry: `plot_example_model_fluxes.py`
+
+5. Time dependent sensitivity loss: `plot_repeatability.py`
 
 Tables
 ------
