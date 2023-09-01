@@ -11,9 +11,10 @@ from astropy.modeling import models, fitting
 
 
 def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7,
-                   repeat=False, subtrans=False, startday=59720., applytime=False):
+                   repeat=False, subtrans=False, startday=59720., applytime=False,
+                   grieke=False):
     """
-    Read in the observed and mdoel fluxes and computer the calibration factors
+    Read in the observed and model fluxes and computer the calibration factors
     """
     if bkgsub:
         extstr = "_bkgsub"
@@ -26,7 +27,11 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
     # read in observed fluxes
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
-    modtab = QTable.read("Models/model_phot.fits")
+    if grieke:
+        mfilename = "Models/model_phot_grieke.fits"
+    else:
+        mfilename = "Models/model_phot.fits"
+    modtab = QTable.read(mfilename)
 
     # get the info to remove the time dependent variation using the repeatability fit
     if applytime:
@@ -113,6 +118,7 @@ def plot_calfactors(
     repeat=False,
     subtrans=False,
     applytime=False,
+    grieke=False
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -181,6 +187,7 @@ def plot_calfactors(
                 indivmos=indivmos, indivcals=indivcals,
                 eefraction=eefraction, repeat=repeat, subtrans=subtrans,
                 startday=startday, applytime=applytime,
+                grieke=grieke,
             )
             # allfacs.append(cfacs[0])
             allfacuncs.append(cfacs[1])
@@ -209,6 +216,7 @@ def plot_calfactors(
                     alpha=0.5,
                     markersize=10,
                 )
+                ax.text(xval, cfactor, cname, rotation=45.) 
                 # plot a red circle around those not used in the average
                 if ((cname in ignore_names) or
                     ((cname == "BD+60 1753") and (abs(xval - 60070.) < 20.))):
@@ -218,8 +226,7 @@ def plot_calfactors(
                     #print(modfac[cname])
                     #ax.scatter(
                     #    [xval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
-                    #)  
-                    ax.text(xval, cfactor, cname)                  
+                    #)                   
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
@@ -458,6 +465,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--applytime", help="remove the time dependent variation", action="store_true",
     )
+    parser.add_argument(
+        "--grieke", help="use GRieke models for the 10 G-stars, CALSPEC models for the rest", action="store_true",
+    )
     parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -503,6 +513,8 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,           
+            applytime=args.applytime,
+            grieke=args.grieke,
         )
         plot_calfactors(
             ax[0, 1],
@@ -510,13 +522,15 @@ if __name__ == "__main__":
             "timemid",
             savefile=savefacs,
             showleg=False,
-            applysubarrcor=subarrcor,
+            applysubarrcor=args.subarrcor,
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans, 
+            applytime=args.applytime,
+            grieke=args.grieke,
         )
         plot_calfactors(
             ax[1, 0],
@@ -529,7 +543,9 @@ if __name__ == "__main__":
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
-            subtrans=args.subtrans, 
+            subtrans=args.subtrans,
+            applytime=args.applytime,
+            grieke=args.grieke,             
         )
         plot_calfactors(
             ax[1, 1],
@@ -543,6 +559,8 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans, 
+            applytime=args.applytime,
+            grieke=args.grieke,
         )
         fname = f"miri_calfactors_{args.filter}_many"
     else:
@@ -561,6 +579,7 @@ if __name__ == "__main__":
             repeat=args.repeat,
             subtrans=args.subtrans, 
             applytime=args.applytime,
+            grieke=args.grieke,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 
@@ -577,6 +596,8 @@ if __name__ == "__main__":
         fname = f"{fname}_repeat"
     if args.subtrans:
         fname = f"{fname}_subtrans"
+    if args.grieke:
+        fname = f"{fname}_grieke"
     if args.png:
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:

@@ -61,33 +61,30 @@ def compute_bandflux(wave, flux_source, bwave, bandpass):
     return inttop / intbot
 
 
-def get_band_fluxes(cfile, bandpasses, imgfile=None):
+def get_band_fluxes(cfile, bandpasses, imgfile=None,
+                    grieke=False):
     """
     Calculated the band fluxes for each possible filter
     """
 
     # replace with G. Rieke's models when available
     cname = cfile.split("/")[1].split("_")[0]
-    if cname in ["xxp330e", "xx16cygb"]:
-        if cname == "16cygb":
-            gcfile = "Models/grieke_16cygb_final.csv"
-            mfac = 1e-3
-        else:
-            gcfile = "Models/grieke_p330e_final.csv"
-            mfac = 1.0
+    grieke_stars = ["p330e", "16cygb", "18sco", "hd106252", "hd142331",
+                    "hd159222", "hd167060", "hd205905", "hd37962", "ngc2506_g31"]
+    if (cname in grieke_stars) & grieke:
+        gcfile = f"Models/grieke23_{cname}.dat"
         print(f"using grieke model for {cname}")
-        modspec = QTable.read(gcfile, format="ascii.csv")
+        modspec = QTable.read(gcfile, format="ascii")
         mwave = modspec["wave_um"].value * u.micron
         mflux = modspec["flux_W_cm-2_um-1"].value * u.W / (u.cm * u.cm * u.micron)
         mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
-        mflux *= mfac
 
         # save the file with Jy units
         otab = QTable()
         otab["wave"] = mwave
         otab["flux"] = mflux
-        otab.write(gcfile.replace(".csv", ".fits"), overwrite=True)
-        otab.write(gcfile.replace(".csv", ".dat"), format="ascii.ipac", overwrite=True)
+        otab.write(gcfile.replace(".dat", ".fits"), overwrite=True)
+        otab.write(gcfile.replace(".dat", "_ipac.dat"), format="ascii.ipac", overwrite=True)
     else:
         # surpress the annoying units warning
         with warnings.catch_warnings():
@@ -140,6 +137,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--irac", help="Do irac instead of miri", action="store_true")
+    parser.add_argument("--grieke", help="Use grieke models for some G stars", action="store_true")
     args = parser.parse_args()
 
     # models to use
@@ -170,7 +168,8 @@ if __name__ == "__main__":
         ntab["name"] = [model_names[(cfile.split("/")[1]).split("_")[0]]]
         print(f"working on {cfile}")
         onemod = get_band_fluxes(
-            cfile, bandpasses, cfile.replace(".fits", "_absfluxbands.png")
+            cfile, bandpasses, cfile.replace(".fits", "_absfluxbands.png"),
+            grieke=args.grieke
         )
         onemod = hstack([ntab, onemod])
 
@@ -189,5 +188,7 @@ if __name__ == "__main__":
         extstr = "_irac"
     else:
         extstr = ""
+    if args.grieke:
+        extstr = f"{extstr}_grieke"
     mmods.write(f"Models/model_phot{extstr}.fits", overwrite=True)
     print(mmods)

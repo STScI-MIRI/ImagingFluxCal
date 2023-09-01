@@ -22,8 +22,10 @@ if __name__ == '__main__':
 
     if args.star == "16cygb":
         cfile = "Models/16cygb_stis_003.fits"
-        gcfile = "Models/grieke_16cygb_final.csv"
-        mfac = 1e-3
+        #gcfile = "Models/grieke_16cygb_final.csv"
+        #mfac = 1e-3
+        gcfile = "Models/grieke23_16cygb.dat"
+        mfac = 1.0
     else:
         cfile = "Models/p330e_stiswfcnic_005.fits"
         gcfile = "Models/grieke_p330e_final.csv"
@@ -43,7 +45,7 @@ if __name__ == '__main__':
     mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
 
     # get grieke model
-    gmodspec = QTable.read(gcfile, format="ascii.csv")
+    gmodspec = QTable.read(gcfile, format="ascii")
     gmwave = gmodspec["wave_um"].value * u.micron
     gmflux = gmodspec["flux_W_cm-2_um-1"].value * u.W / (u.cm * u.cm * u.micron)
     gmflux = gmflux.to(u.Jy, equivalencies=u.spectral_density(gmwave))
@@ -69,13 +71,14 @@ if __name__ == '__main__':
     ax.plot(gmwave[gvals], gmflux[gvals] * gmwave[gvals] ** 2, "g-", label="GRIEKE")
 
     gvals = (mwave > 0.6 * u.micron) & (mwave < 5.0 * u.micron)
-    igmflux = f(mwave)
-    ratio = mflux[gvals].value / igmflux[gvals]
+    igmflux = f(mwave[gvals])
+    ratio = mflux[gvals].value / igmflux
     averatio = np.average(ratio)
     ax.text(0.4, 0.2, fr"CALSPEC/GRIEKE (0.6-5 $\mu$m) = {averatio:.3f}", transform=ax.transAxes)
 
     gvals = (mwave > 5.0 * u.micron) & (mwave < 28 * u.micron)
-    ratio = mflux[gvals].value / igmflux[gvals]
+    igmflux = f(mwave[gvals])
+    ratio = mflux[gvals].value / igmflux
     averatio = np.average(ratio)
     ax.text(0.4, 0.15, fr"CALSPEC/GRIEKE (5-28 $\mu$m) = {averatio:.3f}", transform=ax.transAxes)
 
