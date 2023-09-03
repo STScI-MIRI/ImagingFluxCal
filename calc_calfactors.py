@@ -156,6 +156,7 @@ def plot_calfactors(
 
     # print(subarr_cor)
     ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
+    ignore_names = []
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
     modfac = {"HD 167060": 1.0/1.09,

@@ -48,6 +48,8 @@ if __name__ == "__main__":
             ax[px, py],
             cfilter,
             "mflux",
+            #"welldepth",
+            # "timemid",
             showleg=False,
             showcurval=False,
             bkgsub=bkgsub, 
