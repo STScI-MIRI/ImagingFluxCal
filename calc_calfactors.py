@@ -164,7 +164,7 @@ def plot_calfactors(
 
     # print(subarr_cor)
     ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
-    ignore_names = []
+    ignore_names = ["GSPC P177-D", "16 Cyg B", "del UMi"]
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
     modfac = {"HD 167060": 1.0/1.09,
@@ -501,7 +501,8 @@ if __name__ == "__main__":
         extstr = "_indivcals"
     if args.repeat:
         extstr = f"{extstr}_repeat"
-
+    if args.applytime:
+        extstr = f"{extstr}_timecor"
 
     savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
     if args.multiplot:

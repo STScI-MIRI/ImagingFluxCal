@@ -35,6 +35,6 @@ if __name__ == "__main__":
         otab = QTable()
         otab[f"fit_exp_amp_{cfilter}"] = [amp]
         otab[f"fit_exp_tau_{cfilter}"] = [tau]
-        otab.write(f"CalFacs/miri_calfactors_repeat_{cfilter}_fit.dat",
+        otab.write(f"CalFacs/miri_calfactors_bkgsub_repeat_{cfilter}_fit.dat",
                    format="ascii.commented_header",
                    overwrite=True)

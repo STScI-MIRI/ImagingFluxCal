@@ -34,12 +34,17 @@ if __name__ == "__main__":
 
     startday = 59720.
     for k, cfilter in enumerate(filters):
+
         if cfilter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
             bkgsub = True
+            extstr = "_bkgsub"
         else:
             bkgsub = False
+            extstr = ""
 
         applytime = True
+
+        savefacs = f"CalFacs/miri_calfactors{extstr}_timecor_{cfilter}.fits"
 
         m = k + 1
         px = m // 2
@@ -48,8 +53,9 @@ if __name__ == "__main__":
             ax[px, py],
             cfilter,
             "mflux",
-            #"welldepth",
+            # "welldepth",
             # "timemid",
+            savefile=savefacs,
             showleg=False,
             showcurval=False,
             bkgsub=bkgsub, 
