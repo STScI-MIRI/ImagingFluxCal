@@ -35,11 +35,19 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
 
     # get the info to remove the time dependent variation using the repeatability fit
     if applytime:
-        ntab = QTable.read(f"CalFacs/miri_calfactors_repeat_{filter}_fit.dat", format="ascii.commented_header")
+        if filter == "F2550W":
+            repstr = "_bkgsub"
+        else:
+            repstr = ""
+        ffilename = f"CalFacs/miri_calfactors{repstr}_repeat_{filter}_fit.dat"
+        ntab = QTable.read(ffilename, format="ascii.commented_header")
         # calculate the calibration factor versus time
         amp = ntab[f"fit_exp_amp_{filter}"][0]
         tau = ntab[f"fit_exp_tau_{filter}"][0]
-        c = ntab[f"fit_exp_const_{filter}"][0]
+        if filter not in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+            c = ntab[f"fit_exp_const_{filter}"][0]
+            amp = amp / c  # put in percentage terms like the coronagraphs
+        # print(filter, amp)
 
     if repeat:  # only use observations of BD+60 1753 and HD 2811
         # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
@@ -62,9 +70,9 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         pixarea = obstab["pixarea"][k]
 
         if applytime:   # fix the time dependancies
-            ncfac = (amp * np.exp((obstab["timemid"][k].value - startday)/tau)) + c
+            ncfac = (amp * np.exp((obstab["timemid"][k].value - startday)/tau)) + 1.0
             # correct the sensitivity loss to the startday
-            oflux *= ncfac / (c + amp)
+            oflux *= ncfac / (amp + 1.)
 
         (mindx,) = np.where(modtab["name"] == cname)
         if len(mindx) < 1:

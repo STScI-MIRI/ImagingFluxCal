@@ -10,6 +10,9 @@ from calc_calfactors import plot_calfactors
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--grieke", help="use GRieke models for the 10 G-stars, CALSPEC models for the rest", action="store_true",
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -36,10 +39,7 @@ if __name__ == "__main__":
         else:
             bkgsub = False
 
-        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-            applytime = False
-        else:
-            applytime = True
+        applytime = True
 
         m = k + 1
         px = m // 2
@@ -54,7 +54,7 @@ if __name__ == "__main__":
             showcurval=False,
             bkgsub=bkgsub, 
             applytime=applytime,
-            grieke=True,
+            grieke=args.grieke,
         )
         ax[px, py].set_ylabel("CalFactor")
         ax[px, py].set_title("")
@@ -69,6 +69,8 @@ if __name__ == "__main__":
     plt.tight_layout()
 
     fname = "multi_calfacs"
+    if args.grieke:
+        fname = f"{fname}_grieke"
     if args.png:
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:
