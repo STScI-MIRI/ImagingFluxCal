@@ -8,7 +8,7 @@ if __name__ == '__main__':
     types = ["ADwarfs", "HotStars", "SolarAnalogs"]
     filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W",
                "F1800W", "F2100W", "F2550W"]
-    filters = ["F2300C", "F1550C", "F1140C", "F1065C"]
+    # filters = ["F2300C", "F1550C", "F1140C", "F1065C"]
     # filters = ["F770W"]
 
     for ctype in types:

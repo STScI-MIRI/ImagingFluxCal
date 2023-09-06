@@ -88,6 +88,8 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
             xval = obstab["tgroup"][k] * obstab["ngroups"][k] * obstab["pix_max"][k]
         elif xaxisval == "bkg":
             xval = obstab["mean_bkg"][k]
+        elif xaxisval == "inttime":
+            xval = obstab["tgroup"][k] * obstab["ngroups"][k]
         else:
             xval = mflux * 1e3
 
@@ -455,7 +457,7 @@ if __name__ == "__main__":
         "--xaxisval",
         help="x-axis values",
         default="mflux",
-        choices=["mflux", "timemid", "rate", "welldepth", "bkg"],
+        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime"],
     )
     parser.add_argument(
         "--subarrcor",
