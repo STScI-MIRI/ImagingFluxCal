@@ -8,6 +8,7 @@ import numpy as np
 from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats, sigma_clip
 from astropy.modeling import models, fitting
+import astropy.units as u
 
 
 def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7,
@@ -89,7 +90,7 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         elif xaxisval == "bkg":
             xval = obstab["mean_bkg"][k]
         elif xaxisval == "inttime":
-            xval = obstab["tgroup"][k] * obstab["ngroups"][k]
+            xval = obstab["tgroup"][k] * obstab["ngroups"][k] * u.s
         else:
             xval = mflux * 1e3
 
@@ -364,6 +365,9 @@ def plot_calfactors(
     elif xaxisval == "bkg":
         ax.set_xscale("log")
         ax.set_xlabel("Background [DN/s]")
+    elif xaxisval == "inttime":
+        ax.set_xscale("log")
+        ax.set_xlabel("Integration Time [s]")
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
