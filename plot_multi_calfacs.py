@@ -53,6 +53,7 @@ if __name__ == "__main__":
             ax[px, py],
             cfilter,
             "mflux",
+            # "inttime",
             # "welldepth",
             # "timemid",
             savefile=savefacs,
