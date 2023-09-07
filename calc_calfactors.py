@@ -483,6 +483,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--grieke", help="use GRieke models for the 10 G-stars, CALSPEC models for the rest", action="store_true",
     )
+    parser.add_argument(
+        "--shownames", help="show the names for each point", action="store_true",
+    )
     parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -596,6 +599,7 @@ if __name__ == "__main__":
             subtrans=args.subtrans, 
             applytime=args.applytime,
             grieke=args.grieke,
+            shownames=args.shownames,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 
