@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     data_list = {}
 
-    print("filter, nfac, comfac, oldfac / comfac")
+    print("filter, nfac, comfac, oldfac / comfac, comfac / oldfac")
     for cfilter in filters:
         if cfilter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
             rstr = "_bkgsub"
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
 
-        print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor)
+        print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor, new_cfactor / pipe_cfactor)
 
         # use the time dependent factors for F2550W to define the ranges for the multiple
         # photom reference files

@@ -129,6 +129,8 @@ def plot_calfactors(
     applytime=False,
     grieke=False,
     shownames=False,
+    x2ndaxis=True,
+    notext=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -313,13 +315,14 @@ def plot_calfactors(
         # mod_div = (mod_fit[0].amplitude.value - mod_fit(pxvals))
         # print(mod_div)
 
-    ax.text(
-        0.95,
-        0.08,
-        fr"average: {meanvals[0]:.3f} $\pm$ {meanvals[2]:.3f} ({perstd:.1f}%)",
-        transform=ax.transAxes,
-        ha="right",
-    )
+    if not notext:
+        ax.text(
+            0.95,
+            0.08,
+            fr"average: {meanvals[0]:.3f} $\pm$ {meanvals[2]:.3f} ({perstd:.1f}%)",
+            transform=ax.transAxes,
+            ha="right",
+        )
 
     if savefile is not None:
         atab = QTable()
@@ -380,8 +383,9 @@ def plot_calfactors(
     def per2val(per):
         return ((per + 100) / 100.0) * medval
 
-    secax = ax.secondary_yaxis("right", functions=(val2per, per2val))
-    secax.set_ylabel("percentage")
+    if x2ndaxis:
+        secax = ax.secondary_yaxis("right", functions=(val2per, per2val))
+        secax.set_ylabel("percentage")
 
     if showleg:
 
@@ -406,12 +410,12 @@ def plot_calfactors(
                 alpha=0.5,
             )
         )
-        leg1 = ax.legend(handles=first_legend, loc="upper center")
+        leg1 = ax.legend(handles=first_legend, loc="upper right")
         ax.add_artist(leg1)
 
         second_legend = []
         for ckey in psubsym.keys():
-            if ckey[0:4] != "MASK":
+            if ckey[0:4] != "xMASK":
                 second_legend.append(
                     Line2D(
                         [0],
@@ -424,7 +428,7 @@ def plot_calfactors(
                         alpha=0.5,
                     )
                 )
-        ax.legend(handles=second_legend, loc="upper left")
+        ax.legend(handles=second_legend, fontsize=9, loc="upper left")
 
 
 if __name__ == "__main__":
