@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     startday = 59720.
     days = np.arange(0.0, 1000.0, 1.0)
-    comvals = days < 100.
+    comvals = days < 50.
 
     data_list = {}
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
 
-        print(cfilter, cfac_ave, new_cfactor, pipe_cfactor / new_cfactor)
+        print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor)
 
         # use the time dependent factors for F2550W to define the ranges for the multiple
         # photom reference files
