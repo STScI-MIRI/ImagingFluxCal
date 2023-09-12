@@ -74,7 +74,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
 
     # replace with G. Rieke's models when available
     cname = cfile.split("/")[1].split("_")[0]
-    grieke_stars = ["p330e", "16cygb", "18sco", "hd106252", "hd142331",
+    grieke_stars = ["p330e", "p177d", "16cygb", "18sco", "hd106252", "hd142331",
                     "hd159222", "hd167060", "hd205905", "hd37962", "ngc2506_g31"]
     if (cname in grieke_stars) & grieke:
         gcfile = f"Models/grieke23_{cname}.dat"
@@ -83,6 +83,8 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
         mwave = modspec["wave_um"].value * u.micron
         mflux = modspec["flux_W_cm-2_um-1"].value * u.W / (u.cm * u.cm * u.micron)
         mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
+        if cname == "p177d":
+            mflux *= 1e-3
 
         # save the file with Jy units
         otab = QTable()

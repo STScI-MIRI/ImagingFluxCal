@@ -30,7 +30,7 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, ax = plt.subplots(nrows=7, ncols=2, figsize=(12, 18), sharex=True)
+    fig, ax = plt.subplots(nrows=7, ncols=2, figsize=(14, 16), sharex=True)
 
     # setup the legend
     plot_calfactors(
@@ -62,6 +62,11 @@ if __name__ == "__main__":
 
         savefacs = f"CalFacs/miri_calfactors{extstr}_timecor_{cfilter}.fits"
 
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+            noignore = True
+        else:
+            noignore = False
+
         m = k + 1
         px = m // 2
         py = m % 2
@@ -78,6 +83,7 @@ if __name__ == "__main__":
             bkgsub=bkgsub, 
             applytime=applytime,
             grieke=args.grieke,
+            noignore=noignore,
         )
         ax[px, py].set_ylabel("CalFactor")
         ax[px, py].set_title("")

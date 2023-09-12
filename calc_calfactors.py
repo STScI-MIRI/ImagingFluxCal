@@ -131,6 +131,7 @@ def plot_calfactors(
     shownames=False,
     x2ndaxis=True,
     notext=False,
+    noignore=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -168,8 +169,12 @@ def plot_calfactors(
     }
 
     # print(subarr_cor)
-    ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
-    ignore_names = ["GSPC P177-D", "16 Cyg B", "del UMi"]
+    # ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
+    if noignore:
+        ignore_names = []
+    else:
+        # ignore_names = ["GSPC P177-D", "16 Cyg B", "del UMi"]
+        ignore_names = ["16 Cyg B", "del UMi"]
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
     modfac = {"HD 167060": 1.0/1.09,
