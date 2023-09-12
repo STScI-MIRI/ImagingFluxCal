@@ -30,7 +30,23 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, ax = plt.subplots(nrows=7, ncols=2, figsize=(12, 18))
+    fig, ax = plt.subplots(nrows=7, ncols=2, figsize=(12, 18), sharex=True)
+
+    # setup the legend
+    plot_calfactors(
+        ax[0, 0],
+        "F560W",
+        "mflux",
+        showleg=True,
+        showcurval=False, 
+        x2ndaxis=False,
+        notext=True,
+    )
+    ax[0,0].get_xaxis().set_visible(False)
+    ax[0,0].get_yaxis().set_visible(False)
+    ax[0,0].set_ylim(1.0, 2.)
+    ax[0,0].set_title("")
+    ax[0,0].axis('off')
 
     startday = 59720.
     for k, cfilter in enumerate(filters):
@@ -53,6 +69,7 @@ if __name__ == "__main__":
             ax[px, py],
             cfilter,
             "mflux",
+            # "inttime",
             # "welldepth",
             # "timemid",
             savefile=savefacs,
@@ -64,11 +81,13 @@ if __name__ == "__main__":
         )
         ax[px, py].set_ylabel("CalFactor")
         ax[px, py].set_title("")
+        if px < 6:
+            ax[px, py].set_xlabel("")
 
         ax[px, py].text(0.1, 0.9, cfilter,
                         transform=ax[px, py].transAxes)
 
-    ax[0, 1].set_ylim(0.4, 0.5)
+    ax[0, 1].set_ylim(0.42, 0.48)
     ax[2, 0].set_ylim(1.0, 1.2)
     ax[4, 1].set_ylim(0.65, 0.8)
 
