@@ -62,12 +62,20 @@ Details
    the aperture correction.
    `aper_all.py` does this for all MIRI imaging and coronagraphic filters.
 
-6. Compute the calibration factors: `calc_calcfactors.py`
-   Uses the results of 4 to calculate the calibration factors for all
+6. Compute the sensitivity loss using the repeatability observations of 
+   BD+60 1753.  First run `plot_repeatability.py` to fit the observations with
+   an exponential model for all the Imager filters.  This produces data files
+   with the fit coeffiecients.  Then run `generate_coron_repeat_from_imager.py`
+   to create similar fit coefficient data files for the Coronagraphic filters 
+   based on interpolating the Imager results based on filter pivot wavelength.
+
+7. Compute the calibration factors: `calc_calcfactors.py`
+   Uses the results of 4, 5, and 6 to calculate the calibration factors for all
    observed absflux stars for one filter for all three types (if present).
    Produces a table giving the calibration factors for each observation.
    Produces plots of calibration factors versus model flux, time, well depth,
    etc.
+   A meta plot for all the filters can be created using `plot_multi_calfacs.py`.
 
 Figures
 -------
@@ -93,7 +101,7 @@ Figures
 Tables
 ------
 
-1. Observation details: `Tables\create_obstable.py`
+1. Observation details: `Tables/create_obstable.py`
    Output to screen.
 
 2. Aperture corrections: `create_apcor_reffile.py`

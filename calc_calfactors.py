@@ -36,7 +36,7 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
 
     # get the info to remove the time dependent variation using the repeatability fit
     if applytime:
-        if filter == "F2550W":
+        if filter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
             repstr = "_bkgsub"
         else:
             repstr = ""

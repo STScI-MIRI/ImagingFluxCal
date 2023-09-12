@@ -25,6 +25,8 @@ model_names = {
     "hd180609": "HD 180609",
     "hd106252": "HD 106252",
     "hd142331": "HD 142331",
+    "hd159222": "HD 159222",
+    "hd205905": "HD 205905",
     "hd37962": "HD 37962",
     "hd2811": "HD 2811",
     "p177d": "GSPC P177-D",
@@ -32,6 +34,9 @@ model_names = {
     "16cygb": "16 Cyg B",
     "delumi": "del UMi",
     "10lac": "10 Lac",
+    "18sco": "18 Sco",
+    "snap2": "SNAP 2",
+    "ngc2506g31": "NGC2506 G31",
 }
 
 
@@ -130,6 +135,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
         fig.suptitle(f"{cfile}")
         plt.tight_layout()
         plt.savefig(imgfile)
+        plt.close()
 
     return bfluxes
 
