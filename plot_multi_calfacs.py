@@ -57,6 +57,8 @@ if __name__ == "__main__":
         else:
             bkgsub = False
             extstr = ""
+        if args.grieke:
+            extstr = f"{extstr}_grieke"
 
         applytime = True
 

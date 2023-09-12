@@ -49,7 +49,7 @@ if __name__ == "__main__":
             per_amp = amp
 
         # average of all stars after correcting for time dependence
-        ntab = QTable.read(f"CalFacs/miri_calfactors{rstr}_timecor_{cfilter}_ave.dat",
+        ntab = QTable.read(f"CalFacs/miri_calfactors{rstr}_grieke_timecor_{cfilter}_ave.dat",
                            format="ascii.commented_header")
         cfac_ave = ntab[f"avecalfac_{cfilter}"][0]
         cfac_unc = ntab[f"avecalfac_unc_{cfilter}"][0]
@@ -128,14 +128,15 @@ if __name__ == "__main__":
         new_model.meta.instrument.name = "MIRI"
         new_model.meta.instrument.detector = "MIRIMAGE"
         new_model.meta.exposure.type = "MIR_IMAGE"
-        new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|"
+        new_model.meta.instrument.band = "N/A"
+        new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|MIR_CORONCAL|"
         new_model.meta.subarray = "GENERIC"
         new_model.meta.reftype = "PHOTOM"
         new_model.meta.author = "Karl Gordon"
         # updates to next 2 lines needed
         new_model.meta.pedigree = "INFLIGHT 2022-05-21 2023-09-10"
         tm = Time(begday[k] + startday, format="mjd")
-        new_model.meta.useafter = tm.to_value(format="fits")
+        new_model.meta.useafter = tm.to_value(format="fits")[:-4]
         new_model.meta.description = "Photom reference file."
         entry = "The flux calibration factors calculated from exponential fits to the"
         new_model.history.append(entry)

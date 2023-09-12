@@ -124,6 +124,7 @@ if __name__ == "__main__":
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
+    new_model.meta.instrument.channel = "N/A"
     new_model.meta.exposure.type = "MIR_IMAGE"
     new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|"
     new_model.meta.subarray = "GENERIC"
@@ -147,4 +148,4 @@ if __name__ == "__main__":
     new_model.save("ApCor/jwst_miri_apcorr_flight_27jul23.fits")
 
     print(fulltab)
-    fulltab.write("ApCor/jwst_miri_apcorr_flight_27jul23_full.fits", overwrite=True)
+    fulltab.write("ApCor/jwst_miri_apcorr_flight_12sep23_full.fits", overwrite=True)
