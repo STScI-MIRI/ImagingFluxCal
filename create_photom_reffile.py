@@ -128,7 +128,8 @@ if __name__ == "__main__":
         new_model.meta.instrument.name = "MIRI"
         new_model.meta.instrument.detector = "MIRIMAGE"
         new_model.meta.exposure.type = "MIR_IMAGE"
-        new_model.meta.pixar_sr = 2.84403609523084E-13
+        new_model.meta.photometry.pixelarea_steradians = 2.84403609523084E-13
+        new_model.meta.photometry.pixelarea_arcsecsq = 0.0121
         new_model.meta.instrument.band = "N/A"
         new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|MIR_CORONCAL|"
         new_model.meta.subarray = "GENERIC"
