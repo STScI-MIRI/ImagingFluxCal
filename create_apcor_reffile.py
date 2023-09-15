@@ -145,7 +145,7 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "the SKYIN and SKYOUT columns."
     new_model.history.append(entry)
-    new_model.save("ApCor/jwst_miri_apcorr_flight_27jul23.fits")
+    new_model.save("ApCor/jwst_miri_apcorr_flight_12sep23.fits")
 
     print(fulltab)
     fulltab.write("ApCor/jwst_miri_apcorr_flight_12sep23_full.fits", overwrite=True)
