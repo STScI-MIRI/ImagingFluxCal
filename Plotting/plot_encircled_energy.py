@@ -27,7 +27,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # make plot
-    fontsize = 14
+    fontsize = 18
     font = {"size": fontsize}
     plt.rc("font", **font)
     plt.rc("lines", linewidth=2)

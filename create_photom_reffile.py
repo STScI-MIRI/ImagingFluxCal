@@ -63,10 +63,11 @@ if __name__ == "__main__":
         #  approximates Commissioning so we can compare to the previous value
         #  not used otherwise
         new_cfactor = np.average(ncfacs[comvals])
-
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
 
-        print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor, new_cfactor / pipe_cfactor)
+        
+        #print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor, new_cfactor / pipe_cfactor)
+        print(f"{cfilter} & {cfac_ave:.3f} & {new_cfactor:.3f} & {(new_cfactor / pipe_cfactor):.3f} \\\\")
 
         # use the time dependent factors for F2550W to define the ranges for the multiple
         # photom reference files
