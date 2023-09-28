@@ -80,11 +80,13 @@ if __name__ == "__main__":
         gvals = abs(xvals - (60070. - startday)) > 20.
 
         fit = fitting.LevMarLSQFitter()
-        mod_init = (models.Exponential1D(tau=-200., amplitude=-0.2) 
+        mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
                     + models.Const1D(amplitude=0.70))
         mod_init[0].amplitude.bounds = [None, 0.0]
-        #mod_init[0].tau.fixed = True
-        mod_init[0].tau.bounds = [-250., -100.]
+        if cfilter in ["F560W", "F770W", "F1000W", "F1140W", "F1280W"]:
+            mod_init[0].tau.fixed = True
+        else:
+            mod_init[0].tau.bounds = [-250., -100.]
         # mod_init[1].amplitude.fixed = True
         fitx = xvals[gvals]
         fity = yvals[gvals]
