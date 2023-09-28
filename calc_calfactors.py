@@ -55,8 +55,12 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         gvals = (obstab["name"] == "BD+60 1753")
         obstab = obstab[gvals]
     elif subtrans:  # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
-        gvals = (obstab["name"] == "2MASS J17571324+6703409") & (abs(obstab["timemid"].value - 59818.3) < 1.)
-        obstab = obstab[gvals]
+        if filter == "F1280W":
+            gvals = (obstab["name"] == "J1802271")
+            obstab = obstab[gvals]
+        else:
+            gvals = (obstab["name"] == "2MASS J17571324+6703409") & (abs(obstab["timemid"].value - 59818.3) < 1.)
+            obstab = obstab[gvals]
 
     names = []
     xvals = []
@@ -64,6 +68,9 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
     cfactors_unc = []
     subarrs = []
     for k, cname in enumerate(obstab["name"]):
+        if cname == "J1802271":
+            cname = "2MASS J18022716+6043356"
+
         cfilter = obstab["filter"][k]
         oflux = obstab["aperture_sum_bkgsub"][k]
         oflux_unc = obstab["aperture_sum_bkgsub_err"][k]

@@ -10,12 +10,15 @@ from calc_calfactors import get_calfactors
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--filter",
+        help="filter to process",
+        default="F770W",
+        choices=["F770W", "F1280W"]
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
-
-    filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W",
-               "F1500W", "F1800W", "F2100W", "F2550W"]
 
     # make plot
     fontsize = 16
@@ -26,13 +29,13 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 5))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 5))
 
     startday = 59720.
 
     cfacs = get_calfactors(
         "ADwarfs",
-        "F770W",
+        args.filter,
         xaxisval="timemid",
         subtrans=True,
         startday=startday,
@@ -42,28 +45,40 @@ if __name__ == "__main__":
     yvals = cfacs[0]
     yvals_unc = cfacs[1]
     print(cfacs[3])
-    xvals = [2, 5, 4, 1, 3]
+    #if args.filter == "F1280W":
+    xvals = np.arange(len(yvals)) + 1
+    #else:
+    #    xvals = [2, 5, 4, 1, 3]
 
     mval = np.average(yvals)
     yvals /= mval
     yvals_unc /= mval
 
+    yvals = 1 / yvals
+
+    sindxs = np.argsort(cfacs[2])
+
     mstd = np.std(yvals) * 100.
 
-    ax.errorbar(xvals, yvals, yerr=yvals_unc, fmt="ko")
+    ax.errorbar(xvals, yvals[sindxs], yerr=yvals_unc, fmt="ko")
 
-    ax.set_xticks([1, 2, 3, 4, 5])
-    ax.set_xticklabels(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"])
+    #if args.filter == "F770W":
+    #    ax.set_xticks([1, 2, 3, 4, 5])
+    #    ax.set_xticklabels(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"])
+    #else:
+    ax.set_xticks(xvals)
+    ax.set_xticklabels(np.array(cfacs[3])[sindxs])
 
-    ax.plot([1.0, 5.0], [1.0, 1.0], "k:", alpha=0.5)
+    ax.plot([1.0, len(yvals)], [1.0, 1.0], "k:", alpha=0.5)
     ax.text(3, 0.9925, rf"$\sigma$ = {mstd:.2f}%")
 
-    ax.set_ylim(0.99, 1.01)
+    if args.filter == "F770W":
+        ax.set_ylim(0.99, 1.01)
     ax.set_ylabel("Fractional change")
 
     plt.tight_layout()
 
-    fname = "subtrans"
+    fname = f"subtrans_{args.filter}"
     if args.png:
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:
