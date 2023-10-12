@@ -30,6 +30,9 @@ if __name__ == "__main__":
 
     data_list = {}
 
+    fulltab = QTable(names=("filter", "amplitude", "tau", "photmjysr", "startday", "uncertainty"),
+                     dtype=("str", "f", "f", "f", "f", "f"))
+
     print("filter, nfac, comfac, oldfac / comfac, comfac / oldfac")
     for cfilter in filters:
         if cfilter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
@@ -56,15 +59,20 @@ if __name__ == "__main__":
         cfac_std = ntab[f"avecalfac_std_{cfilter}"][0]
 
         # account the sensitivity loss to the startday
-        perfac = (per_amp * np.exp(days/tau)) + 1.0
-        ncfacs = (perfac / (per_amp + 1)) * cfac_ave
+        #perfac = (per_amp * np.exp(days/tau)) + 1.0
+        #ncfacs = (perfac / (per_amp + 1)) * cfac_ave
+
+        amp = (per_amp / (per_amp + 1)) * cfac_ave
+        const = (1.0 / (per_amp + 1)) * cfac_ave
+        ncfacs = (amp * np.exp(days/tau)) + const
+
+        fulltab.add_row([cfilter, amp, -1.*tau, const, startday, cfac_std])
 
         # calculated the value for the first 100 days
         #  approximates Commissioning so we can compare to the previous value
         #  not used otherwise
         new_cfactor = np.average(ncfacs[comvals])
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
-
         
         #print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor, new_cfactor / pipe_cfactor)
         print(f"{cfilter} & {cfac_ave:.3f} & {new_cfactor:.3f} & {(new_cfactor / pipe_cfactor):.3f} \\\\")
@@ -108,6 +116,9 @@ if __name__ == "__main__":
                 data_list[f"{k}"].append(
                     (cfilter, csub, cfac, cfac_unc)
                 )
+
+    # save time dependent coefficients
+    fulltab.write("CalFacs/jwst_miri_photom_coeff.dat", format="ipac", overwrite=True)
 
     for k in range(n_photom):
         # create the photom reference file

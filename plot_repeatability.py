@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from astropy.modeling import models, fitting
+from astropy.table import QTable
 
 from calc_calfactors import get_calfactors
 
@@ -32,8 +33,10 @@ if __name__ == "__main__":
     for k, cfilter in enumerate(filters):
         if cfilter == "F2550W":
             bkgsub = True
+            rstr = "_bkgsub"
         else:
             bkgsub = False
+            rstr = ""
 
         cfacs = get_calfactors(
             "ADwarfs",
@@ -83,7 +86,7 @@ if __name__ == "__main__":
         mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
                     + models.Const1D(amplitude=0.70))
         mod_init[0].amplitude.bounds = [None, 0.0]
-        if cfilter in ["F560W", "F770W", "F1000W", "F1140W", "F1280W"]:
+        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
             mod_init[0].tau.fixed = True
         else:
             mod_init[0].tau.bounds = [-250., -100.]
@@ -100,8 +103,21 @@ if __name__ == "__main__":
         mod_dev = (mod_fit(fitx) - fity)
         mod_dev = np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
 
-        # pxvals = np.arange(min(fitx), max(fitx))
-        pxvals = np.arange(0.0, 500.)
+        # save the fit results
+        atab = QTable()
+        atab[f"fit_exp_amp_{cfilter}"] = [mod_fit[0].amplitude.value]
+        atab[f"fit_exp_tau_{cfilter}"] = [mod_fit[0].tau.value]
+        atab[f"fit_exp_const_{cfilter}"] = [mod_fit[1].amplitude.value]
+        atab[f"fit_exp_startday_{cfilter}"] = [startday]
+        atab[f"fit_exp_std_{cfilter}"] = [mod_dev]
+        sext = "_fit.dat"
+        atab.write(
+            f"CalFacs/miri_calfactors{rstr}_repeat_{cfilter}_fit.dat",
+            format="ascii.commented_header",
+            overwrite=True,
+        )
+
+        pxvals = np.arange(0, max(fitx))
 
         per_amp = 100. * (mod_fit[0].amplitude.value / mod_fit[1].amplitude.value)
 
