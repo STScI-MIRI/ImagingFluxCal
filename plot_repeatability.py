@@ -27,8 +27,9 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
+    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(16, 8))
 
+    ax = axs[0]
     startday = 59720.
     for k, cfilter in enumerate(filters):
         if cfilter == "F2550W":
@@ -86,11 +87,10 @@ if __name__ == "__main__":
         mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
                     + models.Const1D(amplitude=0.70))
         mod_init[0].amplitude.bounds = [None, 0.0]
-        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
+        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W"]:
             mod_init[0].tau.fixed = True
         else:
-            mod_init[0].tau.bounds = [-250., -100.]
-        # mod_init[1].amplitude.fixed = True
+            mod_init[0].tau.bounds = [-400., -100.]
         fitx = xvals[gvals]
         fity = yvals[gvals]
         sindxs = np.argsort(fitx)
@@ -124,13 +124,17 @@ if __name__ == "__main__":
         meanval = mod_fit[1].amplitude.value
         yvals = meanval / yvals
         # yvals_unc /= np.nanmean(yvals)
+        modvals = (meanval / mod_fit(pxvals))
 
         yoff = k * 0.25
-        ax.plot(xvals, yvals+yoff, "ko")
-        ax.plot([0., 500.], [1. + yoff, 1. + yoff], "k:", alpha=0.5)
-
-        modvals = (meanval / mod_fit(pxvals))
+        yoff2 = k * 0.05
+        ax.errorbar(xvals, yvals+yoff, yerr=yvals_unc, fmt="ko")
+        ax.plot([0., 700.], [1. + yoff, 1. + yoff], "k:", alpha=0.5)
         ax.plot(pxvals, modvals + yoff, "m-")
+
+        axs[1].errorbar(xvals, yvals+yoff2, yerr=yvals_unc, fmt="ko")
+        axs[1].plot([0., 700.], [1. + yoff2, 1. + yoff2], "k:", alpha=0.5)
+        axs[1].plot(pxvals, modvals + yoff2, "m-")
 
         shifty = 0.05
         ax.text(425., 1. + yoff + shifty, cfilter)
@@ -139,9 +143,17 @@ if __name__ == "__main__":
                 backgroundcolor="w",
                 fontsize=0.8*fontsize)
 
+        shifty2 = 0.01
+        axs[1].text(550., 1. + yoff2 + shifty2, cfilter)
+
     ax.set_ylim(0.9, 3.5)
     ax.set_xlabel(f"Time [MJD] - {startday} [days]")
     ax.set_ylabel("Fractional change (+ const)")
+
+    axs[1].set_xlim(400., 700.)
+    axs[1].set_ylim(0.98, 1.50)
+    axs[1].set_xlabel(f"Time [MJD] - {startday} [days]")
+    # axs[1].set_ylabel("Fractional change (+ const)")
 
     plt.tight_layout()
 
