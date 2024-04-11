@@ -86,7 +86,10 @@ if __name__ == "__main__":
         fit = fitting.LevMarLSQFitter()
         mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
                     + models.Const1D(amplitude=0.70))
+        # mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
+        #             + models.Linear1D(intercept=0.70, slope=0.0))
         mod_init[0].amplitude.bounds = [None, 0.0]
+        # mod_init[1].slope.bounds = [0.0, 1e-10]
         if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W"]:
             mod_init[0].tau.fixed = True
         else:
@@ -108,6 +111,8 @@ if __name__ == "__main__":
         atab[f"fit_exp_amp_{cfilter}"] = [mod_fit[0].amplitude.value]
         atab[f"fit_exp_tau_{cfilter}"] = [mod_fit[0].tau.value]
         atab[f"fit_exp_const_{cfilter}"] = [mod_fit[1].amplitude.value]
+        # atab[f"fit_exp_intercept_{cfilter}"] = [mod_fit[1].intercept.value]
+        # atab[f"fit_exp_slope_{cfilter}"] = [mod_fit[1].slope.value]
         atab[f"fit_exp_startday_{cfilter}"] = [startday]
         atab[f"fit_exp_std_{cfilter}"] = [mod_dev]
         sext = "_fit.dat"
@@ -120,8 +125,10 @@ if __name__ == "__main__":
         pxvals = np.arange(0, max(fitx))
 
         per_amp = 100. * (mod_fit[0].amplitude.value / mod_fit[1].amplitude.value)
+        # per_amp = 100. * (mod_fit[0].amplitude.value / mod_fit[1].intercept.value)
 
         meanval = mod_fit[1].amplitude.value
+        # meanval = mod_fit[1].intercept.value
         yvals = meanval / yvals
         # yvals_unc /= np.nanmean(yvals)
         modvals = (meanval / mod_fit(pxvals))
