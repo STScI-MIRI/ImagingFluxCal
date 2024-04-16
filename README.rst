@@ -42,8 +42,8 @@ Details
    Critial for coronagraphy to set the normalize="exit_pupil" to ensure the 
    WebbPSF is normalized to a total of 1.
 
-3. Compute encirciled energies and individual observation aperture corrections.
-   Uses `calc_encirciled_energy.py` to compute the encircled energies
+3. Compute encircled energies and individual observation aperture corrections.
+   Uses `calc_encircled_energy.py` to compute the encircled energies
    Uses observations of a bright stars and PSFs from WebbPSFs to compute aperture
    corrections.  Uses the bright star observations for the inner region and
    the WebbPSFs for the outer regions.
