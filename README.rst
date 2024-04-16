@@ -58,8 +58,7 @@ Details
    of step 3.
 
 5. Measure the flux in a fixed aperture: aper_one_filter.py.
-   Measures the flux using an aperture and background annulus including applying
-   the aperture correction.
+   Measures the flux using an aperture and background annulus.
    `aper_all.py` does this for all MIRI imaging and coronagraphic filters.
 
 6. Compute the sensitivity loss using the repeatability observations of 
@@ -69,7 +68,7 @@ Details
    to create similar fit coefficient data files for the Coronagraphic filters 
    based on interpolating the Imager results based on filter pivot wavelength.
 
-7. Compute the calibration factors: `calc_calcfactors.py`
+7. Compute the calibration factors: `calc_calfactors.py`
    Uses the results of 4, 5, and 6 to calculate the calibration factors for all
    observed absflux stars for one filter for all three types (if present).
    Produces a table giving the calibration factors for each observation.
