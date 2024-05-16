@@ -33,7 +33,8 @@ if __name__ == "__main__":
     fulltab = QTable(names=("filter", "amplitude", "tau", "photmjysr", "startday", "uncertainty"),
                      dtype=("str", "f", "f", "f", "f", "f"))
 
-    print("filter, nfac, comfac, oldfac / comfac, comfac / oldfac")
+    # print("filter, nfac, comfac, oldfac / comfac, comfac / oldfac")
+    print("filter CF      amp      CF_unc  tau    startday frac_from_commissioning")
     for cfilter in filters:
         if cfilter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
             rstr = "_bkgsub"
@@ -68,6 +69,9 @@ if __name__ == "__main__":
 
         fulltab.add_row([cfilter, amp, -1.*tau, const, startday, cfac_std])
 
+        frac_change = (const + amp) / const
+        print(f"{cfilter} {const:.4f}  {amp:.4f}  {cfac_std:.4f}  {-1.*tau:.1f}  {startday:.1f}  {frac_change:.3f}")
+
         # calculated the value for the first 100 days
         #  approximates Commissioning so we can compare to the previous value
         #  not used otherwise
@@ -75,7 +79,7 @@ if __name__ == "__main__":
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
         
         #print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor, new_cfactor / pipe_cfactor)
-        print(f"{cfilter} & {cfac_ave:.3f} & {new_cfactor:.3f} & {(new_cfactor / pipe_cfactor):.3f} \\\\")
+        # print(f"{cfilter} & {cfac_ave:.3f} & {new_cfactor:.3f} & {(new_cfactor / pipe_cfactor):.3f} \\\\")
 
         # use the time dependent factors for F2550W to define the ranges for the multiple
         # photom reference files
@@ -89,7 +93,7 @@ if __name__ == "__main__":
             begval.append(tval)
             for cval, cday in zip(ncfacs, days):
                 if ((cval - tval) / tval) > val_allowed:
-                    print(begday[-1], cday, begval[-1], cval)
+                    # print(begday[-1], cday, begval[-1], cval)
                     begday.append(cday)
                     begval.append(cval)
                     tval = cval
@@ -97,7 +101,7 @@ if __name__ == "__main__":
             begval.append(cval)
 
             n_photom = len(begday) - 1
-            print(f"# photom files needed: {n_photom}")
+            # print(f"# photom files needed: {n_photom}")
 
         # allowed subarrays
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
