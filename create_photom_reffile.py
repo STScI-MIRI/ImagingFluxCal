@@ -10,7 +10,7 @@ if __name__ == "__main__":
     # fmt: off
     image_filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                      "F1500W", "F1800W", "F2100W", "F2550W"]
-    image_filters = list(np.flip(image_filters))
+    # image_filters = list(np.flip(image_filters))
 
     coron_filters = ["F1065C", "F1140C", "F1550C", "F2300C"]
 
@@ -70,7 +70,8 @@ if __name__ == "__main__":
         fulltab.add_row([cfilter, amp, -1.*tau, const, startday, cfac_std])
 
         frac_change = (const + amp) / const
-        print(f"{cfilter} {const:.4f}  {amp:.4f}  {cfac_std:.4f}  {-1.*tau:.1f}  {startday:.1f}  {frac_change:.3f}")
+        # print(f"{cfilter} {const:.4f}  {amp:.4f}  {cfac_std:.4f}  {-1.*tau:.1f}  {startday:.1f}  {frac_change:.3f}")
+        print(f"{cfilter} & {const:.4f} & {amp:.4f} & {-1.*tau:.1f} &  {cfac_std:.4f} \\\\ ")
 
         # calculated the value for the first 100 days
         #  approximates Commissioning so we can compare to the previous value
@@ -83,81 +84,81 @@ if __name__ == "__main__":
 
         # use the time dependent factors for F2550W to define the ranges for the multiple
         # photom reference files
-        if cfilter == "F2550W":
-            val_allowed = 0.01
+        # if cfilter == "F2550W":
+        #     val_allowed = 0.01
 
-            tval = ncfacs[0]
-            begday = []
-            begval = []
-            begday.append(days[0])
-            begval.append(tval)
-            for cval, cday in zip(ncfacs, days):
-                if ((cval - tval) / tval) > val_allowed:
-                    # print(begday[-1], cday, begval[-1], cval)
-                    begday.append(cday)
-                    begval.append(cval)
-                    tval = cval
-            begday.append(cday)
-            begval.append(cval)
+        #     tval = ncfacs[0]
+        #     begday = []
+        #     begval = []
+        #     begday.append(days[0])
+        #     begval.append(tval)
+        #     for cval, cday in zip(ncfacs, days):
+        #         if ((cval - tval) / tval) > val_allowed:
+        #             # print(begday[-1], cday, begval[-1], cval)
+        #             begday.append(cday)
+        #             begval.append(cval)
+        #             tval = cval
+        #     begday.append(cday)
+        #     begval.append(cval)
 
-            n_photom = len(begday) - 1
-            # print(f"# photom files needed: {n_photom}")
+        #     n_photom = len(begday) - 1
+        #     # print(f"# photom files needed: {n_photom}")
 
-        # allowed subarrays
-        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-            subarray_values = ["FULL", csubarray[cfilter]]
-        else:
-            subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
+        # # allowed subarrays
+        # if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        #     subarray_values = ["FULL", csubarray[cfilter]]
+        # else:
+        #     subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
-        for k in range(n_photom):
-            gvals = (days >= begday[k]) & (days < begday[k+1])
-            cfac = np.average(ncfacs[gvals])
+        # for k in range(n_photom):
+        #     gvals = (days >= begday[k]) & (days < begday[k+1])
+        #     cfac = np.average(ncfacs[gvals])
 
-            if cfilter == "F2550W":
-                data_list[f"{k}"] = []
+        #     if cfilter == "F2550W":
+        #         data_list[f"{k}"] = []
 
-            for csub in subarray_values:
-                data_list[f"{k}"].append(
-                    (cfilter, csub, cfac, cfac_unc)
-                )
+        #     for csub in subarray_values:
+        #         data_list[f"{k}"].append(
+        #             (cfilter, csub, cfac, cfac_unc)
+        #         )
 
     # save time dependent coefficients
     fulltab.write("CalFacs/jwst_miri_photom_coeff.dat", format="ipac", overwrite=True)
 
-    for k in range(n_photom):
-        # create the photom reference file
-        data = np.array(
-            data_list[f"{k}"],
-            dtype=[
-                ("filter", "S12"),
-                ("subarray", "S15"),
-                ("photmjsr", "<f4"),
-                ("uncertainty", "<f4")
-            ],
-        )
+    # for k in range(n_photom):
+    #     # create the photom reference file
+    #     data = np.array(
+    #         data_list[f"{k}"],
+    #         dtype=[
+    #             ("filter", "S12"),
+    #             ("subarray", "S15"),
+    #             ("photmjsr", "<f4"),
+    #             ("uncertainty", "<f4")
+    #         ],
+    #     )
 
-        new_model = MirImgPhotomModel(phot_table=data)
-        d1 = datetime.datetime
-        new_model.meta.date = d1.isoformat(d1.today())
-        new_model.meta.filename = f"jwst_miri_photom_{k+1}.fits"
-        new_model.meta.telescope = "JWST"
-        new_model.meta.instrument.name = "MIRI"
-        new_model.meta.instrument.detector = "MIRIMAGE"
-        new_model.meta.exposure.type = "MIR_IMAGE"
-        new_model.meta.photometry.pixelarea_steradians = 2.84403609523084E-13
-        new_model.meta.photometry.pixelarea_arcsecsq = 0.0121
-        new_model.meta.instrument.band = "N/A"
-        new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|MIR_CORONCAL|"
-        new_model.meta.subarray = "GENERIC"
-        new_model.meta.reftype = "PHOTOM"
-        new_model.meta.author = "Karl Gordon"
-        # updates to next 2 lines needed
-        new_model.meta.pedigree = "INFLIGHT 2022-05-21 2023-09-10"
-        tm = Time(begday[k] + startday, format="mjd")
-        new_model.meta.useafter = tm.to_value(format="fits")[:-4]
-        new_model.meta.description = "Photom reference file."
-        entry = "The flux calibration factors calculated from exponential fits to the"
-        new_model.history.append(entry)
-        entry = "time dependent flux calibration factors.  "
-        new_model.history.append(entry)
-        new_model.save(f"Photom/jwst_miri_photom_flight_{k+1}.fits")
+    #     new_model = MirImgPhotomModel(phot_table=data)
+    #     d1 = datetime.datetime
+    #     new_model.meta.date = d1.isoformat(d1.today())
+    #     new_model.meta.filename = f"jwst_miri_photom_{k+1}.fits"
+    #     new_model.meta.telescope = "JWST"
+    #     new_model.meta.instrument.name = "MIRI"
+    #     new_model.meta.instrument.detector = "MIRIMAGE"
+    #     new_model.meta.exposure.type = "MIR_IMAGE"
+    #     new_model.meta.photometry.pixelarea_steradians = 2.84403609523084E-13
+    #     new_model.meta.photometry.pixelarea_arcsecsq = 0.0121
+    #     new_model.meta.instrument.band = "N/A"
+    #     new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|MIR_CORONCAL|"
+    #     new_model.meta.subarray = "GENERIC"
+    #     new_model.meta.reftype = "PHOTOM"
+    #     new_model.meta.author = "Karl Gordon"
+    #     # updates to next 2 lines needed
+    #     new_model.meta.pedigree = "INFLIGHT 2022-05-21 2023-09-10"
+    #     tm = Time(begday[k] + startday, format="mjd")
+    #     new_model.meta.useafter = tm.to_value(format="fits")[:-4]
+    #     new_model.meta.description = "Photom reference file."
+    #     entry = "The flux calibration factors calculated from exponential fits to the"
+    #     new_model.history.append(entry)
+    #     entry = "time dependent flux calibration factors.  "
+    #     new_model.history.append(entry)
+    #     new_model.save(f"Photom/jwst_miri_photom_flight_{k+1}.fits")

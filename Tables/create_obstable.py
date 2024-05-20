@@ -26,6 +26,8 @@ if __name__ == '__main__':
                 targname = hdr["TARGNAME"]
                 if targname == "J1757132":
                     targname = "2MASS J17571324+6703409"
+                if targname == "J1802271":
+                    targname = "2MASS J18022716+6043356"
                 name.append(targname)
                 filter.append(hdr["FILTER"])
                 pid.append(hdr["PROGRAM"][1:])
