@@ -268,6 +268,13 @@ def plot_calfactors(
     allnames = np.concatenate(allnames)
     xvals = np.concatenate(xvals)
 
+    # compute the number of times each star has been observed
+    # usful for reducing the weight of often observed stars so they do not dominate the average
+    uniq_names = np.unique(allnames, return_counts=True)
+    weights = np.zeros(len(xvals))
+    for cname, ccount in zip(uniq_names[0], uniq_names[1]):
+        weights[cname == allnames] = 1. / ccount
+
     # print the top 4 calibration factors with names
     # aindxs = np.flip(np.argsort(allfacs))
     # print(allfacs[atindxs[0:4]])
@@ -283,7 +290,10 @@ def plot_calfactors(
             gvals.append(True)
 
     meanvals = sigma_clipped_stats(allfacs[gvals], sigma=3, maxiters=5)
+    print(np.average(allfacs[gvals], weights=weights[gvals]))
     ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
+    ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
+    ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
     medval = meanvals[0]
     filtered_data = sigma_clip(allfacs[gvals], sigma=3, maxiters=5)
     ax.scatter((xvals[gvals])[filtered_data.mask], (allfacs[gvals])[filtered_data.mask],
@@ -293,7 +303,7 @@ def plot_calfactors(
     perstd = 100.0 * meanvals[2] / meanvals[0]
     # print(meanvals[0], meanvals[2], perstd)
 
-    if xaxisval == "timemid":
+    if (xaxisval == "timemid") and (not applytime):
         fit = fitting.LevMarLSQFitter()
         mod_init = (models.Exponential1D(tau=-200., amplitude=-0.2) 
                     + models.Const1D(amplitude=0.70))
@@ -341,7 +351,7 @@ def plot_calfactors(
         atab[f"avecalfac_{filter}"] = [meanvals[0]]
         atab[f"avecalfac_unc_{filter}"] = [meanvals[2] / np.sqrt(len(allfacs[gvals]))]
         atab[f"avecalfac_std_{filter}"] = [meanvals[2]]
-        if xaxisval == "timemid":
+        if (xaxisval == "timemid") and (not applytime):
             atab[f"fit_exp_amp_{filter}"] = [mod_fit[0].amplitude.value]
             atab[f"fit_exp_tau_{filter}"] = [mod_fit[0].tau.value]
             atab[f"fit_exp_const_{filter}"] = [mod_fit[1].amplitude.value]
@@ -539,9 +549,10 @@ if __name__ == "__main__":
         plot_calfactors(
             ax[0, 0],
             args.filter,
-            "mflux",
+            "rate",
             showleg=True,
             applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
@@ -558,6 +569,7 @@ if __name__ == "__main__":
             savefile=savefacs,
             showleg=False,
             applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
@@ -573,6 +585,7 @@ if __name__ == "__main__":
             "welldepth",
             showleg=False,
             applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
@@ -588,6 +601,7 @@ if __name__ == "__main__":
             "bkg",
             showleg=False,
             applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
             bkgsub=args.bkgsub,
             indivmos=args.indivmos,
             indivcals=args.indivcals,
