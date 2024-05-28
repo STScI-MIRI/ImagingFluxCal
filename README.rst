@@ -75,6 +75,7 @@ Details
    Produces plots of calibration factors versus model flux, time, well depth,
    etc.
    A meta plot for all the filters can be created using `plot_multi_calfacs.py`.
+   Example: `calc_calfactors.py --grieke --applytime --nocurval --noignore`
 
 8. Compute a set of photom reference files accounting for the time dependent
    sensitivity losses using `python create_photom_reffile.py`
