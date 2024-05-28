@@ -5,6 +5,8 @@ from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import numpy as np
 
+from statsmodels.stats.weightstats import DescrStatsW
+
 from astropy.table import QTable
 from astropy.stats import sigma_clipped_stats, sigma_clip
 from astropy.modeling import models, fitting
@@ -139,6 +141,7 @@ def plot_calfactors(
     x2ndaxis=True,
     notext=False,
     noignore=False,
+    legonly=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -184,6 +187,7 @@ def plot_calfactors(
         ignore_names = ["16 Cyg B", "del UMi"]
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
+    # not used
     modfac = {"HD 167060": 1.0/1.09,
               "16 Cyg B": 1.0/1.08,  # (0.93) 0.95 +/- 0.03
               "HD 37962": 1.0/1.06,  # (0.94) 0.96 +/- 0.01
@@ -264,7 +268,6 @@ def plot_calfactors(
     # allfacs = np.concatenate(allfacs)
     allfacs = np.array(allfacs)
     allfacuncs = np.concatenate(allfacuncs)
-    medval = np.nanmedian(allfacs)
     allnames = np.concatenate(allnames)
     xvals = np.concatenate(xvals)
 
@@ -289,19 +292,22 @@ def plot_calfactors(
         else:
             gvals.append(True)
 
-    meanvals = sigma_clipped_stats(allfacs[gvals], sigma=3, maxiters=5)
-    print(np.average(allfacs[gvals], weights=weights[gvals]))
-    ax.axhline(y=meanvals[0], color="k", linestyle="-", alpha=0.5)
-    ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
-    ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
-    medval = meanvals[0]
+    # use sigma clipping to remove the extreme outliers
     filtered_data = sigma_clip(allfacs[gvals], sigma=3, maxiters=5)
+
+    # compute the weighted mean
+    newvals = allfacs[gvals][~filtered_data.mask]
+    newweights = weights[gvals][~filtered_data.mask]
+    meanval = np.average(newvals, weights=newweights)
+    # compute weighted standard deviation
+    meanstd = DescrStatsW(newvals, weights=newweights, ddof=1).std
+
+    ax.axhline(y=meanval, color="k", linestyle="-", alpha=0.5)
+    ax.axhline(y=meanval + meanstd, color="k", linestyle=":", alpha=0.5)
+    ax.axhline(y=meanval - meanstd, color="k", linestyle=":", alpha=0.5)
     ax.scatter((xvals[gvals])[filtered_data.mask], (allfacs[gvals])[filtered_data.mask],
                s=200, facecolor="none", edgecolor="m")
-    # ax.axhline(y=meanvals[0] + meanvals[2], color="k", linestyle=":", alpha=0.5)
-    # ax.axhline(y=meanvals[0] - meanvals[2], color="k", linestyle=":", alpha=0.5)
-    perstd = 100.0 * meanvals[2] / meanvals[0]
-    # print(meanvals[0], meanvals[2], perstd)
+    perstd = 100.0 * meanstd / meanval
 
     if (xaxisval == "timemid") and (not applytime):
         fit = fitting.LevMarLSQFitter()
@@ -341,16 +347,16 @@ def plot_calfactors(
         ax.text(
             0.95,
             0.08,
-            fr"average: {meanvals[0]:.3f} $\pm$ {meanvals[2]:.3f} ({perstd:.1f}%)",
+            fr"average: {meanval:.3f} $\pm$ {meanstd:.3f} ({perstd:.1f}%)",
             transform=ax.transAxes,
             ha="right",
         )
 
     if savefile is not None:
         atab = QTable()
-        atab[f"avecalfac_{filter}"] = [meanvals[0]]
-        atab[f"avecalfac_unc_{filter}"] = [meanvals[2] / np.sqrt(len(allfacs[gvals]))]
-        atab[f"avecalfac_std_{filter}"] = [meanvals[2]]
+        atab[f"avecalfac_{filter}"] = [meanval]
+        atab[f"avecalfac_unc_{filter}"] = [meanstd / np.sqrt(len(allfacs[gvals]))]
+        atab[f"avecalfac_std_{filter}"] = [meanstd]
         if (xaxisval == "timemid") and (not applytime):
             atab[f"fit_exp_amp_{filter}"] = [mod_fit[0].amplitude.value]
             atab[f"fit_exp_tau_{filter}"] = [mod_fit[0].tau.value]
@@ -368,8 +374,8 @@ def plot_calfactors(
         otab = QTable()
         otab["name"] = allnames
         otab[f"calfac_{filter}"] = allfacs
-        otab[f"calfac_{filter}_mean_dev"] = allfacs / meanvals[0]
-        otab[f"calfac_{filter}_med_dev"] = allfacs / meanvals[1]
+        otab[f"calfac_{filter}_mean_dev"] = allfacs / meanval
+        otab[f"calfac_{filter}_med_dev"] = allfacs / meanstd
         otab[f"modflux_{filter}"] = xvals
         otab.write(savefile, overwrite=True)
 
@@ -399,11 +405,13 @@ def plot_calfactors(
     ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
+    ax.set_ylim(0.90* meanval, 1.10*meanval)
+
     def val2per(val):
-        return (val / medval) * 100.0 - 100.0
+        return (val / meanval) * 100.0 - 100.0
 
     def per2val(per):
-        return ((per + 100) / 100.0) * medval
+        return ((per + 100) / 100.0) * meanval
 
     if x2ndaxis:
         secax = ax.secondary_yaxis("right", functions=(val2per, per2val))
@@ -432,7 +440,11 @@ def plot_calfactors(
                 alpha=0.5,
             )
         )
-        leg1 = ax.legend(handles=first_legend, loc="upper right")
+        if legonly:
+            loc = "upper right"
+        else:
+            loc = "upper center"
+        leg1 = ax.legend(handles=first_legend, loc=loc)
         ax.add_artist(leg1)
 
         second_legend = []
@@ -450,7 +462,7 @@ def plot_calfactors(
                         alpha=0.5,
                     )
                 )
-        ax.legend(handles=second_legend, fontsize=9, loc="upper left")
+        ax.legend(handles=second_legend, fontsize=9, ncol=2, loc="upper left")
 
 
 if __name__ == "__main__":
@@ -496,6 +508,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--nocurval", help="do not plot the current calfactor", action="store_true",
+    )
+    parser.add_argument(
+        "--noignore", help="do not ignore any stars", action="store_true",
     )
     parser.add_argument(
         "--repeat", help="plot the repeatability observations", action="store_true",
@@ -561,6 +576,7 @@ if __name__ == "__main__":
             subtrans=args.subtrans,           
             applytime=args.applytime,
             grieke=args.grieke,
+            noignore=args.noignore,
         )
         plot_calfactors(
             ax[0, 1],
@@ -578,6 +594,7 @@ if __name__ == "__main__":
             subtrans=args.subtrans, 
             applytime=args.applytime,
             grieke=args.grieke,
+            noignore=args.noignore,
         )
         plot_calfactors(
             ax[1, 0],
@@ -594,6 +611,7 @@ if __name__ == "__main__":
             subtrans=args.subtrans,
             applytime=args.applytime,
             grieke=args.grieke,             
+            noignore=args.noignore,
         )
         plot_calfactors(
             ax[1, 1],
@@ -610,6 +628,7 @@ if __name__ == "__main__":
             subtrans=args.subtrans, 
             applytime=args.applytime,
             grieke=args.grieke,
+            noignore=args.noignore,
         )
         fname = f"miri_calfactors_{args.filter}_many"
     else:
@@ -630,6 +649,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             shownames=args.shownames,
+            noignore=args.noignore,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 

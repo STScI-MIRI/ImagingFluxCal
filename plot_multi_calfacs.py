@@ -13,6 +13,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--grieke", help="use GRieke models for the 10 G-stars, CALSPEC models for the rest", action="store_true",
     )
+    parser.add_argument(
+        "--xaxisval",
+        help="x-axis values",
+        default="mflux",
+        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime"],
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -41,6 +47,7 @@ if __name__ == "__main__":
         showcurval=False, 
         x2ndaxis=False,
         notext=True,
+        legonly=True,
     )
     ax[0,0].get_xaxis().set_visible(False)
     ax[0,0].get_yaxis().set_visible(False)
@@ -67,7 +74,7 @@ if __name__ == "__main__":
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             noignore = True
         else:
-            noignore = False
+            noignore = True
 
         m = k + 1
         px = m // 2
@@ -75,10 +82,7 @@ if __name__ == "__main__":
         plot_calfactors(
             ax[px, py],
             cfilter,
-            "mflux",
-            # "inttime",
-            # "welldepth",
-            # "timemid",
+            args.xaxisval,
             savefile=savefacs,
             showleg=False,
             showcurval=False,
@@ -98,6 +102,11 @@ if __name__ == "__main__":
     ax[0, 1].set_ylim(0.42, 0.48)
     ax[2, 0].set_ylim(1.0, 1.2)
     ax[4, 1].set_ylim(0.65, 0.8)
+
+    if args.xaxisval == "welldepth":
+        ax[0, 0].set_xlim(1e3, 1e5)
+    elif args.xaxisval == "rate":
+        ax[0, 0].set_xlim(1e1, 1e5)
 
     plt.tight_layout()
 
