@@ -78,7 +78,6 @@ if __name__ == "__main__":
         aapcor_std = np.std(apcors, axis=1)
 
         # print(cfilter)
-        # print(ees)
         # print(aradii)
         # print(aradii_std)
         # print(aapcor)
