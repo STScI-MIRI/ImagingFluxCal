@@ -2,6 +2,7 @@ FSTAGE="all"
 #FSTAGE="stage23"
 #EXTOPT="--nflat"
 EXTOPT="--onlynew"
+EXTOPT_BKGSUB=""
 
 for CBAND in F2300C F1550C F1140C F1065C F560W F770W F1000W F1130W F1280W F1500W F1800W F2100W F2550W
 
@@ -10,7 +11,7 @@ do
     python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=$FSTAGE $EXTOPT
     python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=$FSTAGE $EXTOPT
 
-    python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=stage3 --bkgsub $EXTOPT
-    python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=stage3 --bkgsub $EXTOPT
-    python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=stage3 --bkgsub $EXTOPT
+    python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=stage3 --bkgsub $EXTOPT_BKGSUB
+    python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=stage3 --bkgsub $EXTOPT_BKGSUB
+    python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=stage3 --bkgsub $EXTOPT_BKGSUB
 done

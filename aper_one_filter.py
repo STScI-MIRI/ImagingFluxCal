@@ -223,9 +223,11 @@ def aper_image(
     tphot["filter"] = filter.upper()
     tphot["subarray"] = hdul[0].header["SUBARRAY"]
     tphot["readpattern"] = hdul[0].header["READPATT"]
+    tphot["nints"] = hdul[0].header["NINTS"]
     tphot["ngroups"] = hdul[0].header["NGROUPS"]
     tphot["tgroup"] = hdul[0].header["TGROUP"]
     tphot["timemid"] = hdul[0].header["EXPMID"] * u.day
+    tphot["program"] = hdul[0].header["PROGRAM"]
     tphot["filename"] = filename
     tphot["aprad"] = aprad
     tphot["apcorr"] = apcor
