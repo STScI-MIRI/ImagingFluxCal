@@ -16,6 +16,11 @@ from jwstabsfluxcal.Spitzer.read_spitzer import read_irac
 model_names = {
     "g191b2b": "G 191-B2B",
     "gd71": "GD 71",
+    "gd153": "GD 153",
+    "lds749b": "LDS 749B",
+    "lawd87": "LAWD 87",  # same as LDS 749B
+    "wd1057_719": "WD 1057+719",
+    "pg1057_719": "PG 1057+719",  # same as WD 1057+719
     "1743045": "2MASS J17430448+6655015",
     "1757132": "2MASS J17571324+6703409",
     "1802271": "2MASS J18022716+6043356",
@@ -24,18 +29,23 @@ model_names = {
     "hd167060": "HD 167060",
     "hd180609": "HD 180609",
     "hd106252": "HD 106252",
+    "hd128998": "HD 128998",  # same as HR 5467
     "hd142331": "HD 142331",
     "hd159222": "HD 159222",
     "hd205905": "HD 205905",
     "hd37962": "HD 37962",
+    "hd55677": "HD 55677",
     "hd2811": "HD 2811",
+    "hr5467": "HR 5467",
     "p177d": "GSPC P177-D",
     "p330e": "GSPC P330-E",
     "16cygb": "16 Cyg B",
     "delumi": "del UMi",
+    "lamlep": "lam Lep",
+    "mucol": "mu Col",
     "10lac": "10 Lac",
     "18sco": "18 Sco",
-    "snap2": "SNAP 2",
+    "snap2": "SNAP-2",
     "ngc2506g31": "NGC2506 G31",
 }
 
@@ -173,7 +183,7 @@ if __name__ == "__main__":
     mmods = []
     for cfile in modfiles:
         ntab = QTable()
-        ntab["name"] = [model_names[(cfile.split("/")[1]).split("_")[0]]]
+        ntab["name"] = [model_names[(cfile.split("/")[1]).split("_stis")[0]]]
         print(f"working on {cfile}")
         onemod = get_band_fluxes(
             cfile, bandpasses, cfile.replace(".fits", "_absfluxbands.png"),
@@ -200,3 +210,4 @@ if __name__ == "__main__":
         extstr = f"{extstr}_grieke"
     mmods.write(f"Models/model_phot{extstr}.fits", overwrite=True)
     print(mmods)
+    print(mmods["name"].data)

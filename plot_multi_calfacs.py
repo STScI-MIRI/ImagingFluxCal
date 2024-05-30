@@ -19,6 +19,11 @@ if __name__ == "__main__":
         default="mflux",
         choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime"],
     )
+    parser.add_argument(
+        "--subarrcor",
+        help="Apply subarray correction factors",
+        action="store_true",
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -83,6 +88,7 @@ if __name__ == "__main__":
             ax[px, py],
             cfilter,
             args.xaxisval,
+            applysubarrcor=args.subarrcor,
             savefile=savefacs,
             showleg=False,
             showcurval=False,

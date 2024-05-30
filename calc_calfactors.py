@@ -72,6 +72,8 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
     for k, cname in enumerate(obstab["name"]):
         if cname == "J1802271":
             cname = "2MASS J18022716+6043356"
+        if cname == "GD153":
+            cname = "GD 153"
 
         cfilter = obstab["filter"][k]
         oflux = obstab["aperture_sum_bkgsub"][k]
@@ -82,7 +84,9 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         if applytime:   # fix the time dependancies
             ncfac = (amp * np.exp((obstab["timemid"][k].value - startday)/tau)) + 1.0
             # correct the sensitivity loss to the startday
-            oflux *= ncfac / (amp + 1.)
+            # oflux *= ncfac  #  / (amp + 1.)
+            # correct the sensitivity loss to the value at infinite time
+            oflux *= ncfac
 
         (mindx,) = np.where(modtab["name"] == cname)
         if len(mindx) < 1:
@@ -166,17 +170,31 @@ def plot_calfactors(
     # efac = 1.04
     efac = 1.0
     # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)       
+    # from F770W obs
+    # subarr_cor = {
+    #     "FULL": 1.0,
+    #     "BRIGHTSKY": 1.002 * efac,
+    #     "SUB256": 1.005 * efac,
+    #     "SUB128": 1.005 * efac,
+    #     "SUB64": 1.012 * efac,
+    #     "MASK1065": 1.0,
+    #     "MASK1140": 1.0,
+    #     "MASK1550": 1.0,
+    #     "MASKLYOT": 1.0,
+    # }
+    # from F1280W obs
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.002 * efac,
-        "SUB256": 1.005 * efac,
-        "SUB128": 1.005 * efac,
-        "SUB64": 1.012 * efac,
+        "BRIGHTSKY": 1.021 / 1.008,
+        "SUB256": 1.021 / 1.008,
+        "SUB128": 1.021 / 1.008,
+        "SUB64": 1.021 / 0.985,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
         "MASKLYOT": 1.0,
     }
+    print(subarr_cor)
 
     # print(subarr_cor)
     # ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
@@ -188,13 +206,13 @@ def plot_calfactors(
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
     # not used
-    modfac = {"HD 167060": 1.0/1.09,
-              "16 Cyg B": 1.0/1.08,  # (0.93) 0.95 +/- 0.03
-              "HD 37962": 1.0/1.06,  # (0.94) 0.96 +/- 0.01
-              "del UMi": 1.0/1.03,  # (0.97) 0.98 +/- 0.01 
-              "HD 106252": 1.0/1.06, # (0.94) 0.98 +/- 0.02
-              "HD 142331": 1.0/1.05,
-              "BD+60 1753": 1.0}  # 0.99 +/- 0.02
+    # modfac = {"HD 167060": 1.0/1.09,
+    #           "16 Cyg B": 1.0/1.08,  # (0.93) 0.95 +/- 0.03
+    #           "HD 37962": 1.0/1.06,  # (0.94) 0.96 +/- 0.01
+    #           "del UMi": 1.0/1.03,  # (0.97) 0.98 +/- 0.01 
+    #           "HD 106252": 1.0/1.06, # (0.94) 0.98 +/- 0.02
+    #           "HD 142331": 1.0/1.05,
+    #           "BD+60 1753": 1.0}  # 0.99 +/- 0.02
     # modfac = {"HD 167060": 1.0,
     #           "16 Cyg B": 1.0,
     #           "HD 37962": 1.0,
@@ -206,6 +224,7 @@ def plot_calfactors(
     allfacs = []
     allfacuncs = []
     allnames = []
+    allsubarr = []
     xvals = []
     meanfull = None
     for k, dir in enumerate(dirs):
@@ -222,6 +241,7 @@ def plot_calfactors(
             allfacuncs.append(cfacs[1])
             xvals.append(cfacs[2])
             allnames.append(cfacs[4])
+            allsubarr.append(cfacs[3])
             for cfactor, cfactor_unc, xval, subarray, cname in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3], cfacs[4]
             ):
@@ -269,6 +289,7 @@ def plot_calfactors(
     allfacs = np.array(allfacs)
     allfacuncs = np.concatenate(allfacuncs)
     allnames = np.concatenate(allnames)
+    allsubarr = np.concatenate(allsubarr)
     xvals = np.concatenate(xvals)
 
     # compute the number of times each star has been observed
@@ -293,7 +314,7 @@ def plot_calfactors(
             gvals.append(True)
 
     # use sigma clipping to remove the extreme outliers
-    filtered_data = sigma_clip(allfacs[gvals], sigma=3, maxiters=5)
+    filtered_data = sigma_clip(allfacs[gvals], sigma=4, maxiters=5)
 
     # compute the weighted mean
     newvals = allfacs[gvals][~filtered_data.mask]
@@ -381,7 +402,8 @@ def plot_calfactors(
 
     # get the current pipeline calibration factor and plot
     if showcurval:
-        cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
+        # cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
+        cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits")
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
         ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
 

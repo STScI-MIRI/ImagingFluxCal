@@ -157,7 +157,7 @@ if __name__ == "__main__":
     ax.set_xlabel(f"Time [MJD] - {startday} [days]")
     ax.set_ylabel("Fractional change (+ const)")
 
-    axs[1].set_xlim(400., 700.)
+    axs[1].set_xlim(400., 800.)
     axs[1].set_ylim(0.98, 1.50)
     axs[1].set_xlabel(f"Time [MJD] - {startday} [days]")
     # axs[1].set_ylabel("Fractional change (+ const)")
