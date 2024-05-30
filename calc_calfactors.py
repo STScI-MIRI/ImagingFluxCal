@@ -155,17 +155,26 @@ def plot_calfactors(
         dirs = ["ADwarfs"]
     pcols = ["b", "g", "r"]
 
-    psubsym = {
-        "FULL": "o",
-        "BRIGHTSKY": "s",
-        "SUB256": "p",
-        "SUB128": "P",
-        "SUB64": "*",
-        "MASK1065": "^",
-        "MASK1140": ">",
-        "MASK1550": "<",
-        "MASKLYOT": "v",
-    }
+    if legonly:
+        psubsym = {
+            "FULL": "o",
+            "BRIGHTSKY": "s",
+            "SUB256": "p",
+            "SUB128": "P",
+            "SUB64": "*",
+            "MASK1065": "^",
+            "MASK1140": ">",
+            "MASK1550": "<",
+            "MASKLYOT": "v",
+        }
+    else:
+        psubsym = {
+            "FULL": "o",
+            "BRIGHTSKY": "s",
+            "SUB256": "p",
+            "SUB128": "P",
+            "SUB64": "*",
+        }
 
     # efac = 1.04
     efac = 1.0
@@ -245,14 +254,15 @@ def plot_calfactors(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3], cfacs[4]
             ):
                 # print(cname, xval, cfactor)
-                ax.errorbar(
-                    [xval],
-                    [cfactor],
-                    yerr=[cfactor_unc],
-                    fmt=f"{pcols[k]}{psubsym[subarray]}",
-                    alpha=0.1,
-                    markersize=10,
-                )
+                # if not applysubarrcor:
+                #     ax.errorbar(
+                #         [xval],
+                #         [cfactor],
+                #         yerr=[cfactor_unc],
+                #         fmt=f"{pcols[k]}{psubsym[subarray]}",
+                #         alpha=0.1,
+                #         markersize=10,
+                #     )
                 if applysubarrcor:
                     cfactor = cfactor / subarr_cor[subarray]
                 allfacs.append(cfactor)
@@ -485,7 +495,11 @@ def plot_calfactors(
                         alpha=0.5,
                     )
                 )
-        ax.legend(handles=second_legend, fontsize=9, ncol=2, loc="upper left")
+        if legonly:
+            ncol = 2
+        else:
+            ncol = 1
+        ax.legend(handles=second_legend, fontsize=9, ncol=ncol, loc="upper left")
 
 
 if __name__ == "__main__":

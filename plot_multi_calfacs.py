@@ -63,7 +63,7 @@ if __name__ == "__main__":
     startday = 59720.
     for k, cfilter in enumerate(filters):
 
-        if cfilter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             bkgsub = True
             extstr = "_bkgsub"
         else:
@@ -105,9 +105,9 @@ if __name__ == "__main__":
         ax[px, py].text(0.1, 0.9, cfilter,
                         transform=ax[px, py].transAxes)
 
-    ax[0, 1].set_ylim(0.42, 0.48)
-    ax[2, 0].set_ylim(1.0, 1.2)
-    ax[4, 1].set_ylim(0.65, 0.8)
+    #ax[0, 1].set_ylim(0.42, 0.48)
+    #ax[2, 0].set_ylim(1.0, 1.2)
+    #ax[4, 1].set_ylim(0.65, 0.8)
 
     if args.xaxisval == "welldepth":
         ax[0, 0].set_xlim(1e3, 1e5)
