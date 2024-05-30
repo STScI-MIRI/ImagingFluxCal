@@ -5,8 +5,10 @@ import matplotlib.pyplot as plt
 
 from astropy.modeling import models, fitting
 from astropy.table import QTable
+from astropy.time import Time
 
 from calc_calfactors import get_calfactors
+
 
 if __name__ == "__main__":
 
@@ -52,7 +54,6 @@ if __name__ == "__main__":
         xvals = cfacs[2]
 
         # now get the two stars that we repeated twice to fill in the time gap
-
         for stype, sname in zip(["SolarAnalogs", "ADwarfs"], ["HD 37962", "del UMi"]):
             cfacs2 = get_calfactors(
                 stype,
@@ -84,7 +85,7 @@ if __name__ == "__main__":
         gvals = abs(xvals - (60070. - startday)) > 20.
 
         fit = fitting.LevMarLSQFitter()
-        mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
+        mod_init = (models.Exponential1D(tau=-225., amplitude=-0.2) 
                     + models.Const1D(amplitude=0.70))
         # mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
         #             + models.Linear1D(intercept=0.70, slope=0.0))
@@ -98,7 +99,6 @@ if __name__ == "__main__":
         fity = yvals[gvals]
         sindxs = np.argsort(fitx)
         mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs])
-        print(cfilter, mod_fit[0].tau.value)
 
         per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
         per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 2)))
@@ -134,14 +134,16 @@ if __name__ == "__main__":
         modvals = (meanval / mod_fit(pxvals))
 
         yoff = k * 0.25
-        yoff2 = k * 0.05
-        ax.errorbar(xvals, yvals+yoff, yerr=yvals_unc, fmt="ko")
-        ax.plot([0., 700.], [1. + yoff, 1. + yoff], "k:", alpha=0.5)
+        yoff2 = k * 0.1
+        ax.errorbar(xvals, yvals+yoff, yerr=yvals_unc, fmt="ko", alpha=0.5)
+        ax.plot([0., max(fitx)], [1. + yoff, 1. + yoff], "k:", alpha=0.5)
         ax.plot(pxvals, modvals + yoff, "m-")
 
-        axs[1].errorbar(xvals, yvals+yoff2, yerr=yvals_unc, fmt="ko")
-        axs[1].plot([0., 700.], [1. + yoff2, 1. + yoff2], "k:", alpha=0.5)
-        axs[1].plot(pxvals, modvals + yoff2, "m-")
+        modxvals = meanval / mod_fit(xvals)
+        axs[1].errorbar(xvals, (yvals - modxvals) + yoff2, yerr=yvals_unc, fmt="ko",
+                        alpha=0.5)
+        axs[1].plot([0., max(fitx)], [0. + yoff2, 0. + yoff2], "m:", alpha=0.5)
+        # axs[1].plot(pxvals, modvals + yoff2, "m-")
 
         shifty = 0.05
         ax.text(425., 1. + yoff + shifty, cfilter)
@@ -150,16 +152,19 @@ if __name__ == "__main__":
                 backgroundcolor="w",
                 fontsize=0.8*fontsize)
 
-        shifty2 = 0.01
-        axs[1].text(550., 1. + yoff2 + shifty2, cfilter)
+        shifty2 = 0.02
+        axs[1].text(550., 0. + yoff2 + shifty2, cfilter)
 
     ax.set_ylim(0.9, 3.5)
     ax.set_xlabel(f"Time [MJD] - {startday} [days]")
     ax.set_ylabel("Fractional change (+ const)")
 
-    axs[1].set_xlim(400., 800.)
-    axs[1].set_ylim(0.98, 1.50)
+    axs[1].yaxis.tick_right()
+    axs[1].yaxis.set_label_position("right")
+    #axs[1].set_xlim(400., 800.)
+    axs[1].set_ylim(-0.04, 1.00)
     axs[1].set_xlabel(f"Time [MJD] - {startday} [days]")
+    axs[1].set_ylabel("Data - Model Residual (+ const)")
     # axs[1].set_ylabel("Fractional change (+ const)")
 
     plt.tight_layout()
