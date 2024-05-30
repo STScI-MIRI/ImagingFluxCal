@@ -44,7 +44,6 @@ if __name__ == "__main__":
 
     yvals = cfacs[0]
     yvals_unc = cfacs[1]
-    print(cfacs[3])
     #if args.filter == "F1280W":
     xvals = np.arange(len(yvals)) + 1
     #else:
@@ -62,10 +61,6 @@ if __name__ == "__main__":
 
     ax.errorbar(xvals, yvals[sindxs], yerr=yvals_unc, fmt="ko")
 
-    #if args.filter == "F770W":
-    #    ax.set_xticks([1, 2, 3, 4, 5])
-    #    ax.set_xticklabels(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"])
-    #else:
     ax.set_xticks(xvals)
     ax.set_xticklabels(np.array(cfacs[3])[sindxs])
 
@@ -77,6 +72,14 @@ if __name__ == "__main__":
     ax.set_ylabel("Fractional change")
 
     plt.tight_layout()
+
+    # compute the factors compared to FULL
+    aves = []
+    for csub in ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]:
+        fvals = [True if tsub == csub else False for tsub in cfacs[3]]
+        aves.append(np.average(yvals[fvals]))
+    print(aves / aves[0])
+
 
     fname = f"subtrans_{args.filter}"
     if args.png:

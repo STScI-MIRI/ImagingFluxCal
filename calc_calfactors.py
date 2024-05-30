@@ -185,16 +185,15 @@ def plot_calfactors(
     # from F1280W obs
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.021 / 1.008,
-        "SUB256": 1.021 / 1.008,
-        "SUB128": 1.021 / 1.008,
-        "SUB64": 1.021 / 0.985,
+        "BRIGHTSKY": 1.0 / 0.983,
+        "SUB256": 1.0 / 0.985,
+        "SUB128": 1.0 / 0.98, #  1.0 / 0.945,
+        "SUB64": 1.0 / 0.969,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
         "MASKLYOT": 1.0,
     }
-    print(subarr_cor)
 
     # print(subarr_cor)
     # ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
@@ -322,6 +321,7 @@ def plot_calfactors(
     meanval = np.average(newvals, weights=newweights)
     # compute weighted standard deviation
     meanstd = DescrStatsW(newvals, weights=newweights, ddof=1).std
+    meanstdmean = meanstd / np.sqrt(np.sum(newweights))
 
     ax.axhline(y=meanval, color="k", linestyle="-", alpha=0.5)
     ax.axhline(y=meanval + meanstd, color="k", linestyle=":", alpha=0.5)
@@ -329,6 +329,7 @@ def plot_calfactors(
     ax.scatter((xvals[gvals])[filtered_data.mask], (allfacs[gvals])[filtered_data.mask],
                s=200, facecolor="none", edgecolor="m")
     perstd = 100.0 * meanstd / meanval
+    perstdmean = 100.0 * meanstdmean / meanval
 
     if (xaxisval == "timemid") and (not applytime):
         fit = fitting.LevMarLSQFitter()
@@ -368,7 +369,7 @@ def plot_calfactors(
         ax.text(
             0.95,
             0.08,
-            fr"average: {meanval:.3f} $\pm$ {meanstd:.3f} ({perstd:.1f}%)",
+            fr"average: {meanval:.3f} $\pm$ {meanstd:.3f} ({perstd:.1f}% / {perstdmean:.1f}%)",
             transform=ax.transAxes,
             ha="right",
         )
