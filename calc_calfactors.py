@@ -167,6 +167,13 @@ def plot_calfactors(
             "MASK1550": "<",
             "MASKLYOT": "v",
         }
+    elif "C" in filter:
+        psubsym = {
+            "MASK1065": "^",
+            "MASK1140": ">",
+            "MASK1550": "<",
+            "MASKLYOT": "v",
+        }
     else:
         psubsym = {
             "FULL": "o",
