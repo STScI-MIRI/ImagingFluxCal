@@ -55,31 +55,39 @@ if __name__ == "__main__":
 
     yvals = 1 / yvals
 
-    sindxs = np.argsort(cfacs[2])
+    # compute the factors compared to FULL
+    aves = []
+    subarrs = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
+    for csub in subarrs:
+        fvals = [True if tsub == csub else False for tsub in cfacs[3]]
+        aves.append(np.average(yvals[fvals]))
+    yvals /= aves[0]
+    aves = aves / aves[0]
 
+    sindxs = np.argsort(cfacs[2])
     mstd = np.std(yvals) * 100.
 
     ax.errorbar(xvals, yvals[sindxs], yerr=yvals_unc, fmt="ko")
+    if args.filter == "F1280W":
+        new_sub128 = np.average([aves[2], aves[4]])
+        aves[3] = new_sub128
+        ax.text(xvals[4], new_sub128 + 0.003, "Adopted", ha="center")
+        ax.errorbar(xvals[4], new_sub128, fmt="ko", alpha=0.5)
 
     ax.set_xticks(xvals)
     ax.set_xticklabels(np.array(cfacs[3])[sindxs])
 
     ax.plot([1.0, len(yvals)], [1.0, 1.0], "k:", alpha=0.5)
-    ax.text(3, 0.9925, rf"$\sigma$ = {mstd:.2f}%")
+    # ax.text(3, 0.9925, rf"$\sigma$ = {mstd:.2f}%")
+
+    for cave, csub in zip(aves, subarrs):
+        print(f"{csub} & {cave:.3f} \\\\")
 
     if args.filter == "F770W":
         ax.set_ylim(0.99, 1.01)
     ax.set_ylabel("Fractional change")
 
     plt.tight_layout()
-
-    # compute the factors compared to FULL
-    aves = []
-    for csub in ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]:
-        fvals = [True if tsub == csub else False for tsub in cfacs[3]]
-        aves.append(np.average(yvals[fvals]))
-    print(aves / aves[0])
-
 
     fname = f"subtrans_{args.filter}"
     if args.png:

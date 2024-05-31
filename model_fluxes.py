@@ -210,4 +210,3 @@ if __name__ == "__main__":
         extstr = f"{extstr}_grieke"
     mmods.write(f"Models/model_phot{extstr}.fits", overwrite=True)
     print(mmods)
-    print(mmods["name"].data)

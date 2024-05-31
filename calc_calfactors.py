@@ -330,7 +330,11 @@ def plot_calfactors(
             gvals.append(True)
 
     # use sigma clipping to remove the extreme outliers
-    filtered_data = sigma_clip(allfacs[gvals], sigma=4, maxiters=5)
+    if filter == "F2550W":
+        sigcut = 2.5
+    else:
+        sigcut = 3.0
+    filtered_data = sigma_clip(allfacs[gvals], sigma=sigcut, maxiters=5)
 
     # compute the weighted mean
     newvals = allfacs[gvals][~filtered_data.mask]
