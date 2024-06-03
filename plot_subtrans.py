@@ -74,6 +74,12 @@ if __name__ == "__main__":
         ax.text(xvals[4], new_sub128 + 0.003, "Adopted", ha="center")
         ax.errorbar(xvals[4], new_sub128, fmt="ko", alpha=0.5)
 
+        # based on visualizing all bands
+        new_bs = 1.0
+        aves[1] = new_bs
+        ax.text(xvals[2], new_bs + 0.003, "Adopted", ha="center")
+        ax.errorbar(xvals[2], new_bs, fmt="ko", alpha=0.5)
+
     ax.set_xticks(xvals)
     ax.set_xticklabels(np.array(cfacs[3])[sindxs])
 

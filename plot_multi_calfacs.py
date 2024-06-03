@@ -17,7 +17,7 @@ if __name__ == "__main__":
         "--xaxisval",
         help="x-axis values",
         default="mflux",
-        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime"],
+        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime", "srctype", "subarr"],
     )
     parser.add_argument(
         "--subarrcor",
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     plot_calfactors(
         ax[0, 0],
         "F560W",
-        "mflux",
+        args.xaxisval,
         showleg=True,
         showcurval=False, 
         x2ndaxis=False,
@@ -96,6 +96,7 @@ if __name__ == "__main__":
             applytime=applytime,
             grieke=args.grieke,
             noignore=noignore,
+            # fitline=True,
         )
         ax[px, py].set_ylabel("CalFactor")
         ax[px, py].set_title("")
@@ -116,7 +117,7 @@ if __name__ == "__main__":
 
     plt.tight_layout()
 
-    fname = "multi_calfacs"
+    fname = f"multi_calfacs_{args.xaxisval}"
     if args.grieke:
         fname = f"{fname}_grieke"
     if args.png:

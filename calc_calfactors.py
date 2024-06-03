@@ -104,6 +104,10 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
             xval = obstab["mean_bkg"][k]
         elif xaxisval == "inttime":
             xval = obstab["tgroup"][k] * obstab["ngroups"][k] * u.s
+        elif xaxisval == "srctype":
+            xval = dir
+        elif xaxisval == "subarr":
+            xval = obstab["subarray"][k]
         else:
             xval = mflux * 1e3
 
@@ -113,7 +117,10 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
             # if obstab["name"][k] not in ["HD 167060", "16 Cyg B", "HD 37962", "del UMi"]:
             # print(obstab["name"][k], cfactor)
             names.append(obstab["name"][k])
-            xvals.append(xval.value)
+            if isinstance(xval, u.Quantity):
+                xvals.append(xval.value)
+            else:
+                xvals.append(xval)
             cfactors.append(cfactor)
             cfactors_unc.append(cfactor_unc)
             subarrs.append(obstab["subarray"][k])
@@ -121,7 +128,22 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
     if xaxisval == "timemid":
         xvals = np.array(xvals) - startday
 
-    res = (np.array(cfactors), np.array(cfactors_unc), xvals, subarrs, names)
+    cfactors = np.array(cfactors)
+    cfactors_unc = np.array(cfactors_unc)
+    xvals = np.array(xvals)
+    subarrs = np.array(subarrs)
+    names = np.array(names)
+
+    # sort the subarrays
+    if xaxisval == "subarr":
+        sindxs = np.argsort(xvals)
+        cfactors = cfactors[sindxs]
+        cfactors_unc = cfactors_unc[sindxs]
+        xvals = xvals[sindxs]
+        subarrs = subarrs[sindxs]
+        names = names[sindxs]
+
+    res = (cfactors, cfactors_unc, xvals, subarrs, names)
     return res
 
 
@@ -146,6 +168,7 @@ def plot_calfactors(
     notext=False,
     noignore=False,
     legonly=False,
+    fitline=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -199,12 +222,13 @@ def plot_calfactors(
     #     "MASKLYOT": 1.0,
     # }
     # from F1280W obs
+    # modified BRIGHTSKY based on visualizing all the absflux observations
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.0 / 0.983,
-        "SUB256": 1.0 / 0.985,
-        "SUB128": 1.0 / 0.98, #  1.0 / 0.945,
-        "SUB64": 1.0 / 0.969,
+        "BRIGHTSKY": 1.00,  # 0.983,
+        "SUB256": 0.985,
+        "SUB128": 0.977,  #  0.945,
+        "SUB64": 0.969,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
@@ -271,7 +295,7 @@ def plot_calfactors(
                 #         markersize=10,
                 #     )
                 if applysubarrcor:
-                    cfactor = cfactor / subarr_cor[subarray]
+                    cfactor = cfactor * subarr_cor[subarray]
                 allfacs.append(cfactor)
                 ax.errorbar(
                     [xval],
@@ -285,7 +309,7 @@ def plot_calfactors(
                     ax.text(xval, cfactor, cname, rotation=45.) 
                 # plot a red circle around those not used in the average
                 if ((cname in ignore_names) or
-                    ((cname == "BD+60 1753") and (abs(xval - 60070.) < 20.))):
+                    ((cname == "BD+60 1753") and (xaxisval == "timmid") and (abs(xval - 60070.) < 20.))):
                     ax.scatter(
                         [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
                     )
@@ -324,14 +348,14 @@ def plot_calfactors(
     gvals = []
     for k, cname in enumerate(allnames):
         if ((cname in ignore_names) or
-                    ((cname == "BD+60 1753") and (abs(xvals[k] - 60070.) < 20.))):
+                    ((cname == "BD+60 1753") and (xaxisval == "timmid") and (abs(xval - 60070.) < 20.))):
             gvals.append(False)
         else:
             gvals.append(True)
 
     # use sigma clipping to remove the extreme outliers
     if filter == "F2550W":
-        sigcut = 2.5
+        sigcut = 3.0
     else:
         sigcut = 3.0
     filtered_data = sigma_clip(allfacs[gvals], sigma=sigcut, maxiters=5)
@@ -385,6 +409,19 @@ def plot_calfactors(
         # now see if we can derive the function to remove the trend
         # mod_div = (mod_fit[0].amplitude.value - mod_fit(pxvals))
         # print(mod_div)
+
+    # fit a line
+    if fitline:
+        fit = fitting.LinearLSQFitter()
+        mod_init = models.Linear1D()
+        fitx = ((xvals[gvals])[~filtered_data.mask])
+        fity = (allfacs[gvals])[~filtered_data.mask]
+        fitweights = weights[gvals][~filtered_data.mask]
+
+        sindxs = np.argsort(fitx)
+        mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs], weights=1.0/fitweights[sindxs])
+        pxvals = np.arange(min(fitx), max(fitx))
+        ax.plot(pxvals, mod_fit(pxvals), "m-")
 
     if not notext:
         ax.text(
@@ -443,6 +480,10 @@ def plot_calfactors(
     elif xaxisval == "inttime":
         ax.set_xscale("log")
         ax.set_xlabel("Integration Time [s]")
+    elif xaxisval == "srctype":
+        ax.tick_params(axis='x', labelrotation=60)
+    elif xaxisval == "subarr":
+        ax.tick_params(axis='x', labelrotation=60)
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
@@ -459,7 +500,7 @@ def plot_calfactors(
 
     if x2ndaxis:
         secax = ax.secondary_yaxis("right", functions=(val2per, per2val))
-        secax.set_ylabel("percentage")
+        secax.set_ylabel("percentage", rotation=270)
 
     if showleg:
 
@@ -477,7 +518,7 @@ def plot_calfactors(
                 [0],
                 marker="o",
                 color="w",
-                label="Not in average or fit",
+                label="Not in average",
                 markerfacecolor="none",
                 markeredgecolor="m",
                 markersize=13,
@@ -547,7 +588,7 @@ if __name__ == "__main__":
         "--xaxisval",
         help="x-axis values",
         default="mflux",
-        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime"],
+        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime", "srctype", "subarr"],
     )
     parser.add_argument(
         "--subarrcor",
@@ -575,7 +616,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--shownames", help="show the names for each point", action="store_true",
     )
-    parser.add_argument("--multiplot", help="4 panel plot", action="store_true")
+    parser.add_argument("--detmulti", help="4 panel plot of detector characteristics", action="store_true")
+    parser.add_argument("--sourcemulti", help="2 panel plot of source characteristics", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -603,7 +645,7 @@ if __name__ == "__main__":
         extstr = f"{extstr}_timecor"
 
     savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
-    if args.multiplot:
+    if args.detmulti:
         fontsize = 10
         font = {"size": fontsize}
         plt.rc("font", **font)
@@ -629,7 +671,7 @@ if __name__ == "__main__":
         plot_calfactors(
             ax[0, 1],
             args.filter,
-            "timemid",
+            "inttime",
             savefile=savefacs,
             showleg=False,
             applysubarrcor=args.subarrcor,
@@ -664,6 +706,30 @@ if __name__ == "__main__":
         plot_calfactors(
             ax[1, 1],
             args.filter,
+            "subarr",
+            showleg=False,
+            applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
+            bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
+            indivcals=args.indivcals,
+            eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans, 
+            applytime=args.applytime,
+            grieke=args.grieke,
+            noignore=args.noignore,
+        )
+        fname = f"miri_calfactors_{args.filter}_detmulti"
+    elif args.sourcemulti:
+        fontsize = 10
+        font = {"size": fontsize}
+        plt.rc("font", **font)
+
+        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
+        plot_calfactors(
+            ax[0],
+            args.filter,
             "bkg",
             showleg=False,
             applysubarrcor=args.subarrcor,
@@ -678,7 +744,24 @@ if __name__ == "__main__":
             grieke=args.grieke,
             noignore=args.noignore,
         )
-        fname = f"miri_calfactors_{args.filter}_many"
+        plot_calfactors(
+            ax[1],
+            args.filter,
+            "srctype",
+            showleg=False,
+            applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
+            bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
+            indivcals=args.indivcals,
+            eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans, 
+            applytime=args.applytime,
+            grieke=args.grieke,
+            noignore=args.noignore,
+        )
+        fname = f"miri_calfactors_{args.filter}_sourcemulti"
     else:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
         plot_calfactors(

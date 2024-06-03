@@ -29,10 +29,10 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(16, 8))
+    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(16, 10))
 
     ax = axs[0]
-    startday = 59720.
+    startday = 59720
     for k, cfilter in enumerate(filters):
         if cfilter == "F2550W":
             bkgsub = True
@@ -156,14 +156,28 @@ if __name__ == "__main__":
         axs[1].text(550., 0. + yoff2 + shifty2, cfilter)
 
     ax.set_ylim(0.9, 3.5)
-    ax.set_xlabel(f"Time [MJD] - {startday} [days]")
+    ntvals = np.arange(0, max(fitx), 100)
+    ax.set_xticks(ntvals)
+    ax.set_xticklabels(Time(ntvals + startday, format="mjd").to_value(format='iso', subfmt='date'))
+    ax.tick_params(axis='x', labelrotation=60)
+    ax.set_xlabel(f"Date")
     ax.set_ylabel("Fractional change (+ const)")
 
     axs[1].yaxis.tick_right()
     axs[1].yaxis.set_label_position("right")
     #axs[1].set_xlim(400., 800.)
     axs[1].set_ylim(-0.04, 1.00)
-    axs[1].set_xlabel(f"Time [MJD] - {startday} [days]")
+    axs[1].set_xlabel(f"Date")
+
+    axs[1].set_xticks(ntvals)
+    axs[1].set_xticklabels(Time(ntvals + startday, format="mjd").to_value(format='iso', subfmt='date'))
+    axs[1].tick_params(axis='x', labelrotation=60)
+
+    secax = ax.secondary_xaxis('top')
+    secax.set_xlabel(f"MJD Time - {startday} [days]")
+    secax = axs[1].secondary_xaxis('top')
+    secax.set_xlabel(f"MJD Time - {startday} [days]")
+
     axs[1].set_ylabel("Data - Model Residual (+ const)")
     # axs[1].set_ylabel("Fractional change (+ const)")
 
