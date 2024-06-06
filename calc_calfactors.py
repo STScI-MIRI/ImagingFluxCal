@@ -13,6 +13,24 @@ from astropy.modeling import models, fitting
 import astropy.units as u
 
 
+def compute_stats(allfacs, weights, sigcut):
+    "compute the weighted mean, weighted std, and weighted std of the mean"
+
+    if len(allfacs) > 2:
+        filtered_data = sigma_clip(allfacs, sigma=sigcut, maxiters=5)
+
+        # compute the weighted mean
+        newvals = allfacs[~filtered_data.mask]
+        newweights = weights[~filtered_data.mask]
+        meanval = np.average(newvals, weights=newweights)
+        # compute weighted standard deviation
+        meanstd = DescrStatsW(newvals, weights=newweights, ddof=1).std
+        meanstdmean = meanstd / np.sqrt(np.sum(newweights))
+        return (meanval, meanstd, meanstdmean, filtered_data)    
+    else:
+        return (None, None, None, None)
+
+
 def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7,
                    repeat=False, subtrans=False, startday=59720., applytime=False,
                    grieke=False):
@@ -260,6 +278,9 @@ def plot_calfactors(
 
     startday = 59720.
 
+    if xaxisval == "subarr":
+        ax.scatter(psubsym.keys(), np.full(len(psubsym.keys()), 1.0), facecolors='none', edgecolors='none')
+
     allfacs = []
     allfacuncs = []
     allnames = []
@@ -358,15 +379,8 @@ def plot_calfactors(
         sigcut = 3.0
     else:
         sigcut = 3.0
-    filtered_data = sigma_clip(allfacs[gvals], sigma=sigcut, maxiters=5)
 
-    # compute the weighted mean
-    newvals = allfacs[gvals][~filtered_data.mask]
-    newweights = weights[gvals][~filtered_data.mask]
-    meanval = np.average(newvals, weights=newweights)
-    # compute weighted standard deviation
-    meanstd = DescrStatsW(newvals, weights=newweights, ddof=1).std
-    meanstdmean = meanstd / np.sqrt(np.sum(newweights))
+    meanval, meanstd, meanstdmean, filtered_data = compute_stats(allfacs[gvals], weights[gvals], sigcut)
 
     ax.axhline(y=meanval, color="k", linestyle="-", alpha=0.5)
     ax.axhline(y=meanval + meanstd, color="k", linestyle=":", alpha=0.5)
@@ -375,6 +389,13 @@ def plot_calfactors(
                s=200, facecolor="none", edgecolor="m")
     perstd = 100.0 * meanstd / meanval
     perstdmean = 100.0 * meanstdmean / meanval
+
+    # compute averages in bins
+    if xaxisval == "subarr":
+        for csub in psubsym.keys():
+            gvals2 = xvals[gvals] == csub
+            res = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
+            print(csub, res[0:3])
 
     if (xaxisval == "timemid") and (not applytime):
         fit = fitting.LevMarLSQFitter()
