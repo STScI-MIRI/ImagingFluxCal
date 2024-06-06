@@ -71,6 +71,8 @@ if __name__ == "__main__":
             extstr = ""
         if args.grieke:
             extstr = f"{extstr}_grieke"
+        if args.subarrcor:
+            extstr = f"{extstr}_subarracor"
 
         applytime = True
 

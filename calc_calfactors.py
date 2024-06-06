@@ -16,7 +16,7 @@ import astropy.units as u
 def compute_stats(allfacs, weights, sigcut):
     "compute the weighted mean, weighted std, and weighted std of the mean"
 
-    if len(allfacs) > 2:
+    if len(allfacs) > 3:
         filtered_data = sigma_clip(allfacs, sigma=sigcut, maxiters=5)
 
         # compute the weighted mean
@@ -26,14 +26,25 @@ def compute_stats(allfacs, weights, sigcut):
         # compute weighted standard deviation
         meanstd = DescrStatsW(newvals, weights=newweights, ddof=1).std
         meanstdmean = meanstd / np.sqrt(np.sum(newweights))
-        return (meanval, meanstd, meanstdmean, filtered_data)    
+        return (meanval, meanstd, meanstdmean, filtered_data)
     else:
         return (None, None, None, None)
 
 
-def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, indivcals=False, eefraction=0.7,
-                   repeat=False, subtrans=False, startday=59720., applytime=False,
-                   grieke=False):
+def get_calfactors(
+    dir,
+    filter,
+    xaxisval="mflux",
+    bkgsub=False,
+    indivmos=False,
+    indivcals=False,
+    eefraction=0.7,
+    repeat=False,
+    subtrans=False,
+    startday=59720.0,
+    applytime=False,
+    grieke=False,
+):
     """
     Read in the observed and model fluxes and computer the calibration factors
     """
@@ -72,14 +83,16 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
 
     if repeat:  # only use observations of BD+60 1753 and HD 2811
         # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
-        gvals = (obstab["name"] == "BD+60 1753")
+        gvals = obstab["name"] == "BD+60 1753"
         obstab = obstab[gvals]
     elif subtrans:  # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
         if filter == "F1280W":
-            gvals = (obstab["name"] == "J1802271")
+            gvals = obstab["name"] == "J1802271"
             obstab = obstab[gvals]
         else:
-            gvals = (obstab["name"] == "2MASS J17571324+6703409") & (abs(obstab["timemid"].value - 59818.3) < 1.)
+            gvals = (obstab["name"] == "2MASS J17571324+6703409") & (
+                abs(obstab["timemid"].value - 59818.3) < 1.0
+            )
             obstab = obstab[gvals]
 
     names = []
@@ -99,8 +112,8 @@ def get_calfactors(dir, filter, xaxisval="mflux", bkgsub=False, indivmos=False, 
         apcorr = obstab["apcorr"][k]
         pixarea = obstab["pixarea"][k]
 
-        if applytime:   # fix the time dependancies
-            ncfac = (amp * np.exp((obstab["timemid"][k].value - startday)/tau)) + 1.0
+        if applytime:  # fix the time dependancies
+            ncfac = (amp * np.exp((obstab["timemid"][k].value - startday) / tau)) + 1.0
             # correct the sensitivity loss to the startday
             # oflux *= ncfac  #  / (amp + 1.)
             # correct the sensitivity loss to the value at infinite time
@@ -226,7 +239,7 @@ def plot_calfactors(
 
     # efac = 1.04
     efac = 1.0
-    # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)       
+    # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)
     # from F770W obs
     # subarr_cor = {
     #     "FULL": 1.0,
@@ -243,7 +256,7 @@ def plot_calfactors(
     # modified BRIGHTSKY based on visualizing all the absflux observations
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.00,  # 0.983,
+        "BRIGHTSKY": 1.015,  # 0.983,
         "SUB256": 0.985,
         "SUB128": 0.977,  #  0.945,
         "SUB64": 0.969,
@@ -266,7 +279,7 @@ def plot_calfactors(
     # modfac = {"HD 167060": 1.0/1.09,
     #           "16 Cyg B": 1.0/1.08,  # (0.93) 0.95 +/- 0.03
     #           "HD 37962": 1.0/1.06,  # (0.94) 0.96 +/- 0.01
-    #           "del UMi": 1.0/1.03,  # (0.97) 0.98 +/- 0.01 
+    #           "del UMi": 1.0/1.03,  # (0.97) 0.98 +/- 0.01
     #           "HD 106252": 1.0/1.06, # (0.94) 0.98 +/- 0.02
     #           "HD 142331": 1.0/1.05,
     #           "BD+60 1753": 1.0}  # 0.99 +/- 0.02
@@ -276,10 +289,15 @@ def plot_calfactors(
     #           "del UMi": 1.0,
     #           "HD 180609": 1.0}
 
-    startday = 59720.
+    startday = 59720.0
 
     if xaxisval == "subarr":
-        ax.scatter(psubsym.keys(), np.full(len(psubsym.keys()), 1.0), facecolors='none', edgecolors='none')
+        ax.scatter(
+            psubsym.keys(),
+            np.full(len(psubsym.keys()), 1.0),
+            facecolors="none",
+            edgecolors="none",
+        )
 
     allfacs = []
     allfacuncs = []
@@ -291,10 +309,17 @@ def plot_calfactors(
         # print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
         if exists(f"{dir}/{filter}_eefrac{eefraction}_phot.fits"):
             cfacs = get_calfactors(
-                dir, filter, xaxisval=xaxisval, bkgsub=bkgsub,
-                indivmos=indivmos, indivcals=indivcals,
-                eefraction=eefraction, repeat=repeat, subtrans=subtrans,
-                startday=startday, applytime=applytime,
+                dir,
+                filter,
+                xaxisval=xaxisval,
+                bkgsub=bkgsub,
+                indivmos=indivmos,
+                indivcals=indivcals,
+                eefraction=eefraction,
+                repeat=repeat,
+                subtrans=subtrans,
+                startday=startday,
+                applytime=applytime,
                 grieke=grieke,
             )
             # allfacs.append(cfacs[0])
@@ -327,17 +352,24 @@ def plot_calfactors(
                     markersize=10,
                 )
                 if shownames:
-                    ax.text(xval, cfactor, cname, rotation=45.) 
+                    ax.text(xval, cfactor, cname, rotation=45.0)
                 # plot a red circle around those not used in the average
-                if ((cname in ignore_names) or
-                    ((cname == "BD+60 1753") and (xaxisval == "timmid") and (abs(xval - 60070.) < 20.))):
+                if (cname in ignore_names) or (
+                    (cname == "BD+60 1753")
+                    and (xaxisval == "timmid")
+                    and (abs(xval - 60070.0) < 20.0)
+                ):
                     ax.scatter(
-                        [xval], [cfactor], s=150, facecolor="none", edgecolor="m",
+                        [xval],
+                        [cfactor],
+                        s=150,
+                        facecolor="none",
+                        edgecolor="m",
                     )
-                    #print(modfac[cname])
-                    #ax.scatter(
+                    # print(modfac[cname])
+                    # ax.scatter(
                     #    [xval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
-                    #)                   
+                    # )
                 if subarray == "FULL":
                     meanfull = cfactor
             # special code to give the differneces between the subarrays
@@ -358,7 +390,7 @@ def plot_calfactors(
     uniq_names = np.unique(allnames, return_counts=True)
     weights = np.zeros(len(xvals))
     for cname, ccount in zip(uniq_names[0], uniq_names[1]):
-        weights[cname == allnames] = 1. / ccount
+        weights[cname == allnames] = 1.0 / ccount
 
     # print the top 4 calibration factors with names
     # aindxs = np.flip(np.argsort(allfacs))
@@ -368,8 +400,11 @@ def plot_calfactors(
     # ignore the 4 "high" stars
     gvals = []
     for k, cname in enumerate(allnames):
-        if ((cname in ignore_names) or
-                    ((cname == "BD+60 1753") and (xaxisval == "timmid") and (abs(xval - 60070.) < 20.))):
+        if (cname in ignore_names) or (
+            (cname == "BD+60 1753")
+            and (xaxisval == "timmid")
+            and (abs(xval - 60070.0) < 20.0)
+        ):
             gvals.append(False)
         else:
             gvals.append(True)
@@ -380,31 +415,56 @@ def plot_calfactors(
     else:
         sigcut = 3.0
 
-    meanval, meanstd, meanstdmean, filtered_data = compute_stats(allfacs[gvals], weights[gvals], sigcut)
+    meanval, meanstd, meanstdmean, filtered_data = compute_stats(
+        allfacs[gvals], weights[gvals], sigcut
+    )
 
     ax.axhline(y=meanval, color="k", linestyle="-", alpha=0.5)
     ax.axhline(y=meanval + meanstd, color="k", linestyle=":", alpha=0.5)
     ax.axhline(y=meanval - meanstd, color="k", linestyle=":", alpha=0.5)
-    ax.scatter((xvals[gvals])[filtered_data.mask], (allfacs[gvals])[filtered_data.mask],
-               s=200, facecolor="none", edgecolor="m")
+    ax.scatter(
+        (xvals[gvals])[filtered_data.mask],
+        (allfacs[gvals])[filtered_data.mask],
+        s=200,
+        facecolor="none",
+        edgecolor="m",
+    )
     perstd = 100.0 * meanstd / meanval
     perstdmean = 100.0 * meanstdmean / meanval
 
     # compute averages in bins
-    if xaxisval == "subarr":
-        for csub in psubsym.keys():
+    if (xaxisval == "subarr") and "SUB256" in psubsym.keys():
+        gvals2 = xvals[gvals] == "SUB256"
+        refres = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
+        outvals = np.zeros((len(psubsym.keys()), 3))
+        print(filter)
+        for k, csub in enumerate(psubsym.keys()):
             gvals2 = xvals[gvals] == csub
             res = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
-            print(csub, res[0:3])
+            if res[0] is not None:
+                print(csub, res[0] / refres[0])
+                outvals[k, :] = res[0:3]
+        if savefile:
+            otab = QTable()
+            otab["name"] =  list(psubsym.keys())
+            otab["calfacs"] = outvals[:, 0]
+            otab["calfacs_unc"] = outvals[:, 1]
+            otab["calfacs_uncmean"] = outvals[:, 2]
+            otab.write(
+                savefile.replace(".fits", "_subarr.dat"),
+                overwrite=True,
+                format="ascii.commented_header",
+            )
 
     if (xaxisval == "timemid") and (not applytime):
         fit = fitting.LevMarLSQFitter()
-        mod_init = (models.Exponential1D(tau=-200., amplitude=-0.2) 
-                    + models.Const1D(amplitude=0.70))
+        mod_init = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Const1D(
+            amplitude=0.70
+        )
         mod_init[0].amplitude.bounds = [None, 0.0]
         mod_init[0].tau.fixed = True
         # mod_init[1].amplitude.fixed = True
-        fitx = ((xvals[gvals])[~filtered_data.mask])
+        fitx = (xvals[gvals])[~filtered_data.mask]
         fity = (allfacs[gvals])[~filtered_data.mask]
         sindxs = np.argsort(fitx)
         mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs])
@@ -412,17 +472,17 @@ def plot_calfactors(
         per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
         per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 2)))
 
-        mod_dev = (mod_fit(fitx) - fity)
+        mod_dev = mod_fit(fitx) - fity
         mod_dev = np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
 
         pxvals = np.arange(min(fitx), max(fitx))
         ax.plot(pxvals, mod_fit(pxvals), "m-")
 
-        per_amp = 100. * (mod_fit[0].amplitude.value / mod_fit[1].amplitude.value)
+        per_amp = 100.0 * (mod_fit[0].amplitude.value / mod_fit[1].amplitude.value)
         ax.text(
             0.95,
             0.02,
-            fr"fit: {mod_fit[0].amplitude.value:.3f} exp(x/{mod_fit[0].tau.value:.1f}) + {mod_fit[1].amplitude.value:.3f} ({per_dev:.1f}%) [amp: {per_amp:.1f}%]",
+            rf"fit: {mod_fit[0].amplitude.value:.3f} exp(x/{mod_fit[0].tau.value:.1f}) + {mod_fit[1].amplitude.value:.3f} ({per_dev:.1f}%) [amp: {per_amp:.1f}%]",
             transform=ax.transAxes,
             ha="right",
         )
@@ -435,12 +495,14 @@ def plot_calfactors(
     if fitline:
         fit = fitting.LinearLSQFitter()
         mod_init = models.Linear1D()
-        fitx = ((xvals[gvals])[~filtered_data.mask])
+        fitx = (xvals[gvals])[~filtered_data.mask]
         fity = (allfacs[gvals])[~filtered_data.mask]
         fitweights = weights[gvals][~filtered_data.mask]
 
         sindxs = np.argsort(fitx)
-        mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs], weights=1.0/fitweights[sindxs])
+        mod_fit = fit(
+            mod_init, fitx[sindxs], fity[sindxs], weights=1.0 / fitweights[sindxs]
+        )
         pxvals = np.arange(min(fitx), max(fitx))
         ax.plot(pxvals, mod_fit(pxvals), "m-")
 
@@ -448,7 +510,7 @@ def plot_calfactors(
         ax.text(
             0.95,
             0.08,
-            fr"average: {meanval:.3f} $\pm$ {meanstd:.3f} ({perstd:.1f}% / {perstdmean:.1f}%)",
+            rf"average: {meanval:.3f} $\pm$ {meanstd:.3f} ({perstd:.1f}% / {perstdmean:.1f}%)",
             transform=ax.transAxes,
             ha="right",
         )
@@ -502,16 +564,16 @@ def plot_calfactors(
         ax.set_xscale("log")
         ax.set_xlabel("Integration Time [s]")
     elif xaxisval == "srctype":
-        ax.tick_params(axis='x', labelrotation=60)
+        ax.tick_params(axis="x", labelrotation=60)
     elif xaxisval == "subarr":
-        ax.tick_params(axis='x', labelrotation=60)
+        ax.tick_params(axis="x", labelrotation=60)
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Flux [mJy]")
     ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
-    ax.set_ylim(0.90* meanval, 1.10*meanval)
+    ax.set_ylim(0.90 * meanval, 1.10 * meanval)
 
     def val2per(val):
         return (val / meanval) * 100.0 - 100.0
@@ -590,7 +652,9 @@ if __name__ == "__main__":
         # fmt: on
     )
     parser.add_argument(
-        "--bkgsub", help="use results from background subtraction run", action="store_true"
+        "--bkgsub",
+        help="use results from background subtraction run",
+        action="store_true",
     )
     parser.add_argument(
         "--indivmos",
@@ -603,13 +667,25 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
-        "--eefrac", default=0.7, help="Enclosed energy fraction to use", type=float,
+        "--eefrac",
+        default=0.7,
+        help="Enclosed energy fraction to use",
+        type=float,
     )
     parser.add_argument(
         "--xaxisval",
         help="x-axis values",
         default="mflux",
-        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime", "srctype", "subarr"],
+        choices=[
+            "mflux",
+            "timemid",
+            "rate",
+            "welldepth",
+            "bkg",
+            "inttime",
+            "srctype",
+            "subarr",
+        ],
     )
     parser.add_argument(
         "--subarrcor",
@@ -617,28 +693,50 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
-        "--nocurval", help="do not plot the current calfactor", action="store_true",
+        "--nocurval",
+        help="do not plot the current calfactor",
+        action="store_true",
     )
     parser.add_argument(
-        "--noignore", help="do not ignore any stars", action="store_true",
+        "--noignore",
+        help="do not ignore any stars",
+        action="store_true",
     )
     parser.add_argument(
-        "--repeat", help="plot the repeatability observations", action="store_true",
+        "--repeat",
+        help="plot the repeatability observations",
+        action="store_true",
     )
     parser.add_argument(
-        "--subtrans", help="plot the subarray transfer observations", action="store_true",
+        "--subtrans",
+        help="plot the subarray transfer observations",
+        action="store_true",
     )
     parser.add_argument(
-        "--applytime", help="remove the time dependent variation", action="store_true",
+        "--applytime",
+        help="remove the time dependent variation",
+        action="store_true",
     )
     parser.add_argument(
-        "--grieke", help="use GRieke models for the 10 G-stars, CALSPEC models for the rest", action="store_true",
+        "--grieke",
+        help="use GRieke models for the 10 G-stars, CALSPEC models for the rest",
+        action="store_true",
     )
     parser.add_argument(
-        "--shownames", help="show the names for each point", action="store_true",
+        "--shownames",
+        help="show the names for each point",
+        action="store_true",
     )
-    parser.add_argument("--detmulti", help="4 panel plot of detector characteristics", action="store_true")
-    parser.add_argument("--sourcemulti", help="2 panel plot of source characteristics", action="store_true")
+    parser.add_argument(
+        "--detmulti",
+        help="4 panel plot of detector characteristics",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--sourcemulti",
+        help="2 panel plot of source characteristics",
+        action="store_true",
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -684,7 +782,7 @@ if __name__ == "__main__":
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
-            subtrans=args.subtrans,           
+            subtrans=args.subtrans,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -702,7 +800,7 @@ if __name__ == "__main__":
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
-            subtrans=args.subtrans, 
+            subtrans=args.subtrans,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -721,7 +819,7 @@ if __name__ == "__main__":
             repeat=args.repeat,
             subtrans=args.subtrans,
             applytime=args.applytime,
-            grieke=args.grieke,             
+            grieke=args.grieke,
             noignore=args.noignore,
         )
         plot_calfactors(
@@ -736,7 +834,7 @@ if __name__ == "__main__":
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
-            subtrans=args.subtrans, 
+            subtrans=args.subtrans,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -760,7 +858,7 @@ if __name__ == "__main__":
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
-            subtrans=args.subtrans, 
+            subtrans=args.subtrans,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -777,7 +875,7 @@ if __name__ == "__main__":
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
-            subtrans=args.subtrans, 
+            subtrans=args.subtrans,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -797,7 +895,7 @@ if __name__ == "__main__":
             indivcals=args.indivcals,
             eefraction=args.eefrac,
             repeat=args.repeat,
-            subtrans=args.subtrans, 
+            subtrans=args.subtrans,
             applytime=args.applytime,
             grieke=args.grieke,
             shownames=args.shownames,

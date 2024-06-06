@@ -3,7 +3,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from astropy.modeling import models, fitting
+from astropy.table import QTable
 
 from calc_calfactors import get_calfactors
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     # compute the factors compared to FULL
     aves = []
-    subarrs = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
+    subarrs = np.array(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"])
     for csub in subarrs:
         fvals = [True if tsub == csub else False for tsub in cfacs[3]]
         aves.append(np.average(yvals[fvals]))
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         ax.errorbar(xvals[4], new_sub128, fmt="ko", alpha=0.5)
 
         # based on visualizing all bands
-        new_bs = 1.0
+        new_bs = 1.015
         aves[1] = new_bs
         ax.text(xvals[2], new_bs + 0.003, "Adopted", ha="center")
         ax.errorbar(xvals[2], new_bs, fmt="ko", alpha=0.5)
@@ -88,6 +88,12 @@ if __name__ == "__main__":
 
     for cave, csub in zip(aves, subarrs):
         print(f"{csub} & {cave:.3f} \\\\")
+    otab = QTable()
+    otab["name"] = subarrs
+    otab["FracChange"] = aves
+    otab.write(f"CalFacs/subarray_transfer_{args.filter}.dat",
+               overwrite=True,
+               format="ascii.commented_header")
 
     if args.filter == "F770W":
         ax.set_ylim(0.99, 1.01)
