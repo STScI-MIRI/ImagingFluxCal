@@ -68,17 +68,17 @@ if __name__ == "__main__":
     mstd = np.std(yvals) * 100.
 
     ax.errorbar(xvals, yvals[sindxs], yerr=yvals_unc, fmt="ko")
-    if args.filter == "F1280W":
-        new_sub128 = np.average([aves[2], aves[4]])
-        aves[3] = new_sub128
-        ax.text(xvals[4], new_sub128 + 0.003, "Adopted", ha="center")
-        ax.errorbar(xvals[4], new_sub128, fmt="ko", alpha=0.5)
+    #if args.filter == "F1280W":
+    #    new_sub128 = np.average([aves[2], aves[4]])
+    #    aves[3] = new_sub128
+    #    ax.text(xvals[4], new_sub128 + 0.003, "Adopted", ha="center")
+    #    ax.errorbar(xvals[4], new_sub128, fmt="ko", alpha=0.5)
 
         # based on visualizing all bands
-        new_bs = 1.015
-        aves[1] = new_bs
-        ax.text(xvals[2], new_bs + 0.003, "Adopted", ha="center")
-        ax.errorbar(xvals[2], new_bs, fmt="ko", alpha=0.5)
+    #    new_bs = 1.015
+    #    aves[1] = new_bs
+    #    ax.text(xvals[2], new_bs + 0.003, "Adopted", ha="center")
+    #    ax.errorbar(xvals[2], new_bs, fmt="ko", alpha=0.5)
 
     ax.set_xticks(xvals)
     ax.set_xticklabels(np.array(cfacs[3])[sindxs])
