@@ -48,8 +48,12 @@ def aper_image(
     targname = hdul[0].header["TARGNAME"]
     if targname == "J1757132":
         targname = "2MASS J17571324+6703409"
+    elif targname == "J1802271":
+        targname = "2MASS J18022716+6043356"
     elif targname == "HD 1452331":
         targname = "HD 142331"
+    elif targname == "GD153":
+        targname = "GD 153"
     filter = hdul[0].header["FILTER"]
     photmjysr = hdul[1].header["PHOTMJSR"]
     print(targname, filter)

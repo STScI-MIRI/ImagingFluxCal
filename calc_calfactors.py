@@ -597,7 +597,7 @@ def plot_calfactors(
     ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
-    ax.set_ylim(0.90 * meanval, 1.10 * meanval)
+    # ax.set_ylim(0.90 * meanval, 1.10 * meanval)
 
     def val2per(val):
         return (val / meanval) * 100.0 - 100.0
