@@ -16,7 +16,7 @@ import astropy.units as u
 def compute_stats(allfacs, weights, sigcut):
     "compute the weighted mean, weighted std, and weighted std of the mean"
 
-    if len(allfacs) > 3:
+    if len(allfacs) > 0:
         filtered_data = sigma_clip(allfacs, sigma=sigcut, maxiters=5)
 
         # compute the weighted mean
@@ -24,8 +24,12 @@ def compute_stats(allfacs, weights, sigcut):
         newweights = weights[~filtered_data.mask]
         meanval = np.average(newvals, weights=newweights)
         # compute weighted standard deviation
-        meanstd = DescrStatsW(newvals, weights=newweights, ddof=1).std
-        meanstdmean = meanstd / np.sqrt(np.sum(newweights))
+        if len(allfacs) > 3:
+            meanstd = DescrStatsW(newvals, weights=newweights, ddof=1).std
+            meanstdmean = meanstd / np.sqrt(np.sum(newweights))
+        else:
+            meanstd = 0.0
+            meanstdmean = 0.0
         return (meanval, meanstd, meanstdmean, filtered_data)
     else:
         return (None, None, None, None)

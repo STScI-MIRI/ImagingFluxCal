@@ -34,7 +34,7 @@ if __name__ == "__main__":
                "SUB128": 3.0,
                "SUB64": 4.0}
 
-    adopted_vals = [1.02, 1.03, 1.0, 0.9925, 0.985]
+    adopted_vals = [1.02, 1.03, 1.0, 1.01, 0.985]
     ax.plot(list(subarrs.keys()), adopted_vals, "*", markersize=20, label="Adopted")
 
     atab = QTable.read("CalFacs/subarray_transfer_F770W.dat",
