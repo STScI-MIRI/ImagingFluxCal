@@ -15,7 +15,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # make plot
-    fontsize = 16
+    fontsize = 20
     font = {"size": fontsize}
     plt.rc("font", **font)
     plt.rc("lines", linewidth=2)
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 7))
 
     # subarrs = np.array(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"])
 
@@ -34,8 +34,10 @@ if __name__ == "__main__":
                "SUB128": 3.0,
                "SUB64": 4.0}
 
-    adopted_vals = [1.02, 1.03, 1.0, 1.01, 0.985]
+    adopted_vals = np.array([1.02, 1.03, 1.0, 1.01, 0.985])
     ax.plot(list(subarrs.keys()), adopted_vals, "*", markersize=20, label="Adopted")
+    for cave, csub in zip(adopted_vals / adopted_vals[0], list(subarrs.keys())):
+        print(f"{csub} & {cave:.3f} \\\\")
 
     atab = QTable.read("CalFacs/subarray_transfer_F770W.dat",
                       format="ascii.commented_header")
@@ -50,6 +52,7 @@ if __name__ == "__main__":
     # add in measurements from each of the bands
     filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                "F1500W", "F1800W", "F2100W", "F2550W"]
+    syms = ["v", "^", ">", "<", "p", "X", "D", "P", "d"]
     subarrs_vals = np.array((list(subarrs.values())))
     for k, cfilter in enumerate(filters):
         tab = QTable.read(f"CalFacs/miri_calfactors_timecor_{cfilter}_subarr.dat",
@@ -60,10 +63,10 @@ if __name__ == "__main__":
         gvals = relvals > 0.0
         ax.errorbar(subarrs_vals[gvals] + (k+3)*delt, relvals[gvals], 
                     yerr=relvals_unc[gvals],
-                    fmt="o", label=cfilter, alpha=0.5)
+                    fmt=syms[k], label=cfilter, alpha=0.5)
     
-    ax.set_ylabel("SUB256 Fractional change")
-    ax.set_ylim(0.95, 1.06)
+    ax.set_ylabel("Flux Density relative to SUB256")
+    ax.set_ylim(0.92, 1.06)
 
     ax.legend(ncol=3, fontsize=0.7*fontsize)
 

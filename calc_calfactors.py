@@ -241,36 +241,19 @@ def plot_calfactors(
             "SUB64": "*",
         }
 
-    # efac = 1.04
-    efac = 1.0
-    # updated based on array-bkg subtraction reductions - better centroids (9 Mar 2023)
-    # from F770W obs
-    # subarr_cor = {
-    #     "FULL": 1.0,
-    #     "BRIGHTSKY": 1.002 * efac,
-    #     "SUB256": 1.005 * efac,
-    #     "SUB128": 1.005 * efac,
-    #     "SUB64": 1.012 * efac,
-    #     "MASK1065": 1.0,
-    #     "MASK1140": 1.0,
-    #     "MASK1550": 1.0,
-    #     "MASKLYOT": 1.0,
-    # }
-    # from F1280W obs
-    # modified BRIGHTSKY based on visualizing all the absflux observations
+    # based on calibration factor ratios and dedicated subarray transfer observations
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.015,  # 0.983,
-        "SUB256": 0.985,
-        "SUB128": 0.977,  #  0.945,
-        "SUB64": 0.969,
+        "BRIGHTSKY": 1.01, 
+        "SUB256": 0.98,
+        "SUB128": 0.99, 
+        "SUB64": 0.966,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
         "MASKLYOT": 1.0,
     }
 
-    # print(subarr_cor)
     # ignore_names = ["HD 167060", "16 Cyg B", "HD 37962", "del UMi", "HD 106252", "HD 142331"]
     if noignore:
         ignore_names = []
@@ -464,7 +447,7 @@ def plot_calfactors(
     if xaxisval == "srctype":
         gvals2 = xvals[gvals] == "ADwarfs"
         refres = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
-        outvals = np.zeros((len(psubsym.keys()), 3))
+        outvals = np.zeros((len(dirs), 3))
         print(filter)
         for k, csub in enumerate(dirs):
             gvals2 = xvals[gvals] == csub
@@ -474,7 +457,7 @@ def plot_calfactors(
                 outvals[k, :] = res[0:3]
         if savefile:
             otab = QTable()
-            otab["name"] =  list(dires)
+            otab["name"] =  list(dirs)
             otab["calfacs"] = outvals[:, 0]
             otab["calfacs_unc"] = outvals[:, 1]
             otab["calfacs_uncmean"] = outvals[:, 2]
@@ -601,7 +584,7 @@ def plot_calfactors(
     ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
-    # ax.set_ylim(0.90 * meanval, 1.10 * meanval)
+    ax.set_ylim(0.90 * meanval, 1.10 * meanval)
 
     def val2per(val):
         return (val / meanval) * 100.0 - 100.0
