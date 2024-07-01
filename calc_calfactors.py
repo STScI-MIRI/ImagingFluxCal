@@ -580,8 +580,8 @@ def plot_calfactors(
         ax.tick_params(axis="x", labelrotation=60)
     else:
         ax.set_xscale("log")
-        ax.set_xlabel("Flux [mJy]")
-    ax.set_ylabel("Calibration Factors [(MJy/sr) / (DN/s)]")
+        ax.set_xlabel("Model Flux Density [mJy]")
+    ax.set_ylabel("C [(MJy/sr) / (DN/s)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
     ax.set_ylim(0.90 * meanval, 1.10 * meanval)
@@ -856,9 +856,26 @@ if __name__ == "__main__":
         font = {"size": fontsize}
         plt.rc("font", **font)
 
-        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
+        fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
         plot_calfactors(
-            ax[0],
+            ax[0,0],
+            args.filter,
+            "mflux",
+            showleg=True,
+            applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
+            bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
+            indivcals=args.indivcals,
+            eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans,
+            applytime=args.applytime,
+            grieke=args.grieke,
+            noignore=args.noignore,
+        )
+        plot_calfactors(
+            ax[0,1],
             args.filter,
             "bkg",
             showleg=False,
@@ -875,7 +892,24 @@ if __name__ == "__main__":
             noignore=args.noignore,
         )
         plot_calfactors(
-            ax[1],
+            ax[1,0],
+            args.filter,
+            "timemid",
+            showleg=False,
+            applysubarrcor=args.subarrcor,
+            showcurval=(not args.nocurval),
+            bkgsub=args.bkgsub,
+            indivmos=args.indivmos,
+            indivcals=args.indivcals,
+            eefraction=args.eefrac,
+            repeat=args.repeat,
+            subtrans=args.subtrans,
+            applytime=args.applytime,
+            grieke=args.grieke,
+            noignore=args.noignore,
+        )
+        plot_calfactors(
+            ax[1,1],
             args.filter,
             "srctype",
             showleg=False,
