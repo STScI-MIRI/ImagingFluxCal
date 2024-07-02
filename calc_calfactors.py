@@ -62,6 +62,7 @@ def get_calfactors(
         extstr = f"{extstr}_indivcals"
     # read in observed fluxes
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
+    print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
     if grieke:
         mfilename = "Models/model_phot_grieke.fits"
@@ -771,8 +772,12 @@ if __name__ == "__main__":
         extstr = "_indivcals"
     if args.repeat:
         extstr = f"{extstr}_repeat"
+    if args.grieke:
+        extstr = f"{extstr}_grieke"
     if args.applytime:
         extstr = f"{extstr}_timecor"
+    if args.subarrcor:
+        extstr = f"{extstr}_subarracor"
 
     savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
     if args.detmulti:

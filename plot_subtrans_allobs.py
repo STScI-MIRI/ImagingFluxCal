@@ -55,10 +55,11 @@ if __name__ == "__main__":
     syms = ["v", "^", ">", "<", "p", "X", "D", "P", "d"]
     subarrs_vals = np.array((list(subarrs.values())))
     for k, cfilter in enumerate(filters):
-        tab = QTable.read(f"CalFacs/miri_calfactors_timecor_{cfilter}_subarr.dat",
+        tab = QTable.read(f"CalFacs/miri_calfactors_grieke_timecor_{cfilter}_subarr.dat",
                           format="ascii.commented_header")
         # relative to SUB256 as it is the one always present
         relvals = (tab["calfacs"][2] / tab["calfacs"])  # * atab["FracChange"][2] 
+        print(cfilter, relvals)
         relvals_unc = relvals * (tab["calfacs_uncmean"] / tab["calfacs"])
         gvals = relvals > 0.0
         ax.errorbar(subarrs_vals[gvals] + (k+3)*delt, relvals[gvals], 

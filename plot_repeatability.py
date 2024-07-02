@@ -48,6 +48,7 @@ if __name__ == "__main__":
             repeat=True,
             startday=startday,
             bkgsub=bkgsub,
+            grieke=True,
         )
         yvals = cfacs[0]
         yvals_unc = cfacs[1]
@@ -61,6 +62,7 @@ if __name__ == "__main__":
                 xaxisval="timemid",
                 startday=startday,
                 bkgsub=bkgsub,
+                grieke=True,
             )       
             nvals = [pname == sname for pname in cfacs2[4]]
             if (np.sum(nvals) > 1):
