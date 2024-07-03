@@ -107,11 +107,29 @@ Figures
 
 6. Subarray dependence: `plot_subtrans_allobs.py`
 
+7. Source dependencies:
+   `calc_calfactors.py -filter=F1280W --sourcemulti --grieke --subarrcor --applytime --noignore --nocurval`
+
+8. Source type dependence: `plot_srctype_allobs.py`
+
+9. Detector dependencies:
+   `calc_calfactors.py -filter=F1280W --detmulti --grieke --subarrcor --applytime --noignore --nocurval`
+
+Appendix Figures:
+
+`plot_multi_calfacs --xaxisval=mflux --griek --subarrcor`
+
+Replace `mflux` with desired xaxis value.
+
 Tables
 ------
 
-1. Observation details: `Tables/create_obstable.py`
+1, 2, 3. Observation details: `Tables/create_obstable.py`
    Output to screen.
 
-2. Aperture corrections: `create_apcor_reffile.py`
+4. Aperture corrections: `create_apcor_reffile.py`
    Portion of output to the screen.
+
+5. Output from creating Subarray dependence.
+
+6. Output from `create_photom_reffile.py`.
