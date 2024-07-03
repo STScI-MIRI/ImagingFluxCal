@@ -37,10 +37,14 @@ Details
    There are some differences from the defaults for MIRI.
    `pipeline_all` runs everything for all MIRI imaging/coronagraphic filters.
 
-2. Compute WebbPSFs: `calc_webbpsfs.py`.
-   Runs WebbPSFs with specfic parameters for MIRI.
+2a. Compute WebbPSFs: `calc_webbpsfs.py`.
+   Runs WebbPSFs with specfic parameters for MIRI.  Needs to be done for each filter.
    Critial for coronagraphy to set the normalize="exit_pupil" to ensure the 
    WebbPSF is normalized to a total of 1.
+
+2b. Add the cruciform to the F560W and F770W WebbPSFs: `add_cruciform_to_webbpsfs`.
+   Adds the cruciform artifact to the WebbPSFs based on a simple model.  Done for 
+   each filter.
 
 3. Compute encircled energies and individual observation aperture corrections.
    Uses `calc_encircled_energy.py` to compute the encircled energies
@@ -68,7 +72,9 @@ Details
    to create similar fit coefficient data files for the Coronagraphic filters 
    based on interpolating the Imager results based on filter pivot wavelength.
 
-7. Compute the calibration factors: `calc_calfactors.py`
+7. Compute the model flux densities in all the filters: `model_fluxes.py --grieke`
+
+8. Compute the calibration factors: `calc_calfactors.py`
    Uses the results of 4, 5, and 6 to calculate the calibration factors for all
    observed absflux stars for one filter for all three types (if present).
    Produces a table giving the calibration factors for each observation.
@@ -77,7 +83,7 @@ Details
    A meta plot for all the filters can be created using `plot_multi_calfacs.py`.
    Example: `calc_calfactors.py --grieke --applytime --nocurval --noignore`
 
-8. Compute a set of photom reference files accounting for the time dependent
+9. Compute a set of photom reference files accounting for the time dependent
    sensitivity losses using `python create_photom_reffile.py`
 
 Figures

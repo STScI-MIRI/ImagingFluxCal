@@ -342,7 +342,7 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
 
     # get the aper info from the apcor reference file
     # tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
-    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_27jul23.fits")
+    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_2jul24.fits")
     # repfilter = {
     #     "F1065C": "F1130W",
     #     "F1140C": "F1130W",
