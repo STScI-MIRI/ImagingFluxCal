@@ -59,7 +59,6 @@ if __name__ == "__main__":
                           format="ascii.commented_header")
         # relative to SUB256 as it is the one always present
         relvals = (tab["calfacs"][2] / tab["calfacs"])  # * atab["FracChange"][2] 
-        print(cfilter, relvals)
         relvals_unc = relvals * (tab["calfacs_uncmean"] / tab["calfacs"])
         gvals = relvals > 0.0
         ax.errorbar(subarrs_vals[gvals] + (k+3)*delt, relvals[gvals], 

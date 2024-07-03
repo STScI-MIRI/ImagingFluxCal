@@ -17,6 +17,8 @@ if __name__ == '__main__':
             if exists(f"{ctype}/{cfilter}/"):
                 print(f"{ctype}/{cfilter}/")
                 aper_one_filter(ctype, cfilter)
+                if cfilter == "F2550W":
+                    aper_one_filter(ctype, cfilter, bkgsub=True)
                 #aper_one_filter(ctype, cfilter, indivcals=True)
                 #aper_one_filter(ctype, cfilter, indivcals=True, bkgsub=True)
                 #aper_one_filter(ctype, cfilter, indivmos=True)

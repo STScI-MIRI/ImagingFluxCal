@@ -90,11 +90,12 @@ def get_calfactors(
         # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
         gvals = obstab["name"] == "BD+60 1753"
         obstab = obstab[gvals]
-    elif subtrans:  # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
+    elif subtrans: 
         if filter == "F1280W":
-            gvals = obstab["name"] == "J1802271"
+            gvals = (obstab["name"] == "2MASS J18022716+6043356") & (
+                abs(obstab["timemid"].value - 60177.3) < 1.0)
             obstab = obstab[gvals]
-        else:
+        else: # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
             gvals = (obstab["name"] == "2MASS J17571324+6703409") & (
                 abs(obstab["timemid"].value - 59818.3) < 1.0
             )
@@ -287,6 +288,11 @@ def plot_calfactors(
             edgecolors="none",
         )
 
+    if bkgsub:
+        extstr = "_bkgsub"
+    else:
+        extstr = ""
+
     allfacs = []
     allfacuncs = []
     allnames = []
@@ -294,8 +300,8 @@ def plot_calfactors(
     xvals = []
     meanfull = None
     for k, dir in enumerate(dirs):
-        # print(f"{dir}/{filter}_eefrac{eefraction}_phot.fits")
-        if exists(f"{dir}/{filter}_eefrac{eefraction}_phot.fits"):
+        print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
+        if exists(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits"):
             cfacs = get_calfactors(
                 dir,
                 filter,
