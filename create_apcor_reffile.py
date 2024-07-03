@@ -54,6 +54,10 @@ if __name__ == "__main__":
                           f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat",
                           f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat"]
         filters.append(cfilter)
+    # remove HD 2811 as the jwst 1.13.4 reductions look odd
+    cfilter = "F1550C"
+    files[cfilter] = [f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat",
+                      f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat"]
 
     fulltab = QTable(names=("filter", "subarray", "eefraction", "radius", "radius_unc", "apcor", "apcor_unc",
                             "skyin", "skyin_unc", "skyout", "skyout_unc"),
@@ -147,4 +151,4 @@ if __name__ == "__main__":
     new_model.save("ApCor/jwst_miri_apcorr_flight_2jul24.fits")
 
     print(fulltab)
-    fulltab.write("ApCor/jwst_miri_apcorr_flight_12sep23_full.fits", overwrite=True)
+    fulltab.write("ApCor/jwst_miri_apcorr_flight_2jul24_full.fits", overwrite=True)

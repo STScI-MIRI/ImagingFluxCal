@@ -90,6 +90,12 @@ if __name__ == "__main__":
                 f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
                 f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
             ]
+        # remove HD 2811 as the jwst 1.13.4 reductions look odd
+        cfilter = "F1550C"
+        files[cfilter] = [
+            f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+            f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+        ]
     else:
         star = "BD+60 1753"
         if args.example:
@@ -133,7 +139,7 @@ if __name__ == "__main__":
             offval = 0.0
 
         # get aperture corrections and uncertainties
-        tab = QTable.read("ApCor/jwst_miri_apcorr_flight_27jul23_full.fits")
+        tab = QTable.read("ApCor/jwst_miri_apcorr_flight_2jul24_full.fits")
         gtab = tab[(tab["subarray"] == "FULL") & (tab["filter"] == cfilter)]
 
         ax.errorbar(gtab["radius"] * pixscale, gtab["eefraction"] + offval, xerr=gtab["radius_unc"] * pixscale, fmt="k.")
