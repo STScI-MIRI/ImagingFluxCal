@@ -74,7 +74,18 @@ Details
 
 7. Compute the model flux densities in all the filters: `model_fluxes.py --grieke`
 
-8. Compute the calibration factors: `calc_calfactors.py`
+8. Measure the subarray dependence: `plot_subtrans_allobs.py`.
+   Adjust the "Adopted" points manually till they match the scatter in the ratio
+   of the calibration factors.  Copy the values relative to FULL printed to 
+   the screen to the `subarr_cor` variable in the `plot_calfacs` function.
+
+   Before this plot is made, the subarray dependence based on the dedicated subarray
+   observations need to be measured by running `plot_subtrans.py --filter=F770W`
+   and the same again for `F1280W`.  In addition, the subarray dependence based
+   on the ratio of calibration factors from all the observations needs to measured
+   using `plot_multi_calfacs.py --grieke --xaxisval=subarr`.
+
+9. Compute the calibration factors: `calc_calfactors.py`
    Uses the results of 4, 5, and 6 to calculate the calibration factors for all
    observed absflux stars for one filter for all three types (if present).
    Produces a table giving the calibration factors for each observation.
@@ -83,7 +94,7 @@ Details
    A meta plot for all the filters can be created using `plot_multi_calfacs.py`.
    Example: `calc_calfactors.py --grieke --applytime --nocurval --noignore`
 
-9. Compute a set of photom reference files accounting for the time dependent
+10. Compute a set of photom reference files accounting for the time dependent
    sensitivity losses using `python create_photom_reffile.py`
 
 Figures
@@ -110,16 +121,16 @@ Figures
    to be run first to get the values for the dedicated subarray transfer observations.
 
 7. Source dependencies:
-   `calc_calfactors.py -filter=F1280W --sourcemulti --grieke --subarrcor --applytime --noignore --nocurval`
+   `calc_calfactors.py -filter=F1280W --sourcemulti --grieke --subarrcor --applytime --nocurval`
 
 8. Source type dependence: `plot_srctype_allobs.py`
 
 9. Detector dependencies:
-   `calc_calfactors.py -filter=F1280W --detmulti --grieke --subarrcor --applytime --noignore --nocurval`
+   `calc_calfactors.py -filter=F1280W --detmulti --grieke --subarrcor --applytime --nocurval`
 
 Appendix Figures:
 
-`plot_multi_calfacs --xaxisval=mflux --griek --subarrcor`
+`plot_multi_calfacs.py --xaxisval=mflux --grieke --subarrcor`
 
 Replace `mflux` with desired xaxis value.
 

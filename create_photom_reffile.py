@@ -34,15 +34,19 @@ if __name__ == "__main__":
                      dtype=("str", "f", "f", "f", "f", "f"))
 
     # print("filter, nfac, comfac, oldfac / comfac, comfac / oldfac")
-    print("filter CF      amp      CF_unc  tau    startday frac_from_commissioning")
+    print("filter   CF      amp     amp_per   tau   CF_unc  CF_unc_per repeat_per")
     for cfilter in filters:
-        if cfilter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             rstr = "_bkgsub"
         else:
             rstr = ""
+        if cfilter == "F2550W":
+            rstr2 = "_bkgsub"
+        else:
+            rstr2 = rstr
 
         # repeatability measurements for time dependence
-        ntab_repeat = QTable.read(f"CalFacs/miri_calfactors{rstr}_repeat_{cfilter}_fit.dat",
+        ntab_repeat = QTable.read(f"CalFacs/miri_calfactors{rstr2}_repeat_{cfilter}_fit.dat",
                                   format="ascii.commented_header")
         amp = ntab_repeat[f"fit_exp_amp_{cfilter}"][0]
         tau = ntab_repeat[f"fit_exp_tau_{cfilter}"][0]
@@ -51,13 +55,20 @@ if __name__ == "__main__":
             per_amp = amp / c
         else:
             per_amp = amp
+        # repeatability as a percentage for paper table
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+            repeat_per = 0.0
+        else:
+            repeat_per = ntab_repeat[f"fit_exp_std_per_{cfilter}"][0]
 
         # average of all stars after correcting for time dependence
-        ntab = QTable.read(f"CalFacs/miri_calfactors{rstr}_grieke_timecor_{cfilter}_ave.dat",
+        ntab = QTable.read(f"CalFacs/miri_calfactors{rstr}_grieke_subarracor_timecor_{cfilter}_ave.dat",
                            format="ascii.commented_header")
         cfac_ave = ntab[f"avecalfac_{cfilter}"][0]
         cfac_unc = ntab[f"avecalfac_unc_{cfilter}"][0]
         cfac_std = ntab[f"avecalfac_std_{cfilter}"][0]
+        cfac_unc_per = 100.0 * cfac_unc / cfac_ave
+        cfac_npts = ntab[f"avecalfac_npts_{cfilter}"][0]
 
         # account the sensitivity loss to the startday
         #perfac = (per_amp * np.exp(days/tau)) + 1.0
@@ -70,8 +81,9 @@ if __name__ == "__main__":
         fulltab.add_row([cfilter, amp, -1.*tau, const, startday, cfac_std])
 
         frac_change = (const + amp) / const
+        amp_per = (np.absolute(amp) / const) * 100.0
         # print(f"{cfilter} {const:.4f}  {amp:.4f}  {cfac_std:.4f}  {-1.*tau:.1f}  {startday:.1f}  {frac_change:.3f}")
-        print(f"{cfilter} & {const:.4f} & {amp:.4f} & {-1.*tau:.1f} &  {cfac_std:.4f} \\\\ ")
+        print(f"{cfilter} & {const:.4f} & {np.absolute(amp):.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         # calculated the value for the first 100 days
         #  approximates Commissioning so we can compare to the previous value

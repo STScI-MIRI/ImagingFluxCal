@@ -18,10 +18,10 @@ if __name__ == "__main__":
     fontsize = 20
     font = {"size": fontsize}
     plt.rc("font", **font)
-    plt.rc("lines", linewidth=2)
-    plt.rc("axes", linewidth=2)
-    plt.rc("xtick.major", width=2)
-    plt.rc("ytick.major", width=2)
+    plt.rc("lines", linewidth=3)
+    plt.rc("axes", linewidth=3)
+    plt.rc("xtick.major", width=3)
+    plt.rc("ytick.major", width=3)
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 7))
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                "SUB128": 3.0,
                "SUB64": 4.0}
 
-    adopted_vals = np.array([1.02, 1.03, 1.0, 1.01, 0.985])
+    adopted_vals = np.array([1.02, 1.025, 1.0, 1.02, 0.985])
     ax.plot(list(subarrs.keys()), adopted_vals, "*", markersize=20, label="Adopted")
     for cave, csub in zip(adopted_vals / adopted_vals[0], list(subarrs.keys())):
         print(f"{csub} & {cave:.3f} \\\\")

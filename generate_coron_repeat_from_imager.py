@@ -14,6 +14,8 @@ if __name__ == "__main__":
 
         nfile1 = f"CalFacs/miri_calfactors_repeat_{ifilter[0]}_fit.dat"
         nfile2 = f"CalFacs/miri_calfactors_repeat_{ifilter[1]}_fit.dat"
+        if ifilter[1] == "F2550W":
+            nfile2 = nfile2.replace("_repeat", "_bkgsub_repeat")
         ntab1 = QTable.read(nfile1, format="ascii.commented_header")
         ntab2 = QTable.read(nfile2, format="ascii.commented_header")
 

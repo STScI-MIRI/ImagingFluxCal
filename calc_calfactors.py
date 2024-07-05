@@ -30,9 +30,9 @@ def compute_stats(allfacs, weights, sigcut):
         else:
             meanstd = 0.0
             meanstdmean = 0.0
-        return (meanval, meanstd, meanstdmean, filtered_data)
+        return (meanval, meanstd, meanstdmean, filtered_data, np.sum(newweights))
     else:
-        return (None, None, None, None)
+        return (None, None, None, None, None)
 
 
 def get_calfactors(
@@ -246,9 +246,9 @@ def plot_calfactors(
     # based on calibration factor ratios and dedicated subarray transfer observations
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.01, 
+        "BRIGHTSKY": 1.005, 
         "SUB256": 0.98,
-        "SUB128": 0.99, 
+        "SUB128": 1.00, 
         "SUB64": 0.966,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
@@ -261,7 +261,7 @@ def plot_calfactors(
         ignore_names = []
     else:
         # ignore_names = ["GSPC P177-D", "16 Cyg B", "del UMi"]
-        ignore_names = ["16 Cyg B", "del UMi"]
+        ignore_names = ["HD 180609"]
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
     # not used
@@ -409,7 +409,7 @@ def plot_calfactors(
     else:
         sigcut = 3.0
 
-    meanval, meanstd, meanstdmean, filtered_data = compute_stats(
+    meanval, meanstd, meanstdmean, filtered_data, npts = compute_stats(
         allfacs[gvals], weights[gvals], sigcut
     )
 
@@ -538,6 +538,7 @@ def plot_calfactors(
         atab[f"avecalfac_{filter}"] = [meanval]
         atab[f"avecalfac_unc_{filter}"] = [meanstd / np.sqrt(len(allfacs[gvals]))]
         atab[f"avecalfac_std_{filter}"] = [meanstd]
+        atab[f"avecalfac_npts_{filter}"] = [npts]
         if (xaxisval == "timemid") and (not applytime):
             atab[f"fit_exp_amp_{filter}"] = [mod_fit[0].amplitude.value]
             atab[f"fit_exp_tau_{filter}"] = [mod_fit[0].tau.value]

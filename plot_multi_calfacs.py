@@ -79,9 +79,9 @@ if __name__ == "__main__":
         savefacs = f"CalFacs/miri_calfactors{extstr}_timecor_{cfilter}.fits"
 
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-            noignore = True
+            noignore = False
         else:
-            noignore = True
+            noignore = False
 
         m = k + 1
         px = m // 2

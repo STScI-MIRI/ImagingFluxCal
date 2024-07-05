@@ -87,7 +87,7 @@ if __name__ == "__main__":
         gvals = abs(xvals - (60070. - startday)) > 20.
 
         fit = fitting.LevMarLSQFitter()
-        mod_init = (models.Exponential1D(tau=-225., amplitude=-0.2) 
+        mod_init = (models.Exponential1D(tau=-200., amplitude=-0.2) 
                     + models.Const1D(amplitude=0.70))
         # mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2) 
         #             + models.Linear1D(intercept=0.70, slope=0.0))
@@ -117,6 +117,7 @@ if __name__ == "__main__":
         # atab[f"fit_exp_slope_{cfilter}"] = [mod_fit[1].slope.value]
         atab[f"fit_exp_startday_{cfilter}"] = [startday]
         atab[f"fit_exp_std_{cfilter}"] = [mod_dev]
+        atab[f"fit_exp_std_per_{cfilter}"] = [per_dev]
         sext = "_fit.dat"
         atab.write(
             f"CalFacs/miri_calfactors{rstr}_repeat_{cfilter}_fit.dat",
