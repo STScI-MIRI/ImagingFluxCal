@@ -21,6 +21,19 @@ if __name__ == "__main__":
                  "F1550C": "MASK1550",
                  "F2300C": "MASKLYOT"}
 
+    # based on calibration factor ratios and dedicated subarray transfer observations
+    subarr_cor = {
+        "FULL": 1.0,
+        "BRIGHTSKY": 1.005, 
+        "SUB256": 0.98,
+        "SUB128": 1.00, 
+        "SUB64": 0.966,
+        "MASK1065": 1.0,
+        "MASK1140": 1.0,
+        "MASK1550": 1.0,
+        "MASKLYOT": 1.0,
+    }
+
     # current calibration factors
     cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
 
@@ -28,7 +41,8 @@ if __name__ == "__main__":
     days = np.arange(0.0, 1000.0, 1.0)
     comvals = days < 50.
 
-    data_list = {}
+    data_list = []
+    data_list_time = []
 
     fulltab = QTable(names=("filter", "amplitude", "tau", "photmjysr", "startday", "uncertainty"),
                      dtype=("str", "f", "f", "f", "f", "f"))
@@ -76,101 +90,78 @@ if __name__ == "__main__":
 
         amp = (per_amp / (per_amp + 1)) * cfac_ave
         const = (1.0 / (per_amp + 1)) * cfac_ave
-        ncfacs = (amp * np.exp(days/tau)) + const
+        # ncfacs = (amp * np.exp(days/tau)) + const
 
         fulltab.add_row([cfilter, amp, -1.*tau, const, startday, cfac_std])
 
         frac_change = (const + amp) / const
         amp_per = (np.absolute(amp) / const) * 100.0
         # print(f"{cfilter} {const:.4f}  {amp:.4f}  {cfac_std:.4f}  {-1.*tau:.1f}  {startday:.1f}  {frac_change:.3f}")
-        print(f"{cfilter} & {const:.4f} & {np.absolute(amp):.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
+        print(f"{cfilter} & {const:.4f} & {amp:.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         # calculated the value for the first 100 days
         #  approximates Commissioning so we can compare to the previous value
         #  not used otherwise
-        new_cfactor = np.average(ncfacs[comvals])
-        pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
+        # new_cfactor = np.average(ncfacs[comvals])
+        # pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
         
-        #print(cfilter, cfac_ave, pipe_cfactor, new_cfactor, pipe_cfactor / new_cfactor, new_cfactor / pipe_cfactor)
-        # print(f"{cfilter} & {cfac_ave:.3f} & {new_cfactor:.3f} & {(new_cfactor / pipe_cfactor):.3f} \\\\")
+        # build the data structure needed
+        # allowed subarrays
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+            subarray_values = ["FULL", csubarray[cfilter]]
+        else:
+            subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
-        # use the time dependent factors for F2550W to define the ranges for the multiple
-        # photom reference files
-        # if cfilter == "F2550W":
-        #     val_allowed = 0.01
+        for csub in subarray_values:
+            data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
+            data_list_time.append((amp / subarr_cor[csub], tau, startday))
 
-        #     tval = ncfacs[0]
-        #     begday = []
-        #     begval = []
-        #     begday.append(days[0])
-        #     begval.append(tval)
-        #     for cval, cday in zip(ncfacs, days):
-        #         if ((cval - tval) / tval) > val_allowed:
-        #             # print(begday[-1], cday, begval[-1], cval)
-        #             begday.append(cday)
-        #             begval.append(cval)
-        #             tval = cval
-        #     begday.append(cday)
-        #     begval.append(cval)
-
-        #     n_photom = len(begday) - 1
-        #     # print(f"# photom files needed: {n_photom}")
-
-        # # allowed subarrays
-        # if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-        #     subarray_values = ["FULL", csubarray[cfilter]]
-        # else:
-        #     subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
-
-        # for k in range(n_photom):
-        #     gvals = (days >= begday[k]) & (days < begday[k+1])
-        #     cfac = np.average(ncfacs[gvals])
-
-        #     if cfilter == "F2550W":
-        #         data_list[f"{k}"] = []
-
-        #     for csub in subarray_values:
-        #         data_list[f"{k}"].append(
-        #             (cfilter, csub, cfac, cfac_unc)
-        #         )
 
     # save time dependent coefficients
     fulltab.write("CalFacs/jwst_miri_photom_coeff.dat", format="ipac", overwrite=True)
 
-    # for k in range(n_photom):
-    #     # create the photom reference file
-    #     data = np.array(
-    #         data_list[f"{k}"],
-    #         dtype=[
-    #             ("filter", "S12"),
-    #             ("subarray", "S15"),
-    #             ("photmjsr", "<f4"),
-    #             ("uncertainty", "<f4")
-    #         ],
-    #     )
+    # create the photom reference file
+    data = np.array(
+        data_list,
+        dtype=[
+            ("filter", "S12"),
+            ("subarray", "S15"),
+            ("photmjsr", "<f4"),
+            ("uncertainty", "<f4")
+        ],
+    )
 
-    #     new_model = MirImgPhotomModel(phot_table=data)
-    #     d1 = datetime.datetime
-    #     new_model.meta.date = d1.isoformat(d1.today())
-    #     new_model.meta.filename = f"jwst_miri_photom_{k+1}.fits"
-    #     new_model.meta.telescope = "JWST"
-    #     new_model.meta.instrument.name = "MIRI"
-    #     new_model.meta.instrument.detector = "MIRIMAGE"
-    #     new_model.meta.exposure.type = "MIR_IMAGE"
-    #     new_model.meta.photometry.pixelarea_steradians = 2.84403609523084E-13
-    #     new_model.meta.photometry.pixelarea_arcsecsq = 0.0121
-    #     new_model.meta.instrument.band = "N/A"
-    #     new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|MIR_CORONCAL|"
-    #     new_model.meta.subarray = "GENERIC"
-    #     new_model.meta.reftype = "PHOTOM"
-    #     new_model.meta.author = "Karl Gordon"
-    #     # updates to next 2 lines needed
-    #     new_model.meta.pedigree = "INFLIGHT 2022-05-21 2023-09-10"
-    #     tm = Time(begday[k] + startday, format="mjd")
-    #     new_model.meta.useafter = tm.to_value(format="fits")[:-4]
-    #     new_model.meta.description = "Photom reference file."
-    #     entry = "The flux calibration factors calculated from exponential fits to the"
-    #     new_model.history.append(entry)
-    #     entry = "time dependent flux calibration factors.  "
-    #     new_model.history.append(entry)
-    #     new_model.save(f"Photom/jwst_miri_photom_flight_{k+1}.fits")
+    # create the photom reference file
+    data_time = np.array(
+        data_list_time,
+        dtype=[
+            ("amplitude", "<f4"),
+            ("tau", "<f4"),
+            ("t0", "<f4")
+        ],
+    )
+
+    new_model = MirImgPhotomModel(phot_table=data, timecoeff=data_time)
+    d1 = datetime.datetime
+    new_model.meta.date = d1.isoformat(d1.today())
+    new_model.meta.filename = f"jwst_miri_photom_2jul24.fits"
+    new_model.meta.telescope = "JWST"
+    new_model.meta.instrument.name = "MIRI"
+    new_model.meta.instrument.detector = "MIRIMAGE"
+    new_model.meta.exposure.type = "MIR_IMAGE"
+    new_model.meta.photometry.pixelarea_steradians = 2.8606325654256E-13
+    new_model.meta.photometry.pixelarea_arcsecsq = 0.01217199
+    new_model.meta.instrument.band = "N/A"
+    new_model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_4QPM|MIR_LYOT|MIR_TACQ|MIR_TACONFIRM|MIR_CORONCAL|"
+    new_model.meta.subarray = "GENERIC"
+    new_model.meta.reftype = "PHOTOM"
+    new_model.meta.author = "Karl Gordon"
+    # updates to next 2 lines needed
+    new_model.meta.pedigree = "INFLIGHT 2022-05-21 2024-07-02"
+    new_model.meta.useafter = "2022-04-01T00:00:00"
+    new_model.meta.description = "Photom reference file."
+    entry = "The flux calibration factors calculated from exponential fits to the"
+    new_model.history.append(entry)
+    entry = "time dependent flux calibration factors.  "
+    new_model.history.append(entry)
+    new_model.save(f"Photom/jwst_miri_photom_flight_2jul24.fits")
