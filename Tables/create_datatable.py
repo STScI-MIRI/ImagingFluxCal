@@ -6,8 +6,13 @@ import astropy.units as u
 
 if __name__ == "__main__":
 
+    pfile = "Photom/jwst_miri_photom_flight_2jul24.fits"
+    cftab = QTable.read(pfile, hdu=1)
+    cftab_time = QTable.read(pfile, hdu=2)
+    pixarea = 2.8606325654256E-13
+
     # fmt: off
-    filters = ["F560W", "F770W", "F1000W",
+    filters = ["F2100W", "F560W", "F770W", "F1000W",
                "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
                "F1065C", "F1140C", "F1550C", "F2300C"]
     # fmt: on
@@ -20,12 +25,15 @@ if __name__ == "__main__":
             "filter",
             "subarray",
             "timemid",
-            "inst flux",
-            "inst flux unc",
-            "background"
+            "inst_flux",
+            "inst_flux_unc",
+            "inst_background",
+            "flux",
+            "flux_unc",
+            "background",
         ),
-        units=("", "", "", u.d, "DN/s", "DN/s", "DN/s"),
-        dtype=("str", "str", "str", "float64", "float64", "float64", "float64"),
+        units=("", "", "", u.d, "DN/s", "DN/s", "DN/s", u.mJy, u.mJy, u.MJy / u.sr),
+        dtype=("str", "str", "str", "float32", "float32", "float32", "float32", "float32", "float32", "float32"),
     )
 
     for cdir in dirs:
@@ -33,10 +41,22 @@ if __name__ == "__main__":
 
             fname = f"{cdir}/{cfilter}_eefrac0.7_phot.fits"
             if os.path.isfile(fname): 
+
                 tab = QTable.read(fname)
-                # print(tab.colnames)
 
                 for cline in tab:
+
+                    # compute calibrated flux
+                    gval = (cftab["filter"] == cfilter) & (cftab["subarray"] == cline["subarray"])
+                    pipe_cfactor = cftab["photmjsr"][gval][0]
+                    pipe_amp = cftab_time["amplitude"][gval][0]
+                    pipe_tau = cftab_time["tau"][gval][0]
+                    pipe_t0 = cftab_time["t0"][gval][0]
+                    cur_cf = pipe_cfactor + pipe_amp * np.exp((cline["timemid"].value - pipe_t0) / pipe_tau)
+                    phys_flux = (1e9 * cline["aperture_sum_bkgsub"].value * cline["apcorr"] * pixarea * cur_cf) * u.mJy
+                    phys_flux_unc = (1e9 * cline["aperture_sum_bkgsub"].value * cline["apcorr"] * pixarea * cur_cf) * u.mJy
+                    phys_bkg = (cline["mean_bkg"].value * cur_cf) * u.MJy / u.sr
+
                     otab.add_row(
                         (
                             cline["name"],
@@ -45,12 +65,15 @@ if __name__ == "__main__":
                             cline["timemid"],
                             cline["aperture_sum_bkgsub"],
                             cline["aperture_sum_bkgsub_err"],
-                            cline["mean_bkg"]
+                            cline["mean_bkg"],
+                            phys_flux,
+                            phys_flux_unc,
+                            phys_bkg,
                         )
                     )
 
-        # sort by name
-        sindxs = np.argsort(otab["name"])
-        otab = otab[sindxs]
-        print(otab)
-        exit()
+    # sort by name
+    sindxs = np.argsort(otab["name"])
+    otab = otab[sindxs]
+
+    otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
