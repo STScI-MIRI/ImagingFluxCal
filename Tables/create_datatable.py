@@ -19,23 +19,34 @@ if __name__ == "__main__":
 
     dirs = ["HotStars", "ADwarfs", "SolarAnalogs"]
 
+    colformats = {'time': '.1f', 
+                  "pixrate": ".2e",
+                  "pixwelldepth": ".2e",
+                  "inttime": ".2f",
+                  "iflux": ".2e",
+                  "ifluxunc": ".2e",
+                  "ibkg": ".2e",
+                  "flux": ".2f",
+                  "fluxunc": ".2f",
+                  "bkg": ".2e"}
+
     otab = QTable(
         names=(
             "name",
             "PID",
-            "source_type",
+            "srctype",
             "filter",
             "subarray",
             "time",
-            "central_pixel_rate",
-            "central_pixel_welldepth",
-            "integration_time",
-            "inst_flux",
-            "inst_flux_unc",
-            "inst_background",
+            "pixrate",
+            "pixwelldepth",
+            "inttime",
+            "iflux",
+            "ifluxunc",
+            "ibkg",
             "flux",
-            "flux_unc",
-            "background",
+            "fluxunc",
+            "bkg",
         ),
         units=(
             "",
@@ -56,7 +67,7 @@ if __name__ == "__main__":
         ),
         dtype=(
             "str",
-            "str",
+            "int",
             "str",
             "str",
             "str",
@@ -105,7 +116,7 @@ if __name__ == "__main__":
                     ) * u.mJy
                     phys_flux_unc = (
                         1e9
-                        * cline["aperture_sum_bkgsub"].value
+                        * cline["aperture_sum_bkgsub_err"].value
                         * cline["apcorr"]
                         * pixarea
                         * cur_cf
@@ -136,4 +147,8 @@ if __name__ == "__main__":
     sindxs = np.argsort(otab["name"])
     otab = otab[sindxs]
 
-    otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
+    #otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
+    # otab.write('ecliptic_cols.dat', format='ascii.mrt', overwrite=True, formats=colformats)
+
+    otab.write("miri_absflux_program_data.tex", overwrite=True, format="aastex",
+               formats=colformats)
