@@ -61,7 +61,7 @@ if __name__ == "__main__":
         psf = miri.calc_psf(
             fov_pixels=300,
             oversample=samp,
-            add_distortion=False,
+            # add_distortion=False,
             normalize="exit_pupil",
         )
     else:
