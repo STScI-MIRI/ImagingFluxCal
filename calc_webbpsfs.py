@@ -65,7 +65,7 @@ if __name__ == "__main__":
             normalize="exit_pupil",
         )
     else:
-        psf = miri.calc_psf(fov_arcsec=fov, oversample=samp, add_distortion=False)
+        psf = miri.calc_psf(fov_arcsec=fov, oversample=samp) # , add_distortion=False)
     psf.writeto(f"PSFs/miri_{cfilter}_psf.fits", overwrite=True)
 
     # Calculate encircled energy as a function of distance for the PSF
@@ -73,3 +73,9 @@ if __name__ == "__main__":
     # aradii = np.arange(1.0, 10.0, 0.5)
     # ee_frac = ee(aradii)
     # print(ee_frac)
+
+# from 1.13.0 docs
+#miri = webbpsf.MIRI()
+#psf = miri.calc_psf()
+#webbpsf.display_psf(psf, ext=3)
+#result = psf['DET_DIST'].data   # This is the PSF with the cross artifact model included

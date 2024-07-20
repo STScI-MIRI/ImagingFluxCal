@@ -69,7 +69,7 @@ if __name__ == "__main__":
     }
 
     # Calculate encircled energy as a function of distance for the PSF
-    if cfilter in ["F560W", "F770W"]:
+    if cfilter in ["cF560W", "cF770W"]:
         psf_fname = f"PSFs/miri_{cfilter}_psf_wcurciform.fits"
     else:
         psf_fname = f"PSFs/miri_{cfilter}_psf.fits"
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         wcenter = (896, 315)
     else:
         wcenter = None
-    ee = webbpsf.measure_ee(psf, center=wcenter)
+    ee = webbpsf.measure_ee(psf, center=wcenter, ext=3)
     psf.close()
 
     norm_factor = args.fwhmfac
