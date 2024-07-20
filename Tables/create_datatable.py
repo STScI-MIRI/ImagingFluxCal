@@ -1,7 +1,9 @@
 import os
 import numpy as np
-from astropy.table import QTable
+from astropy.table import QTable, Table
 import astropy.units as u
+
+import cdspyreadme
 
 
 if __name__ == "__main__":
@@ -19,16 +21,19 @@ if __name__ == "__main__":
 
     dirs = ["HotStars", "ADwarfs", "SolarAnalogs"]
 
-    colformats = {'time': '.1f', 
-                  "pixrate": ".2e",
-                  "pixwelldepth": ".2e",
-                  "inttime": ".2f",
-                  "iflux": ".2e",
-                  "ifluxunc": ".2e",
-                  "ibkg": ".2e",
-                  "flux": ".2f",
-                  "fluxunc": ".2f",
-                  "bkg": ".2e"}
+    colformats = {
+        "name": "s",
+        "time": ".1f",
+        "pixrate": ".2e",
+        "pixwelldepth": ".2e",
+        "inttime": ".2f",
+        "iflux": ".2e",
+        "ifluxunc": ".2e",
+        "ibkg": ".2e",
+        "flux": ".2f",
+        "fluxunc": ".2f",
+        "bkg": ".2e",
+    }
 
     otab = QTable(
         names=(
@@ -147,8 +152,33 @@ if __name__ == "__main__":
     sindxs = np.argsort(otab["name"])
     otab = otab[sindxs]
 
-    #otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
-    # otab.write('ecliptic_cols.dat', format='ascii.mrt', overwrite=True, formats=colformats)
+    # otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
+    # otab.write('miri_absflux_program_data.dat', format='ascii.mrt', overwrite=True, formats=colformats)
 
-    otab.write("miri_absflux_program_data.tex", overwrite=True, format="aastex",
-               formats=colformats)
+    # write latex table to provide example lines for paper
+    otab.write(
+        "miri_absflux_program_data.tex",
+        overwrite=True,
+        format="aastex",
+        formats=colformats,
+    )
+
+    # write MRT table
+    tablemaker = cdspyreadme.CDSTablesMaker()
+    tablemaker.addTable(Table(otab), name="table1")
+
+    # Customize ReadMe output
+    tablemaker.title = (
+        "MIRI Imaging and Coronagraphic Absolute Flux Calibration Measurements"
+    )
+    tablemaker.author = "Karl D. Gordon"
+    tablemaker.date = 2020
+    tablemaker.abstract = "This is my abstract..."
+    tablemaker.more_description = "Additional information of the data context."
+    #tablemaker.putRef("II/246", "2mass catalogue")
+    #tablemaker.putRef("http://...", "external link")
+
+    tablemaker.writeCDSTables()
+    # Save ReadMe into a file
+    with open("ReadMe", "w") as fd:
+        tablemaker.makeReadMe(out=fd)
