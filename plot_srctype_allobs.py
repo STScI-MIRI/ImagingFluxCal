@@ -24,6 +24,8 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=3)
     plt.rc("ytick.major", width=3)
 
+    cftab = QTable.read("Photom/jwst_miri_photom_flight_2jul24.fits", hdu=1)
+
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 7))
 
     delt = 0.05
@@ -42,14 +44,16 @@ if __name__ == "__main__":
     arelvals = np.zeros((9, 3))
     arelvals_unc = np.zeros((9, 3))
     for k, cfilter in enumerate(filters):
+        pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter][0]
+
         tab = QTable.read(f"CalFacs/miri_calfactors_grieke_subarracor_timecor_{cfilter}_srctype.dat",
                           format="ascii.commented_header")
         # relative to SUB256 as it is the one always present
-        relvals = (tab["calfacs"][1] / tab["calfacs"])
+        relvals = (pipe_cfactor / tab["calfacs"])
         relvals_unc = np.square(tab["calfacs_uncmean"] / tab["calfacs"])
         gvals = relvals_unc > 0.0
-        if k != 1:
-            relvals_unc += np.square(tab["calfacs_uncmean"][1] / tab["calfacs"][1])
+        #if k != 1:
+        #    relvals_unc += np.square(tab["calfacs_uncmean"][1] / tab["calfacs"][1])
         relvals_unc = relvals * np.sqrt(relvals_unc)
         ax.errorbar(subarrs_vals[gvals] + (k+3)*delt, relvals[gvals], 
                     yerr=relvals_unc[gvals],
@@ -78,8 +82,11 @@ if __name__ == "__main__":
 
     ax.errorbar(list(dirs.keys()), ameans, yerr=auncs, fmt="k*", markersize=20, label="Average")
 
-    ax.set_ylabel("C / C(ADwarfs)")
-    ax.set_ylim(0.96, 1.04)
+    ax.plot([-1.0, 3.5], [1.0, 1.0], "k:")
+
+    ax.set_ylabel("C(srctype) / C")
+    ax.set_xlim(-0.25, 2.75)
+    ax.set_ylim(0.97, 1.03)
 
     ax.legend(ncol=3, fontsize=0.7*fontsize)
 

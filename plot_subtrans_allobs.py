@@ -55,6 +55,7 @@ if __name__ == "__main__":
     syms = ["v", "^", ">", "<", "p", "X", "D", "P", "d"]
     subarrs_vals = np.array((list(subarrs.values())))
     for k, cfilter in enumerate(filters):
+
         tab = QTable.read(f"CalFacs/miri_calfactors_grieke_timecor_{cfilter}_subarr.dat",
                           format="ascii.commented_header")
         # relative to SUB256 as it is the one always present
