@@ -79,7 +79,7 @@ if __name__ == "__main__":
         wcenter = (896, 315)
     else:
         wcenter = None
-    ee = webbpsf.measure_ee(psf, center=wcenter, ext=3)
+    ee = webbpsf.measure_ee(psf, center=wcenter, ext=2)
     psf.close()
 
     norm_factor = args.fwhmfac

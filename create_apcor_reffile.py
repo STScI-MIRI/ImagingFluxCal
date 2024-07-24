@@ -151,4 +151,4 @@ if __name__ == "__main__":
     new_model.save("ApCor/jwst_miri_apcorr_flight_2jul24.fits")
 
     print(fulltab)
-    fulltab.write("ApCor/jwst_miri_apcorr_flight_2jul24_full.fits", overwrite=True)
+    fulltab.write("ApCor/jwst_miri_apcorr_flight_24jul24_full.fits", overwrite=True)
