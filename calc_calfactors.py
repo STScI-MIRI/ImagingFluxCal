@@ -261,7 +261,7 @@ def plot_calfactors(
         ignore_names = []
     else:
         # ignore_names = ["GSPC P177-D", "16 Cyg B", "del UMi"]
-        ignore_names = ["HD 180609"]
+        ignore_names = ["HD 180609", "mu Col"]
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
     # not used

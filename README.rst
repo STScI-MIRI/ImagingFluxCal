@@ -37,14 +37,10 @@ Details
    There are some differences from the defaults for MIRI.
    `pipeline_all` runs everything for all MIRI imaging/coronagraphic filters.
 
-2a. Compute WebbPSFs: `calc_webbpsfs.py`.
+2. Compute WebbPSFs: `calc_webbpsfs.py`.
    Runs WebbPSFs with specfic parameters for MIRI.  Needs to be done for each filter.
    Critial for coronagraphy to set the normalize="exit_pupil" to ensure the 
    WebbPSF is normalized to a total of 1.
-
-2b. Add the cruciform to the F560W and F770W WebbPSFs: `add_cruciform_to_webbpsfs`.
-   Adds the cruciform artifact to the WebbPSFs based on a simple model.  Done for 
-   each filter.
 
 3. Compute encircled energies and individual observation aperture corrections.
    Uses `calc_encircled_energy.py` to compute the encircled energies

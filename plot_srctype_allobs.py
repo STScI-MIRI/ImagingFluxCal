@@ -45,15 +45,17 @@ if __name__ == "__main__":
     arelvals_unc = np.zeros((9, 3))
     for k, cfilter in enumerate(filters):
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter][0]
+        pipe_unc = cftab["uncertainty"][cftab["filter"] == cfilter][0]
 
-        tab = QTable.read(f"CalFacs/miri_calfactors_grieke_subarracor_timecor_{cfilter}_srctype.dat",
+        cfname = f"CalFacs/miri_calfactors_grieke_subarracor_timecor_{cfilter}_srctype.dat"
+        # cfname = f"CalFacs/miri_calfactors_subarracor_timecor_{cfilter}_srctype.dat"
+        tab = QTable.read(cfname,
                           format="ascii.commented_header")
         # relative to SUB256 as it is the one always present
         relvals = (pipe_cfactor / tab["calfacs"])
         relvals_unc = np.square(tab["calfacs_uncmean"] / tab["calfacs"])
         gvals = relvals_unc > 0.0
-        #if k != 1:
-        #    relvals_unc += np.square(tab["calfacs_uncmean"][1] / tab["calfacs"][1])
+        relvals_unc += np.square(pipe_unc / pipe_cfactor)
         relvals_unc = relvals * np.sqrt(relvals_unc)
         ax.errorbar(subarrs_vals[gvals] + (k+3)*delt, relvals[gvals], 
                     yerr=relvals_unc[gvals],

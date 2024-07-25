@@ -199,9 +199,6 @@ if __name__ == "__main__":
         else:
             mmods = vstack([mmods, onemod])
 
-        if ntab["name"][-1] == "mu Col":
-            print(onemod[0])
-
     # remove "col0" column added by vstack
     mmods.remove_column("col0")
 
