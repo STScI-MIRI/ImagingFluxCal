@@ -10,7 +10,7 @@ if __name__ == "__main__":
         # fmt: off
         choices=["F560W", "F770W", "F1000W",
                  "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C"],
+                 "F1065C", "F1140C", "F1550C", "F2300C", "FND"],
         # fmt: on
     )
     args = parser.parse_args()
@@ -31,6 +31,7 @@ if __name__ == "__main__":
         "F2100W": 5.989,
         "F2300C": 6.090,
         "F2550W": 7.312,
+        "FND": 3.7,
     }
 
     # Set input parameters:

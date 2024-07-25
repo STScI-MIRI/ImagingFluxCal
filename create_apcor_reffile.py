@@ -34,6 +34,7 @@ if __name__ == "__main__":
                 "F1140C": "15.0",
                 "F1550C": "10.0",
                 "F2300C": "10.0",
+                "FND": "3.0",
                }
 
     for cfilter in dsets.keys():
@@ -58,6 +59,9 @@ if __name__ == "__main__":
     cfilter = "F1550C"
     files[cfilter] = [f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat",
                       f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat"]
+
+    # add in the FND obs
+    files[cfilter] = ["ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"]
 
     fulltab = QTable(names=("filter", "subarray", "eefraction", "radius", "radius_unc", "apcor", "apcor_unc",
                             "skyin", "skyin_unc", "skyout", "skyout_unc"),
@@ -151,4 +155,4 @@ if __name__ == "__main__":
     new_model.save("ApCor/jwst_miri_apcorr_flight_2jul24.fits")
 
     print(fulltab)
-    fulltab.write("ApCor/jwst_miri_apcorr_flight_24jul24_full.fits", overwrite=True)
+    fulltab.write("ApCor/jwst_miri_apcorr_flight_2jul24_full.fits", overwrite=True)

@@ -55,7 +55,10 @@ def aper_image(
     elif targname == "GD153":
         targname = "GD 153"
     filter = hdul[0].header["FILTER"]
-    photmjysr = hdul[1].header["PHOTMJSR"]
+    if "PHOTMJSR" in hdul[1].header.keys():
+        photmjysr = hdul[1].header["PHOTMJSR"]
+    else:
+        photmjysr = 1.0
     print(targname, filter)
     targra = hdul[0].header["TARG_RA"]
     targdec = hdul[0].header["TARG_DEC"]
@@ -418,7 +421,7 @@ if __name__ == "__main__":
         choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                  "F1500W", "F1800W", "F2100W", "F2550W",
                  "F1065C", "F1140C", "F1550C", "F2300C",
-                 "F770W_subtrans", "F770W_repeat"]
+                 "FND"]
         # fmt: on
     )
     parser.add_argument(

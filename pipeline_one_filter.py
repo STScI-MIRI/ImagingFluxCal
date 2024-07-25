@@ -62,7 +62,7 @@ if __name__ == "__main__":
         choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                  "F1500W", "F1800W", "F2100W", "F2550W",
                  "F1065C", "F1140C", "F1550C", "F2300C",
-                 "F770W_subtrans", "F770W_repeat"]
+                 "FND"]
         # fmt: on
     )
     parser.add_argument(
@@ -172,11 +172,12 @@ if __name__ == "__main__":
                 calfiles = glob.glob(f"{ndir}/*mirimage{calext}_cal.fits")
 
                 # for coronagraphy, need to fake the data as imaging
-                if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+                if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C", "FND"]:
                     nfilt = {"F1065C": "F1000W",
                              "F1140C": "F1130W",
                              "F1550C": "F1500W",
-                             "F2300C": "F2100W"}
+                             "F2300C": "F2100W",
+                             "FND": "F1280W"}
                     for cfile in calfiles:
                         hdul = fits.open(cfile)
                         hdul[0].header["EXP_TYPE"] = "MIR_IMAGE"

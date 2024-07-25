@@ -474,6 +474,7 @@ def make_sky(
             "F2100W": 5.989,
             "F2300C": 6.090,
             "F2550W": 7.312,
+            "FND": 3.7,
         }
 
         hdul = fits.open(files[0])

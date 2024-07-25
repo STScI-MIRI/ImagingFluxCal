@@ -28,7 +28,7 @@ if __name__ == "__main__":
         # fmt: off
         choices=["F560W", "F770W", "F1000W",
                  "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C"],
+                 "F1065C", "F1140C", "F1550C", "F2300C", "FND"],
         # fmt: on
     )
     parser.add_argument(
@@ -49,7 +49,10 @@ if __name__ == "__main__":
         f"{args.dir}/{cfilter}/{args.dataset}/miri_{args.dataset}_stage3_asn_i2d.fits"
     )
     print(f"mosaic filename = {filename}")
-    filename_bkg = filename.replace("stage3", "stage3_bkgsub")
+    if args.filter == "FND":  # only one image - bkgsub mosaic not possible
+        filename_bkg = filename
+    else:
+        filename_bkg = filename.replace("stage3", "stage3_bkgsub")
 
     # in 0.11 arcsec pixels
     filter_fwhm = {
@@ -66,6 +69,7 @@ if __name__ == "__main__":
         "F2100W": 5.989,
         "F2300C": 6.090,
         "F2550W": 7.312,
+        "FND": 3.7,
     }
 
     # Calculate encircled energy as a function of distance for the PSF
