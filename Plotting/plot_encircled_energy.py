@@ -47,11 +47,11 @@ if __name__ == "__main__":
              "F1000W": ["1", "2", "3", "4", "5"],
              "F1130W": ["1", "2", "3"],
              "F1280W": ["1", "2", "3"],
+             "FND": ["1", "2", "3", "4", "5", "6", "7", "8"],
              "F1500W": ["2", "3", "4", "5", "6"],
              "F1800W": ["1", "2", "3"],
              "F2100W": ["1", "2", "3"],
              "F2550W": ["1", "2", "3"],
-             "FND": ["1"],
              }
 
     dfwhmfac = {"F560W": "25.0",
@@ -67,7 +67,7 @@ if __name__ == "__main__":
                 "F1140C": "15.0",
                 "F1550C": "10.0",
                 "F2300C": "10.0",
-                "FND": "3.0",
+                "FND": "5.0",
                }
 
     cfilter = args.filter
@@ -82,31 +82,28 @@ if __name__ == "__main__":
                 f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
             ]
         elif cfilter == "FND":
-            files[cfilter] = [f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"]
+            files[cfilter] = [f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"]
         else:
             for cset in dsets[cfilter]:
                 files[cfilter].append(
                     f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"
                 )
+
     elif args.coron:
-        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-            for cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-                files[cfilter] = [
-                    f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
-                    f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
-                    f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
-                ]
-            # remove HD 2811 as the jwst 1.13.4 reductions look odd
-            cfilter = "F1550C"
+        for cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             files[cfilter] = [
                 f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+                f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
                 f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
             ]
-        else:
-            files[cfilter] = [f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"]
+        # remove HD 2811 as the jwst 1.13.4 reductions look odd
+        cfilter = "F1550C"
+        files[cfilter] = [
+            f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+            f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat",
+        ]
 
     else:
-        star = "BD+60 1753"
         if args.example:
             dsets = {}
             dsets["F770W"] = ["1"]
@@ -114,6 +111,10 @@ if __name__ == "__main__":
 
         for cfilter in dsets.keys():
             files[cfilter] = []
+            if cfilter == "FND":
+                star = "del UMi"
+            else:
+                star = "BD+60 1753"
             for cset in dsets[cfilter]:
                 files[cfilter].append(
                     f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"
@@ -135,8 +136,8 @@ if __name__ == "__main__":
         "F1140C": ("tab:orange", "dashed"),
         "F1550C": ("tab:green", "dotted"),
         "F2300C": ("tab:purple", "dashdot"),
-        "FND": ("tab:brown", "solid"),
-    }
+        "FND": ("tab:gray", "dashdot"),
+        }
 
     for k, cfilter in enumerate(filters):
 
@@ -149,7 +150,7 @@ if __name__ == "__main__":
             offval = 0.0
 
         # get aperture corrections and uncertainties
-        tab = QTable.read("ApCor/jwst_miri_apcorr_flight_2jul24_full.fits")
+        tab = QTable.read("ApCor/jwst_miri_apcorr_flight_29jul24_full.fits")
         gtab = tab[(tab["subarray"] == "FULL") & (tab["filter"] == cfilter)]
 
         ax.errorbar(gtab["radius"] * pixscale, gtab["eefraction"] + offval, xerr=gtab["radius_unc"] * pixscale, fmt="k.")

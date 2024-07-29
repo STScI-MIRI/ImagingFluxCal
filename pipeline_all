@@ -16,3 +16,8 @@ do
     python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=stage3 --bkgsub $EXTOPT_BKGSUB
     python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=stage3 --bkgsub $EXTOPT_BKGSUB
 done
+
+CBAND="FND"
+python pipeline_one_filter.py --filter=$CBAND --dir=SolarAnalogs --stage=$FSTAGE $EXTOPT
+python pipeline_one_filter.py --filter=$CBAND --dir=HotStars --stage=$FSTAGE $EXTOPT
+python pipeline_one_filter.py --filter=$CBAND --dir=ADwarfs --stage=$FSTAGE $EXTOPT

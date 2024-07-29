@@ -54,6 +54,10 @@ def aper_image(
         targname = "HD 142331"
     elif targname == "GD153":
         targname = "GD 153"
+    elif targname == "10LAC":
+        targname = "10 Lac"
+    elif targname == "HR 6538":
+        targname = "HD 159222"
     filter = hdul[0].header["FILTER"]
     if "PHOTMJSR" in hdul[1].header.keys():
         photmjysr = hdul[1].header["PHOTMJSR"]
@@ -345,7 +349,7 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
 
     # get the aper info from the apcor reference file
     # tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
-    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_2jul24.fits")
+    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_29jul24.fits")
     # repfilter = {
     #     "F1065C": "F1130W",
     #     "F1140C": "F1130W",

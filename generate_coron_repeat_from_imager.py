@@ -5,7 +5,8 @@ if __name__ == "__main__":
     filter_pairs = {"F2300C": (["F2100W", "F2550W"], [20.80, 25.23], 22.66),
                     "F1550C": (["F1500W", "F1800W"], [15.05, 17.97], 15.51),
                     "F1140C": (["F1000W", "F1130W"], [9.95, 11.31], 11.30),
-                    "F1065C": (["F1000W", "F1130W"], [9.95, 11.31], 10.60)}
+                    "F1065C": (["F1000W", "F1130W"], [9.95, 11.31], 10.60),
+                    "FND": (["F1280W", "F1500W"], [12.81, 15.05], 12.9)}
     for cfilter in filter_pairs.keys():
         fpair = filter_pairs[cfilter]
         ifilter = fpair[0]
@@ -41,6 +42,10 @@ if __name__ == "__main__":
         otab[f"fit_exp_amp_{cfilter}"] = [amp]
         otab[f"fit_exp_tau_{cfilter}"] = [tau]
         otab[f"fit_exp_startday_{cfilter}"] = [startday]
-        otab.write(f"CalFacs/miri_calfactors_bkgsub_repeat_{cfilter}_fit.dat",
+        if cfilter == "FND":
+            bstr = ""
+        else:
+            bstr = "_bkgsub"
+        otab.write(f"CalFacs/miri_calfactors{bstr}_repeat_{cfilter}_fit.dat",
                    format="ascii.commented_header",
                    overwrite=True)

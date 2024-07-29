@@ -15,6 +15,7 @@ if __name__ == "__main__":
              "F1000W": ["1", "2", "3", "4", "5"],
              "F1130W": ["1", "2", "3"],
              "F1280W": ["1", "2", "3"],
+             "FND": ["1", "2", "3", "4", "5", "6", "7", "8"],
              "F1500W": ["1", "2", "3", "4", "5"],
              "F1800W": ["1", "2", "3"],
              "F2100W": ["1", "2", "3"],
@@ -34,12 +35,16 @@ if __name__ == "__main__":
                 "F1140C": "15.0",
                 "F1550C": "10.0",
                 "F2300C": "10.0",
-                "FND": "3.0",
+                "FND": "5.0",
                }
 
     for cfilter in dsets.keys():
         files[cfilter] = []
         for cset in dsets[cfilter]:
+            if cfilter == "FND":
+                star = "del UMi"
+            else:
+                star = "BD+60 1753"
             files[cfilter].append(
                 f"ADwarfs/{cfilter}/{star}_set{cset}/miri_{star}_set{cset}_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat"
             )
@@ -59,9 +64,6 @@ if __name__ == "__main__":
     cfilter = "F1550C"
     files[cfilter] = [f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat",
                       f"SolarAnalogs/{cfilter}/HD 167060_set1/miri_HD 167060_set1_stage3_asn_i2dfwhmfac{dfwhmfac[cfilter]}_apcor.dat"]
-
-    # add in the FND obs
-    files[cfilter] = ["ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_asn_i2d_ee_fwhmfac{dfwhmfac[cfilter]}.dat"]
 
     fulltab = QTable(names=("filter", "subarray", "eefraction", "radius", "radius_unc", "apcor", "apcor_unc",
                             "skyin", "skyin_unc", "skyout", "skyout_unc"),
@@ -100,6 +102,8 @@ if __name__ == "__main__":
 
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             subarray_values = ["FULL", csubarray[cfilter]]
+        elif cfilter == "FND":
+            subarray_values = ["FULL", "MASK1065", "MASK1140", "MASK1550", "MASKLYOT", "SLITLESSPRISM"]
         else:
             subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
@@ -152,7 +156,7 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "the SKYIN and SKYOUT columns."
     new_model.history.append(entry)
-    new_model.save("ApCor/jwst_miri_apcorr_flight_2jul24.fits")
+    new_model.save("ApCor/jwst_miri_apcorr_flight_29jul24.fits")
 
     print(fulltab)
-    fulltab.write("ApCor/jwst_miri_apcorr_flight_2jul24_full.fits", overwrite=True)
+    fulltab.write("ApCor/jwst_miri_apcorr_flight_29jul24_full.fits", overwrite=True)

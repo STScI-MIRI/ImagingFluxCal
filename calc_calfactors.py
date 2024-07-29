@@ -81,7 +81,7 @@ def get_calfactors(
         # calculate the calibration factor versus time
         amp = ntab[f"fit_exp_amp_{filter}"][0]
         tau = ntab[f"fit_exp_tau_{filter}"][0]
-        if filter not in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        if filter not in ["F1065C", "F1140C", "F1550C", "F2300C", "FND"]:
             c = ntab[f"fit_exp_const_{filter}"][0]
             amp = amp / c  # put in percentage terms like the coronagraphs
         # print(filter, amp)
@@ -234,6 +234,8 @@ def plot_calfactors(
             "MASK1550": "<",
             "MASKLYOT": "v",
         }
+    elif filter == "FND":
+        psubsym = {"FULL": "o"}
     else:
         psubsym = {
             "FULL": "o",
@@ -667,7 +669,7 @@ if __name__ == "__main__":
         choices=["F560W", "F770W", "F1000W", "F1130W", "F1280W",
                  "F1500W", "F1800W", "F2100W", "F2550W",
                  "F1065C", "F1140C", "F1550C", "F2300C",
-                 "F770W_subtrans", "F770W_repeat"]
+                 "FND"]
         # fmt: on
     )
     parser.add_argument(

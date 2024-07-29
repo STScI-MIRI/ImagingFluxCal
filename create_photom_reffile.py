@@ -20,6 +20,7 @@ if __name__ == "__main__":
                  "F1140C": "MASK1140",
                  "F1550C": "MASK1550",
                  "F2300C": "MASKLYOT"}
+    fndsubarray = ["FULL", "MASK1065", "MASK1140", "MASK1550", "MASKLYOT", "SLITLESSPRISM"]
 
     # based on calibration factor ratios and dedicated subarray transfer observations
     subarr_cor = {
@@ -109,6 +110,8 @@ if __name__ == "__main__":
         # allowed subarrays
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             subarray_values = ["FULL", csubarray[cfilter]]
+        elif cfilter in ["FND"]:
+            subarray_values = fndsubarray
         else:
             subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
@@ -116,6 +119,11 @@ if __name__ == "__main__":
             data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
             data_list_time.append((amp / subarr_cor[csub], tau, startday))
 
+    # temp fix for FND - remove once photom file includes this filter
+    cfilter = "FND"
+    csub = "FULL"
+    data_list.append((cfilter, csub, 1.0, 0.1))
+    data_list_time.append((0.0, -200., startday))
 
     # save time dependent coefficients
     fulltab.write("CalFacs/jwst_miri_photom_coeff.dat", format="ipac", overwrite=True)
@@ -164,4 +172,4 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_2jul24.fits")
+    new_model.save(f"Photom/jwst_miri_photom_flight_29jul24.fits")
