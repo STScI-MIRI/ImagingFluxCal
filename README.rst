@@ -49,6 +49,8 @@ Details
    the WebbPSFs for the outer regions.
    `calc_all_ees` runs all MIRI imaging filters for a defined set of observations.
    This script varies the fwhmfac where the observed/webbpsf PSFs are merged.
+   `calc_all_ees_onlyneeded` only runs for the fwhmfacs that are used in the apcor
+   ref file and paper plots.
 
 4. Create the aperture correction reference file: `create_apcor_reffile.py`
    Uses the individual aperture corrections computed in step 3 to compute the
