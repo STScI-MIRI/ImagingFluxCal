@@ -271,18 +271,20 @@ def aper_image(
 
     if imgfile is not None:
         # show an image of the source and apertures used
-        fontsize = 14
+        fontsize = 18
         font = {"size": fontsize}
         plt.rc("font", **font)
         plt.rc("lines", linewidth=2)
         plt.rc("axes", linewidth=2)
         plt.rc("xtick.major", width=2)
         plt.rc("ytick.major", width=2)
-        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 6))
+        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
         norm = simple_norm(orig_data, "sqrt", percent=99)
         ax[0].imshow(orig_data, norm=norm, interpolation="nearest", origin="lower")
         extract_aper.plot(ax=ax[0], color="white")
+        extract_aper_plus = RectangularAperture(npix_coord, imsize+5, imsize+5)
+        extract_aper_plus.plot(ax=ax[0], color="black")
         norm = simple_norm(data, "sqrt", percent=99.9)
         ax[1].imshow(data, norm=norm, interpolation="nearest", origin="lower")
         aper.plot(ax=ax[1], color="white", lw=2, label="Photometry aperture")
@@ -349,7 +351,7 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
 
     # get the aper info from the apcor reference file
     # tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
-    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_29jul24.fits")
+    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_31jul24.fits")
     # repfilter = {
     #     "F1065C": "F1130W",
     #     "F1140C": "F1130W",

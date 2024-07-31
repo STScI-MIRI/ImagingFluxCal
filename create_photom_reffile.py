@@ -12,7 +12,7 @@ if __name__ == "__main__":
                      "F1500W", "F1800W", "F2100W", "F2550W"]
     # image_filters = list(np.flip(image_filters))
 
-    coron_filters = ["F1065C", "F1140C", "F1550C", "F2300C"]
+    coron_filters = ["F1065C", "F1140C", "F1550C", "F2300C", "FND"]
 
     filters = image_filters + coron_filters
     # fmt: on
@@ -33,6 +33,7 @@ if __name__ == "__main__":
         "MASK1140": 1.0,
         "MASK1550": 1.0,
         "MASKLYOT": 1.0,
+        "SLITLESSPRISM": 1.0,
     }
 
     # current calibration factors
@@ -71,7 +72,7 @@ if __name__ == "__main__":
         else:
             per_amp = amp
         # repeatability as a percentage for paper table
-        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C", "FND"]:
             repeat_per = 0.0
         else:
             repeat_per = ntab_repeat[f"fit_exp_std_per_{cfilter}"][0]
@@ -97,8 +98,6 @@ if __name__ == "__main__":
 
         frac_change = (const + amp) / const
         amp_per = (np.absolute(amp) / const) * 100.0
-        # print(f"{cfilter} {const:.4f}  {amp:.4f}  {cfac_std:.4f}  {-1.*tau:.1f}  {startday:.1f}  {frac_change:.3f}")
-        print(f"{cfilter} & {const:.4f} & {amp:.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         # calculated the value for the first 100 days
         #  approximates Commissioning so we can compare to the previous value
@@ -115,15 +114,19 @@ if __name__ == "__main__":
         else:
             subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
+        print(cfilter, cfac_unc)
+
+        print(f"{cfilter} & {cfac_ave:.4f} & {amp:.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
+
         for csub in subarray_values:
             data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
             data_list_time.append((amp / subarr_cor[csub], tau, startday))
 
     # temp fix for FND - remove once photom file includes this filter
-    cfilter = "FND"
-    csub = "FULL"
-    data_list.append((cfilter, csub, 1.0, 0.1))
-    data_list_time.append((0.0, -200., startday))
+    #cfilter = "FND"
+    #csub = "FULL"
+    #data_list.append((cfilter, csub, 1.0, 0.1))
+    #data_list_time.append((0.0, -200., startday))
 
     # save time dependent coefficients
     fulltab.write("CalFacs/jwst_miri_photom_coeff.dat", format="ipac", overwrite=True)
@@ -152,7 +155,7 @@ if __name__ == "__main__":
     new_model = MirImgPhotomModel(phot_table=data, timecoeff=data_time)
     d1 = datetime.datetime
     new_model.meta.date = d1.isoformat(d1.today())
-    new_model.meta.filename = f"jwst_miri_photom_2jul24.fits"
+    new_model.meta.filename = f"jwst_miri_photom_31jul24.fits"
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
@@ -172,4 +175,4 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_29jul24.fits")
+    new_model.save(f"Photom/jwst_miri_photom_flight_31jul24.fits")

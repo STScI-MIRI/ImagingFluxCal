@@ -783,10 +783,10 @@ if __name__ == "__main__":
         extstr = f"{extstr}_repeat"
     if args.grieke:
         extstr = f"{extstr}_grieke"
-    if args.applytime:
-        extstr = f"{extstr}_timecor"
     if args.subarrcor:
         extstr = f"{extstr}_subarracor"
+    if args.applytime:
+        extstr = f"{extstr}_timecor"
 
     savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
     if args.detmulti:

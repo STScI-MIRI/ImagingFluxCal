@@ -89,8 +89,9 @@ Details
    Produces a table giving the calibration factors for each observation.
    Produces plots of calibration factors versus model flux, time, well depth,
    etc.
+   Example: `calc_calfactors.py --grieke --applytime --subarrcor --nocurval`
+
    A meta plot for all the filters can be created using `plot_multi_calfacs.py`.
-   Example: `calc_calfactors.py --grieke --applytime --nocurval --noignore`
 
 10. Compute a set of photom reference files accounting for the time dependent
    sensitivity losses using `python create_photom_reffile.py`
@@ -119,12 +120,12 @@ Figures
    to be run first to get the values for the dedicated subarray transfer observations.
 
 7. Source dependencies:
-   `calc_calfactors.py -filter=F1280W --sourcemulti --grieke --subarrcor --applytime --nocurval`
+   `calc_calfactors.py --filter=F1280W --sourcemulti --grieke --subarrcor --applytime --nocurval`
 
 8. Source type dependence: `plot_srctype_allobs.py`
 
 9. Detector dependencies:
-   `calc_calfactors.py -filter=F1280W --detmulti --grieke --subarrcor --applytime --nocurval`
+   `calc_calfactors.py --filter=F1280W --detmulti --grieke --subarrcor --applytime --nocurval`
 
 Appendix Figures:
 

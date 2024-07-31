@@ -150,7 +150,7 @@ if __name__ == "__main__":
             offval = 0.0
 
         # get aperture corrections and uncertainties
-        tab = QTable.read("ApCor/jwst_miri_apcorr_flight_29jul24_full.fits")
+        tab = QTable.read("ApCor/jwst_miri_apcorr_flight_31jul24_full.fits")
         gtab = tab[(tab["subarray"] == "FULL") & (tab["filter"] == cfilter)]
 
         ax.errorbar(gtab["radius"] * pixscale, gtab["eefraction"] + offval, xerr=gtab["radius_unc"] * pixscale, fmt="k.")

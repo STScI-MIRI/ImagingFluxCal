@@ -24,12 +24,17 @@ if __name__ == "__main__":
         help="Apply subarray correction factors",
         action="store_true",
     )
+    parser.add_argument(
+        "--noignore",
+        help="Do not ignore any stars (useful for measuring the subarray differences)",
+        action="store_true",
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
 
     filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W",
-               "F1500W", "F1800W", "F2100W", "F2550W",
+               "FND", "F1500W", "F1800W", "F2100W", "F2550W",
                "F1065C", "F1140C", "F1550C", "F2300C"]
 
     # make plot
@@ -41,7 +46,7 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, ax = plt.subplots(nrows=7, ncols=2, figsize=(14, 16), sharex=True)
+    fig, ax = plt.subplots(nrows=8, ncols=2, figsize=(14, 16), sharex=True)
 
     # setup the legend
     plot_calfactors(
@@ -59,6 +64,12 @@ if __name__ == "__main__":
     ax[0,0].set_ylim(1.0, 2.)
     ax[0,0].set_title("")
     ax[0,0].axis('off')
+
+    ax[0,1].get_xaxis().set_visible(False)
+    ax[0,1].get_yaxis().set_visible(False)
+    ax[0,1].set_ylim(1.0, 2.)
+    ax[0,1].set_title("")
+    ax[0,1].axis('off')
 
     startday = 59720.
     for k, cfilter in enumerate(filters):
@@ -78,12 +89,12 @@ if __name__ == "__main__":
 
         savefacs = f"CalFacs/miri_calfactors{extstr}_timecor_{cfilter}.fits"
 
-        if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
-            noignore = False
-        else:
-            noignore = False
+        # if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
+        #     noignore = False
+        # else:
+        #     noignore = False
 
-        m = k + 1
+        m = k + 2
         px = m // 2
         py = m % 2
         plot_calfactors(
@@ -97,7 +108,7 @@ if __name__ == "__main__":
             bkgsub=bkgsub, 
             applytime=applytime,
             grieke=args.grieke,
-            noignore=noignore,
+            noignore=args.noignore,
             # fitline=True,
         )
         ax[px, py].set_ylabel("CalFactor")

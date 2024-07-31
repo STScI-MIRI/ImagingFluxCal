@@ -23,24 +23,29 @@ if __name__ == '__main__':
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
 
-    fontsize = 14
+    if args.coron:
+        fontsize = 18
+        nrows = 2
+        ncols = 2
+        imsize = 150.
+        fsize = (10, 10)
+    else:
+        fontsize = 12
+        nrows = 2
+        ncols = 5
+        imsize = 60.
+        fsize = (14, 6)
+
     font = {"size": fontsize}
     plt.rc("font", **font)
     plt.rc("lines", linewidth=2)
     plt.rc("axes", linewidth=2)
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
-    if args.coron:
-        nrows = 2
-        ncols = 2
-        imsize = 150.
-    else:
-        nrows = 3
-        ncols = 3
-        imsize = 100.
-    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 10))
 
-    filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W",
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
+
+    filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "FND", "F1500W",
                "F1800W", "F2100W", "F2550W"]
     if args.coron:
         filters = ["F1065C", "F1140C", "F1550C", "F2300C"]
@@ -49,6 +54,8 @@ if __name__ == '__main__':
             fname = f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_bkgsub_asn_i2d.fits"
         elif cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
             fname = f"ADwarfs/{cfilter}/BD+60 1753_set1/miri_BD+60 1753_set1_stage3_bkgsub_asn_i2d.fits"
+        elif cfilter == "FND":
+            fname = f"ADwarfs/{cfilter}/del UMi_set1/miri_del UMi_set1_stage3_asn_i2d.fits"
         else:
             fname = f"ADwarfs/{cfilter}/HD 2811_set1/miri_HD 2811_set1_stage3_bkgsub_asn_i2d.fits"
         hdul = fits.open(fname)
@@ -72,7 +79,7 @@ if __name__ == '__main__':
         hdul.close()
 
         coord = orig_coord
-        cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
+        cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w, fill_value=0.0, mode="partial")
         data = cutout.data
         data_wcs = cutout.wcs
 
@@ -90,10 +97,10 @@ if __name__ == '__main__':
         data = cutout.data
         data_wcs = cutout.wcs
 
-        data[data == 0.0] = np.median(data[data > 0.0])
+        data[np.isnan(data)] = np.median(data[data > 0.0])
 
         norm = simple_norm(data, "sqrt", percent=99)
-        ll = k // nrows
+        ll = k // ncols
         mm = k % ncols
         ax[ll, mm].imshow(data, norm=norm, interpolation="nearest", origin="lower")
         ax[ll, mm].set_title(cfilter)

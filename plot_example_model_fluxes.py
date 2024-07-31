@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # models to use
     modfiles = ["Models/g191b2b_stiswfcnic_004.fits",
                 "Models/bd60d1753_stiswfc_004.fits",
-                "Models/p330e_stiswfcnic_005.fits"]
+                "Models/p330e_stiswfcnic_006.fits"]
 
     # bandpasses to use
     bandpasses = read_miri()
