@@ -406,10 +406,10 @@ def plot_calfactors(
             gvals.append(True)
 
     # use sigma clipping to remove the extreme outliers
-    if filter == "F2550W":
+    if filter == "FND":
         sigcut = 3.0
     else:
-        sigcut = 3.0
+        sigcut = 4.0
 
     meanval, meanstd, meanstdmean, filtered_data, npts = compute_stats(
         allfacs[gvals], weights[gvals], sigcut
@@ -538,7 +538,7 @@ def plot_calfactors(
     if savefile is not None:
         atab = QTable()
         atab[f"avecalfac_{filter}"] = [meanval]
-        atab[f"avecalfac_unc_{filter}"] = [meanstd / np.sqrt(len(allfacs[gvals]))]
+        atab[f"avecalfac_unc_{filter}"] = [meanstdmean]
         atab[f"avecalfac_std_{filter}"] = [meanstd]
         atab[f"avecalfac_npts_{filter}"] = [npts]
         if (xaxisval == "timemid") and (not applytime):

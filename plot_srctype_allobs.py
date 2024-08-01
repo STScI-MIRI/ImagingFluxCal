@@ -24,7 +24,7 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=3)
     plt.rc("ytick.major", width=3)
 
-    cftab = QTable.read("Photom/jwst_miri_photom_flight_2jul24.fits", hdu=1)
+    cftab = QTable.read("Photom/jwst_miri_photom_flight_31jul24.fits", hdu=1)
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 7))
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         ameans.append(meanval)
         auncs.append(meanstdmean)
 
-    ax.errorbar(list(dirs.keys()), ameans, yerr=auncs, fmt="k*", markersize=20, label="Average")
+    ax.errorbar(list(dirs.keys()), ameans, yerr=np.array(auncs) * 3, fmt="k*", markersize=20, label="Average")
 
     ax.plot([-1.0, 3.5], [1.0, 1.0], "k:")
 

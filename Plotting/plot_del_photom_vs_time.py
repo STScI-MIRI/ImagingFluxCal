@@ -32,8 +32,8 @@ if __name__ == "__main__":
 
     files = ["CalFactors/jwst_miri_photom_0079.fits",
              "CalFactors/jwst_miri_photom_0201.fits",
-             "Photom/jwst_miri_photom_flight_2jul24.fits"]
-    dates = ["2022-06-07", "2023-09-10", "2024-07-02"]
+             "Photom/jwst_miri_photom_flight_31jul24.fits"]
+    dates = ["2022-06", "2023-09", "2024-07"]
     cols = ["b", "c", "g"]
 
     xtick_num = []
@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     axs[0].set_ylabel("C")
     axs[1].set_ylabel("C")
-    axs[0].set_ylim(0.0, 1.5)
+    axs[0].set_ylim(0.0, 1.6)
     axs[1].set_ylim(0.0, 5.0)
     axs[1].yaxis.tick_right()
     axs[1].yaxis.set_label_position("right")

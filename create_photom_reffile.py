@@ -114,8 +114,6 @@ if __name__ == "__main__":
         else:
             subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
-        print(cfilter, cfac_unc)
-
         print(f"{cfilter} & {cfac_ave:.4f} & {amp:.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         for csub in subarray_values:
