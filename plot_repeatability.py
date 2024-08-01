@@ -159,18 +159,18 @@ if __name__ == "__main__":
         axs[1].text(550., 0. + yoff2 + shifty2, cfilter)
 
     ax.set_ylim(0.9, 3.5)
-    ntvals = np.arange(0, max(fitx), 100)
+    ntvals = np.arange(0, max(fitx)+50, 100)
     ax.set_xticks(ntvals)
     ax.set_xticklabels(Time(ntvals + startday, format="mjd").to_value(format='iso', subfmt='date'))
     ax.tick_params(axis='x', labelrotation=60)
-    ax.set_xlabel(f"Date")
+    # ax.set_xlabel(f"Date")
     ax.set_ylabel("Fractional change (+ const)")
 
     axs[1].yaxis.tick_right()
     axs[1].yaxis.set_label_position("right")
     #axs[1].set_xlim(400., 800.)
     axs[1].set_ylim(-0.04, 1.00)
-    axs[1].set_xlabel(f"Date")
+    #axs[1].set_xlabel(f"Date")
 
     axs[1].set_xticks(ntvals)
     axs[1].set_xticklabels(Time(ntvals + startday, format="mjd").to_value(format='iso', subfmt='date'))
