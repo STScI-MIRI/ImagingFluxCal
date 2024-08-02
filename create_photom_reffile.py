@@ -117,10 +117,8 @@ if __name__ == "__main__":
         print(f"{cfilter} & {cfac_ave:.4f} & {amp:.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         for csub in subarray_values:
-            if cfilter == "F2550W":
-                print((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub], amp / subarr_cor[csub], tau, startday))
             data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
-            data_list_time.append((amp / subarr_cor[csub], tau, startday))
+            data_list_time.append((amp / subarr_cor[csub], -1.*tau, startday))
 
     # temp fix for FND - remove once photom file includes this filter
     #cfilter = "FND"

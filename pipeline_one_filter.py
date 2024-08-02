@@ -156,7 +156,6 @@ if __name__ == "__main__":
                 print(f"image2 for {ckey}")
                 miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg",
                             flatfile=flatfile, photomfile="../Photom/jwst_miri_photom_flight_31jul24.fits")
-                #            flatfile=flatfile, photomfile="../Photom/jwst_miri_photom_flight_31jul24.fits")
 
             if args.bkgsub:
                 calfiles = glob.glob(f"{ndir}/*mirimage_cal.fits")
