@@ -110,7 +110,7 @@ if __name__ == "__main__":
                     pipe_tau = cftab_time["tau"][gval][0]
                     pipe_t0 = cftab_time["t0"][gval][0]
                     cur_cf = pipe_cfactor + pipe_amp * np.exp(
-                        (cline["timemid"].value - pipe_t0) / pipe_tau
+                        -1.0 * (cline["timemid"].value - pipe_t0) / pipe_tau
                     )
                     phys_flux = (
                         1e9
