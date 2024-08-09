@@ -93,14 +93,14 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
         modspec = QTable.read(gcfile, format="ascii")
         mwave = modspec["wave_um"].value * u.micron
         mflux = modspec["flux_W_cm-2_um-1"].value * u.W / (u.cm * u.cm * u.micron)
-        mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
+        mflux_Jy = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
         if cname == "p177d":
             mflux *= 1e-3
 
         # save the file with Jy units
         otab = QTable()
         otab["wave"] = mwave
-        otab["flux"] = mflux
+        otab["flux"] = mflux_Jy
         otab.write(gcfile.replace(".dat", ".fits"), overwrite=True)
         otab.write(gcfile.replace(".dat", "_ipac.dat"), format="ascii.ipac", overwrite=True)
     else:
@@ -111,7 +111,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
 
         mwave = (modspec["WAVELENGTH"].value * u.angstrom).to(u.micron)
         mflux = modspec["FLUX"].value * u.erg / (u.cm * u.cm * u.s * u.angstrom)
-        mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
+        mflux_Jy = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
 
     # get the bandpasses
     bfluxes = QTable()
@@ -119,7 +119,9 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
     for cband in bandpasses.keys():
         rwave, cwave, ceff = bandpasses[cband]
         rwaves[cband.upper()] = rwave
-        bfluxes[cband.upper()] = [compute_bandflux(mwave, mflux, cwave, ceff)]
+        bflux_lambda = compute_bandflux(mwave, mflux, cwave, ceff)
+        bflux_nu = bflux_lambda.to(u.Jy, equivalencies=u.spectral_density(rwave * u.micron))
+        bfluxes[cband.upper()] = [bflux_nu]
 
     if imgfile is not None:
         fontsize = 14
@@ -132,7 +134,7 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
 
         gvals = (mwave > 0.01 * u.micron) & (mwave < 32.0 * u.micron)
-        ax.plot(mwave[gvals], mflux[gvals] * (mwave[gvals] ** 2), "k-", alpha=0.5)
+        ax.plot(mwave[gvals], mflux_Jy[gvals] * (mwave[gvals] ** 2), "k-", alpha=0.5)
 
         for cband in bfluxes.keys():
             ax.plot(
