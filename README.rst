@@ -81,7 +81,7 @@ Details
    observations need to be measured by running `plot_subtrans.py --filter=F770W`
    and the same again for `F1280W`.  In addition, the subarray dependence based
    on the ratio of calibration factors from all the observations needs to measured
-   using `plot_multi_calfacs.py --grieke --xaxisval=subarr`.
+   using `plot_multi_calfacs.py --grieke --xaxisval=subarr --noignore`.
 
 9. Compute the calibration factors: `calc_calfactors.py`
    Uses the results of 4, 5, and 6 to calculate the calibration factors for all
@@ -99,19 +99,17 @@ Details
 Figures
 -------
 
-1. Montage of observed PSFs: `Plotting/plot_example_images.py`
-   By default makes a figure for the 9 imaging filters.  Use the option
-   `--coron` to make the figure with the 4 coronagraphic filters.
+1. Montage of observed imager PSFs: `Plotting/plot_example_images.py`
 
-2. Encirciled energy plot: `Plotting/plot_encircled_energy.py`
+2. Montage of observed coronagraphic PSFs: `Plotting/plot_example_images.py --coron`
+
+3. Encirciled energy plot: `Plotting/plot_encircled_energy.py`
    By default makes a figure showing the encircled energies for all 9
    imaging filters, with a veritical offset between them.  Call with
-   `--coron` to get teh coronagraphic plot.
+   `--coron` to get the coronagraphic plot.
 
-3. Example of photometry technique: `aper_one_filter.py`
+4. Example of photometry technique: `aper_one_filter.py`
    One of the standard outputs.
-
-4. Example of model spectra and photometry: `plot_example_model_fluxes.py`
 
 5. Time dependent sensitivity loss: `plot_repeatability.py`
 
@@ -126,6 +124,8 @@ Figures
 
 9. Detector dependencies:
    `calc_calfactors.py --filter=F1280W --detmulti --grieke --subarrcor --applytime --nocurval`
+
+10. Change in delivered calibration versus time: `Plotting/plot_del_photom_vs_time.py`
 
 Appendix Figures:
 

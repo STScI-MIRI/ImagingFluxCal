@@ -14,7 +14,7 @@ if __name__ == "__main__":
     pixarea = 2.8606325654256e-13
 
     # fmt: off
-    filters = ["F2100W", "F560W", "F770W", "F1000W",
+    filters = ["F560W", "F770W", "F1000W",
                "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
                "F1065C", "F1140C", "F1550C", "F2300C"]
     # fmt: on
@@ -151,6 +151,29 @@ if __name__ == "__main__":
     # sort by name
     sindxs = np.argsort(otab["name"])
     otab = otab[sindxs]
+
+    # sort each name by filter
+    fvals = {"F560W": 5.6, 
+             "F770W": 7.7,
+             "F1000W" : 10.0,
+             "F1130W": 11.3,
+             "F1280W": 12.8,
+             "FND": 13.0,
+             "F1500W": 15.0,
+             "F1800W": 18.0,
+             "F2100W": 21.0,
+             "F2550W": 25.5,
+             "F1065C": 106.5,
+             "F1140C": 114.0,
+             "F1550C": 155.0,
+             "F2300C": 230.0}
+    unames = np.unique(otab["name"])
+    for cname in unames:
+        gvals = otab["name"] == cname
+        targfilters = otab["filter"][gvals].data
+        svals = [fvals[cfilter] for cfilter in targfilters]
+        sindxs = np.argsort(svals)
+        otab[gvals] = otab[gvals][sindxs]
 
     # otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
     # otab.write('miri_absflux_program_data.dat', format='ascii.mrt', overwrite=True, formats=colformats)
