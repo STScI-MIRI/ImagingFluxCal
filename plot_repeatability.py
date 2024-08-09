@@ -13,6 +13,7 @@ from calc_calfactors import get_calfactors
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--show_prev", help="show previous time dependence", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -30,6 +31,10 @@ if __name__ == "__main__":
     plt.rc("ytick.major", width=2)
 
     fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(16, 10))
+
+    if args.show_prev:
+        cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=1)
+        cftab_time = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=2)
 
     ax = axs[0]
     startday = 59720
@@ -157,6 +162,15 @@ if __name__ == "__main__":
 
         shifty2 = 0.02
         axs[1].text(550., 0. + yoff2 + shifty2, cfilter)
+
+        if args.show_prev:
+            amp = cftab_time["amplitude"][cftab["filter"] == cfilter][0]
+            tau = cftab_time["tau"][cftab["filter"] == cfilter][0]
+            startday = cftab_time["t0"][cftab["filter"] == cfilter][0]
+            mod_fit[0].amplitude = amp
+            mod_fit[0].tau = -1. * tau
+            modvals = (meanval / mod_fit(pxvals))
+            ax.plot(pxvals, modvals + yoff, "b:")
 
     ax.set_ylim(0.9, 3.5)
     ntvals = np.arange(0, max(fitx)+50, 100)
