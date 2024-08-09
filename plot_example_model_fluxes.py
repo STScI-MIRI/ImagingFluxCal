@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     # models to use
     modfiles = ["Models/g191b2b_stiswfcnic_004.fits",
-                "Models/bd60d1753_stiswfc_004.fits",
-                "Models/p330e_stiswfcnic_006.fits"]
+                "Models/bd60d1753_stiswfc_005.fits",
+                "Models/p330e_stiswfcnic_007.fits"]
 
     # bandpasses to use
     bandpasses = read_miri()
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
         mwave = (modspec["WAVELENGTH"].value * u.angstrom).to(u.micron)
         mflux = modspec["FLUX"].value * u.erg / (u.cm * u.cm * u.s * u.angstrom)
-        mflux = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
+        mflux_Jy = mflux.to(u.Jy, equivalencies=u.spectral_density(mwave))
 
         # get the band fluxes
         bfluxes = QTable()
@@ -66,7 +66,10 @@ if __name__ == "__main__":
         for cband in bandpasses.keys():
             rwave, cwave, ceff = bandpasses[cband]
             rwaves[cband.upper()] = rwave
-            bfluxes[cband.upper()] = [compute_bandflux(mwave, mflux, cwave, ceff)]
+            bflux_lambda = compute_bandflux(mwave, mflux, cwave, ceff)
+            bflux_nu = bflux_lambda.to(u.Jy, equivalencies=u.spectral_density(rwave * u.micron))
+            bfluxes[cband.upper()] = [bflux_lambda]
+
             # bandwidth
             intresp = np.trapz(ceff, cwave)
             bwidth = intresp / max(ceff)
@@ -74,10 +77,10 @@ if __name__ == "__main__":
 
         gvals = (mwave > 4.5 * u.micron) & (mwave < 32.0 * u.micron)
 
-        ave_mflux = (np.average(mflux[gvals] * (mwave[gvals] ** 2))).value
-        offval = k * 0.2
+        ave_mflux = (np.average(mflux[gvals] * (mwave[gvals] ** 0))).value
+        offval = 1. + k * 0.2
 
-        ax.plot(mwave[gvals], mflux[gvals].value * (mwave[gvals].value ** 2) / ave_mflux + offval, "k-", alpha=0.5)
+        ax.plot(mwave[gvals], (mflux[gvals].value * (mwave[gvals].value ** 0) / ave_mflux) * offval, "k-", alpha=0.5)
 
         for cband in bfluxes.keys():
             if cband in ["F1065C", "F1140C", "F1550C", "F2300C"]:
@@ -86,12 +89,13 @@ if __name__ == "__main__":
                 ptype = "go"
             if cband != "FND":
                 ax.errorbar(
-                    rwaves[cband], bfluxes[cband].value * (rwaves[cband] ** 2) / ave_mflux + offval,
+                    rwaves[cband], (bfluxes[cband].value * (rwaves[cband] ** 0) / ave_mflux) * offval,
                     xerr=0.5 * bwidths[cband].value, fmt=ptype, alpha=0.5
                 )
 
     ax.set_xscale("log")
     ax.set_xlabel(r"wavelength [$\mu$m]")
+    ax.set_yscale("log")
     ax.set_ylabel(r"Normalized RJ Flux [Jy $\mu$m$^2$] + const")
 
     ax.text(20., 1.0, "Hot Star (G191B2B)", alpha=0.7)
