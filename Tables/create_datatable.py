@@ -175,7 +175,7 @@ if __name__ == "__main__":
         sindxs = np.argsort(svals)
         otab[gvals] = otab[gvals][sindxs]
 
-    # otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
+    otab.write("miri_absflux_program_data.dat", format="ipac", overwrite=True)
     # otab.write('miri_absflux_program_data.dat', format='ascii.mrt', overwrite=True, formats=colformats)
 
     # write latex table to provide example lines for paper
