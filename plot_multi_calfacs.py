@@ -111,7 +111,7 @@ if __name__ == "__main__":
             noignore=args.noignore,
             # fitline=True,
         )
-        ax[px, py].set_ylabel("CalFactor")
+        ax[px, py].set_ylabel("C")
         ax[px, py].set_title("")
         if px < 6:
             ax[px, py].set_xlabel("")
@@ -127,6 +127,8 @@ if __name__ == "__main__":
         ax[0, 0].set_xlim(1e3, 1e5)
     elif args.xaxisval == "rate":
         ax[0, 0].set_xlim(1e1, 1e5)
+    elif args.xaxisval == "inttime":
+        ax[0, 0].set_xlim(0.1, 400)
 
     plt.tight_layout()
 

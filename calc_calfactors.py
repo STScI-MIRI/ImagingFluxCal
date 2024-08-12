@@ -591,7 +591,7 @@ def plot_calfactors(
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Model Flux Density [mJy]")
-    ax.set_ylabel("C [(MJy/sr) / (DN/s)]")
+    ax.set_ylabel("C [(MJy/sr) / (DN/s/pix)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
     ax.set_ylim(0.90 * meanval, 1.10 * meanval)

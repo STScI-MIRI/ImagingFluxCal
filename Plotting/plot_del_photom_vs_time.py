@@ -67,8 +67,8 @@ if __name__ == "__main__":
     axs[0].tick_params(axis='x', labelrotation=60)
     axs[1].tick_params(axis='x', labelrotation=60)
 
-    axs[0].set_ylabel("C")
-    axs[1].set_ylabel("C")
+    axs[0].set_ylabel("C [(MJy/sr) / (DN/s/pix)]")
+    axs[1].set_ylabel("C [(MJy/sr) / (DN/s/pix)]")
     axs[0].set_ylim(0.0, 1.6)
     axs[1].set_ylim(0.0, 5.0)
     axs[1].yaxis.tick_right()

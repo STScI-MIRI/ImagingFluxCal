@@ -59,7 +59,7 @@ if __name__ == "__main__":
         relvals_unc = relvals * np.sqrt(relvals_unc)
         ax.errorbar(subarrs_vals[gvals] + (k+3)*delt, relvals[gvals], 
                     yerr=relvals_unc[gvals],
-                    fmt=syms[k], label=cfilter, alpha=0.5)
+                    fmt=syms[k], label=f"{cfilter} $\pm 1\sigma$", alpha=0.5)
 
         arelvals[k, :] = relvals
         arelvals_unc[k, gvals] = relvals_unc[gvals]
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         ameans.append(meanval)
         auncs.append(meanstdmean)
 
-    ax.errorbar(list(dirs.keys()), ameans, yerr=np.array(auncs) * 3, fmt="k*", markersize=20, label="Average")
+    ax.errorbar(list(dirs.keys()), ameans, yerr=np.array(auncs) * 3, fmt="k*", markersize=20, label=r"Average $\pm 3\sigma$")
 
     ax.plot([-1.0, 3.5], [1.0, 1.0], "k:")
 

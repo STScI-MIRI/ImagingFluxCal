@@ -71,8 +71,8 @@ def compute_bandflux(wave, flux_source, bwave, bandpass):
     flux_source_bp = np.interp(bwave, wave, flux_source)
 
     # compute the the integrals
-    inttop = np.trapz(bwave * bandpass * flux_source_bp)
-    intbot = np.trapz(bwave * bandpass)
+    inttop = np.trapz(bwave * bandpass * flux_source_bp, bwave)
+    intbot = np.trapz(bwave * bandpass, bwave)
 
     return inttop / intbot
 

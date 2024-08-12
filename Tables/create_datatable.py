@@ -30,8 +30,8 @@ if __name__ == "__main__":
         "iflux": ".2e",
         "ifluxunc": ".2e",
         "ibkg": ".2e",
-        "flux": ".2f",
-        "fluxunc": ".2f",
+        "flux": ".2e",
+        "fluxunc": ".2e",
         "bkg": ".2e",
     }
 
