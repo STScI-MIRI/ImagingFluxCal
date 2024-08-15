@@ -94,7 +94,7 @@ if __name__ == "__main__":
         const = (1.0 / (per_amp + 1)) * cfac_ave
         # ncfacs = (amp * np.exp(days/tau)) + const
 
-        fulltab.add_row([cfilter, amp, -1.*tau, const, startday, cfac_std])
+        fulltab.add_row([cfilter, amp, -1.*tau, cfac_ave, startday, cfac_unc])
 
         frac_change = (const + amp) / const
         amp_per = (np.absolute(amp) / const) * 100.0
