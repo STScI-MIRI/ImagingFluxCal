@@ -1,5 +1,6 @@
 import argparse
 import matplotlib.pyplot as plt
+import numpy as np
 
 from astropy.table import QTable
 
@@ -144,8 +145,10 @@ if __name__ == "__main__":
         if args.filter == "all":
             if args.coron:
                 offval = (3 - k) * 0.1
+                textradius = 4.5
             else:
                 offval = (8 - k) * 0.1
+                textradius = 2.5
         else:
             offval = 0.0
 
@@ -187,6 +190,12 @@ if __name__ == "__main__":
                     label=f"{clabel} model",
                 )
 
+        rvals = np.absolute(ctab["radius"] * pixscale - textradius) < 0.2
+        aveval = np.mean(ctab["ee_model"][rvals]) + offval
+        ax.text(textradius, aveval, cfilter, horizontalalignment='left', color=ccol,
+                verticalalignment='bottom',
+                fontsize=0.9*fontsize)
+
     if args.coron:
         xmax_fac = 50
     else:
@@ -197,7 +206,7 @@ if __name__ == "__main__":
     ax.set_xlabel("radius [arcsec]")
     ax.set_ylabel("Encircled Energy + const")
 
-    ax.legend(ncol=2)
+    # ax.legend(ncol=2)
 
     plt.tight_layout()
 
