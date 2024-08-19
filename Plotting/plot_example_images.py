@@ -1,6 +1,7 @@
 import argparse
 import warnings
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import numpy as np
 
 import astropy.units as u
@@ -30,7 +31,7 @@ if __name__ == '__main__':
         imsize = 150.
         fsize = (10, 10)
     else:
-        fontsize = 12
+        fontsize = 16
         nrows = 2
         ncols = 5
         imsize = 60.
@@ -103,7 +104,21 @@ if __name__ == '__main__':
         ll = k // ncols
         mm = k % ncols
         ax[ll, mm].imshow(data, norm=norm, interpolation="nearest", origin="lower")
-        ax[ll, mm].set_title(cfilter)
+        ax[ll, mm].text(0.05, 0.95, cfilter, horizontalalignment='left', color="white",
+                        verticalalignment='top', transform=ax[ll, mm].transAxes,
+                        fontsize=fontsize)
+
+        scalebar = AnchoredSizeBar(ax[ll, mm].transData,
+                                1./0.11, '1"', 'lower right', 
+                                pad=0.1,
+                                color='white',
+                                frameon=False,
+                                size_vertical=1)
+
+        ax[ll, mm].add_artist(scalebar)
+
+        ax[ll, mm].set_yticks([])
+        ax[ll, mm].set_xticks([])
 
     plt.tight_layout()
 
