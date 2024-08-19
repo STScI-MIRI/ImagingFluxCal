@@ -338,6 +338,9 @@ def plot_calfactors(
                 #     )
                 if applysubarrcor:
                     cfactor = cfactor * subarr_cor[subarray]
+                if xaxisval == "welldepth":  # set the maximum well depth to the saturation level
+                    xval = min([xval, 60000.0])
+
                 allfacs.append(cfactor)
                 ax.errorbar(
                     [xval],

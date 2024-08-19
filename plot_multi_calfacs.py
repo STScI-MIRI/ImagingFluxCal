@@ -124,7 +124,7 @@ if __name__ == "__main__":
     #ax[4, 1].set_ylim(0.65, 0.8)
 
     if args.xaxisval == "welldepth":
-        ax[0, 0].set_xlim(1e3, 1e5)
+        ax[0, 0].set_xlim(1e2, 65000.)
     elif args.xaxisval == "rate":
         ax[0, 0].set_xlim(1e1, 1e5)
     elif args.xaxisval == "inttime":

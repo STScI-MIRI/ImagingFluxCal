@@ -399,6 +399,17 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
             imgfile=cfile.replace(".fits", f"{extstr}_eefrac{eefraction}_absfluxapers.png"),
             override_center=loccoord,
         )
+
+        if bkgsub:  # add in the average background to get the correct background
+            hdul = fits.open(cfile.replace("_bkgsub", ""))
+            orig_data = hdul[1].data
+            photmjysr = hdul[1].header["PHOTMJSR"]
+            orig_data /= photmjysr
+            meanbkg = np.nanmedian(orig_data)
+            print(one_res["mean_bkg"])
+            one_res["mean_bkg"] = one_res["mean_bkg"] + (meanbkg * u.DN / u.s)
+            print(one_res["mean_bkg"])
+
         if mres is None:
             mres = one_res
         else:
