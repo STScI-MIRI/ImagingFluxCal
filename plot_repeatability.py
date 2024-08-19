@@ -55,9 +55,13 @@ if __name__ == "__main__":
             bkgsub=bkgsub,
             grieke=True,
         )
-        yvals = cfacs[0]
-        yvals_unc = cfacs[1]
-        xvals = cfacs[2]
+
+        # remove point that is near 350 - excess stripping in images
+        gvals = np.absolute(cfacs[2] - 350.0) < 5.
+
+        yvals = cfacs[0][~gvals]
+        yvals_unc = cfacs[1][~gvals]
+        xvals = cfacs[2][~gvals]
 
         # now get the two stars that we repeated twice to fill in the time gap
         for stype, sname in zip(["SolarAnalogs", "ADwarfs"], ["HD 37962", "del UMi"]):
