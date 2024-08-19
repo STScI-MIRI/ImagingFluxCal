@@ -433,13 +433,16 @@ def plot_calfactors(
 
     # compute averages in bins
     if (xaxisval == "subarr") and "SUB256" in psubsym.keys():
-        gvals2 = xvals[gvals] == "SUB256"
-        refres = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
+        txvals = xvals[gvals][~filtered_data.mask]
+        tallfacs = allfacs[gvals][~filtered_data.mask]
+        tweights = weights[gvals][~filtered_data.mask]
+
+        gvals2 = txvals == "SUB256"
+        refres = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
         outvals = np.zeros((len(psubsym.keys()), 3))
-        print(filter)
         for k, csub in enumerate(psubsym.keys()):
-            gvals2 = xvals[gvals] == csub
-            res = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
+            gvals2 = txvals == csub
+            res = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
             if res[0] is not None:
                 print(csub, res[0] / refres[0])
                 outvals[k, :] = res[0:3]
@@ -457,13 +460,16 @@ def plot_calfactors(
 
     # compute averages in bins
     if xaxisval == "srctype":
-        gvals2 = xvals[gvals] == "ADwarfs"
-        refres = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
+        txvals = xvals[gvals][~filtered_data.mask]
+        tallfacs = allfacs[gvals][~filtered_data.mask]
+        tweights = weights[gvals][~filtered_data.mask]
+
+        gvals2 = txvals == "ADwarfs"
+        refres = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
         outvals = np.zeros((len(dirs), 3))
-        print(filter)
         for k, csub in enumerate(dirs):
-            gvals2 = xvals[gvals] == csub
-            res = compute_stats(allfacs[gvals][gvals2], weights[gvals][gvals2], sigcut)
+            gvals2 = txvals == csub
+            res = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
             if res[0] is not None:
                 print(csub, res[0] / refres[0])
                 outvals[k, :] = res[0:3]
@@ -597,7 +603,7 @@ def plot_calfactors(
     ax.set_ylabel("C [(MJy/sr) / (DN/s/pix)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
-    ax.set_ylim(0.90 * meanval, 1.10 * meanval)
+    #ax.set_ylim(0.90 * meanval, 1.10 * meanval)
 
     def val2per(val):
         return (val / meanval) * 100.0 - 100.0

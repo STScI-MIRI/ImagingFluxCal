@@ -82,7 +82,7 @@ if __name__ == "__main__":
         ameans.append(meanval)
         auncs.append(meanstdmean)
 
-    ax.errorbar(list(dirs.keys()), ameans, yerr=np.array(auncs) * 3, fmt="k*", markersize=20, label=r"Average $\pm 3\sigma$")
+    ax.errorbar(list(dirs.keys()), ameans, yerr=np.array(auncs) * 5, fmt="k*", markersize=20, label=r"Average $\pm 5\sigma$")
 
     ax.plot([-1.0, 3.5], [1.0, 1.0], "k:")
 
