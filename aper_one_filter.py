@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
+import copy
 
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -77,21 +78,22 @@ def aper_image(
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", FITSFixedWarning)
         w = WCS(hdul[1].header)
-    orig_coord = SkyCoord(
+    coord = SkyCoord(
         targra,
         targdec,
         unit="deg",
-        pm_ra_cosdec=hdul[0].header["MU_RA"] * u.arcsec / u.yr,
-        pm_dec=hdul[0].header["MU_DEC"] * u.arcsec / u.yr,
+        # pm_ra_cosdec=hdul[0].header["MU_RA"] * u.arcsec / u.yr,
+        # pm_dec=hdul[0].header["MU_DEC"] * u.arcsec / u.yr,
     )
-    new_obstime = Time(hdul[0].header["DATE-BEG"])
-    orig_coord.obstime = Time(hdul[0].header["MU_EPOCH"])
-    # suppress waring that happens every time
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", ErfaWarning)
-        coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
+    # new_obstime = Time(hdul[0].header["DATE-BEG"])
+    # orig_coord.obstime = Time(hdul[0].header["MU_EPOCH"])
+    # # suppress waring that happens every time
+    # with warnings.catch_warnings():
+    #     warnings.simplefilter("ignore", ErfaWarning)
+    #     coord = orig_coord.apply_space_motion(new_obstime=new_obstime)
 
     pix_coord = w.world_to_pixel(coord)
+    orig_pix_coord = copy.copy(pix_coord)
     if override_center is None:
         # check if outside the image
         if ((pix_coord[0] < 0) | (pix_coord[0] > orig_data.shape[0])) | (
@@ -285,6 +287,10 @@ def aper_image(
         extract_aper.plot(ax=ax[0], color="white")
         extract_aper_plus = RectangularAperture(npix_coord, imsize+5, imsize+5)
         extract_aper_plus.plot(ax=ax[0], color="black")
+
+        orig_extract_aper = RectangularAperture(orig_pix_coord, imsize, imsize)
+        orig_extract_aper.plot(ax=ax[0], color="red")
+
         norm = simple_norm(data, "sqrt", percent=99.9)
         ax[1].imshow(data, norm=norm, interpolation="nearest", origin="lower")
         aper.plot(ax=ax[1], color="white", lw=2, label="Photometry aperture")
