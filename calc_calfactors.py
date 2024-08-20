@@ -295,6 +295,13 @@ def plot_calfactors(
     else:
         extstr = ""
 
+    # used for making srctype plots have better x distributions
+    srctype_vals = {"HotStars": 0.0,
+                    "ADwarfs": 1.0,
+                    "SolarAnalogs": 2.0}
+    mu, sigma = 0, 0.12 # mean and standard deviation
+    rng = np.random.default_rng()
+
     allfacs = []
     allfacuncs = []
     allnames = []
@@ -341,9 +348,14 @@ def plot_calfactors(
                 if xaxisval == "welldepth":  # set the maximum well depth to the saturation level
                     xval = min([xval, 60000.0])
 
+                if xaxisval == "srctype":
+                    pxval = srctype_vals[xval] + rng.normal(mu, sigma)
+                else:
+                    pxval = xval
+
                 allfacs.append(cfactor)
                 ax.errorbar(
-                    [xval],
+                    [pxval],
                     [cfactor],
                     yerr=[cfactor_unc],
                     fmt=f"{pcols[k]}{psubsym[subarray]}",
@@ -351,15 +363,15 @@ def plot_calfactors(
                     markersize=10,
                 )
                 if shownames:
-                    ax.text(xval, cfactor, cname, rotation=45.0)
+                    ax.text(pxval, cfactor, cname, rotation=45.0)
                 # plot a red circle around those not used in the average
                 if (cname in ignore_names) or (
                     (cname == "BD+60 1753")
                     and (xaxisval == "timmid")
-                    and (abs(xval - 60070.0) < 20.0)
+                    and (abs(pxval - 60070.0) < 20.0)
                 ):
                     ax.scatter(
-                        [xval],
+                        [pxval],
                         [cfactor],
                         s=150,
                         facecolor="none",
@@ -367,7 +379,7 @@ def plot_calfactors(
                     )
                     # print(modfac[cname])
                     # ax.scatter(
-                    #    [xval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
+                    #    [pxval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
                     # )
                 if subarray == "FULL":
                     meanfull = cfactor
@@ -594,16 +606,19 @@ def plot_calfactors(
         ax.set_xscale("log")
         ax.set_xlabel("Integration Time [s]")
     elif xaxisval == "srctype":
+        ax.set_xticks(list(srctype_vals.values()))
+        ax.set_xticklabels(srctype_vals.keys())
         ax.tick_params(axis="x", labelrotation=60)
     elif xaxisval == "subarr":
         ax.tick_params(axis="x", labelrotation=60)
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Model Flux Density [mJy]")
+
     ax.set_ylabel("C [(MJy/sr) / (DN/s/pix)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
-    #ax.set_ylim(0.90 * meanval, 1.10 * meanval)
+    ax.set_ylim(0.90 * meanval, 1.10 * meanval)
 
     def val2per(val):
         return (val / meanval) * 100.0 - 100.0
