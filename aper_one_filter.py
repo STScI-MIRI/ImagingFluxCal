@@ -104,7 +104,7 @@ def aper_image(
             data = orig_data
             data_wcs = w
         else:
-            imsize = annrad[1] * 6.0
+            imsize = annrad[1] * 8.0
             cutout = Cutout2D(orig_data, coord, (imsize, imsize), wcs=w)
             data = cutout.data
             data_wcs = cutout.wcs
