@@ -282,23 +282,32 @@ def plot_calfactors(
 
     startday = 59720.0
 
-    if xaxisval == "subarr":
-        ax.scatter(
-            psubsym.keys(),
-            np.full(len(psubsym.keys()), 1.0),
-            facecolors="none",
-            edgecolors="none",
-        )
+    # if xaxisval == "subarr":
+    #     ax.scatter(
+    #         psubsym.keys(),
+    #         np.full(len(psubsym.keys()), 1.0),
+    #         facecolors="none",
+    #         edgecolors="none",
+    #     )
 
     if bkgsub:
         extstr = "_bkgsub"
     else:
         extstr = ""
 
-    # used for making srctype plots have better x distributions
+    # used for making srctype and subarr plots have better x distributions
     srctype_vals = {"HotStars": 0.0,
                     "ADwarfs": 1.0,
                     "SolarAnalogs": 2.0}
+    subarr_vals = {"FULL": 0.0,
+                    "BRIGHTSKY": 1.0,
+                    "SUB256": 2.0,
+                    "SUB128": 3.0,
+                    "SUB64": 4.0,
+                    "MASK1065": 5.0,
+                    "MASK1140": 6.0,
+                    "MASK1550": 7.0,
+                    "MASKLYOT": 8.0}
     mu, sigma = 0, 0.12 # mean and standard deviation
     rng = np.random.default_rng()
 
@@ -350,6 +359,8 @@ def plot_calfactors(
 
                 if xaxisval == "srctype":
                     pxval = srctype_vals[xval] + rng.normal(mu, sigma)
+                elif xaxisval == "subarr":
+                    pxval = subarr_vals[xval] + rng.normal(mu, sigma)
                 else:
                     pxval = xval
 
@@ -610,7 +621,13 @@ def plot_calfactors(
         ax.set_xticklabels(srctype_vals.keys())
         ax.tick_params(axis="x", labelrotation=60)
     elif xaxisval == "subarr":
+        ax.set_xticks(list(subarr_vals.values()))
+        ax.set_xticklabels(subarr_vals.keys())
         ax.tick_params(axis="x", labelrotation=60)
+        if "C" in filter:
+            ax.set_xlim(4.5, 8.5)
+        else:
+            ax.set_xlim(-0.5, 4.5)
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Model Flux Density [mJy]")

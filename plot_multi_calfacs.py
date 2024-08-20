@@ -129,6 +129,8 @@ if __name__ == "__main__":
         ax[0, 0].set_xlim(1e1, 1e5)
     elif args.xaxisval == "inttime":
         ax[0, 0].set_xlim(0.1, 400)
+    elif args.xaxisval == "subarr":
+        ax[0, 0].set_xlim(-0.5, 8.5)
 
     plt.tight_layout()
 
