@@ -62,7 +62,7 @@ def get_calfactors(
         extstr = f"{extstr}_indivcals"
     # read in observed fluxes
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
-    print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
+    # print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
     if grieke:
         mfilename = "Models/model_phot_grieke.fits"
@@ -318,7 +318,7 @@ def plot_calfactors(
     xvals = []
     meanfull = None
     for k, dir in enumerate(dirs):
-        print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
+        # print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
         if exists(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits"):
             cfacs = get_calfactors(
                 dir,
@@ -451,6 +451,8 @@ def plot_calfactors(
         facecolor="none",
         edgecolor="m",
     )
+    if np.sum(filtered_data.mask) > 0:
+        print("sigma-clipped names", (allnames[gvals])[filtered_data.mask])
     perstd = 100.0 * meanstd / meanval
     perstdmean = 100.0 * meanstdmean / meanval
 
@@ -598,7 +600,7 @@ def plot_calfactors(
     # get the current pipeline calibration factor and plot
     if showcurval:
         # cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
-        cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits")
+        cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=1)
         pipe_cfactor = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
         ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
 
@@ -635,7 +637,7 @@ def plot_calfactors(
     ax.set_ylabel("C [(MJy/sr) / (DN/s/pix)]")
     ax.set_title(f"{filter} / EEFRAC {eefraction}")
 
-    # ax.set_ylim(0.90 * meanval, 1.10 * meanval)
+    ax.set_ylim(0.90 * meanval, 1.10 * meanval)
 
     def val2per(val):
         return (val / meanval) * 100.0 - 100.0

@@ -48,6 +48,7 @@ model_names = {
     "18sco": "18 Sco",
     "snap2": "SNAP-2",
     "ngc2506g31": "NGC2506 G31",
+    "c26202": "C26202",
 }
 
 
@@ -77,16 +78,26 @@ def compute_bandflux(wave, flux_source, bwave, bandpass):
     return inttop / intbot
 
 
-def get_band_fluxes(cfile, bandpasses, imgfile=None,
-                    grieke=False):
+def get_band_fluxes(cfile, bandpasses, imgfile=None, grieke=False):
     """
     Calculated the band fluxes for each possible filter
     """
 
     # replace with G. Rieke's models when available
     cname = cfile.split("/")[1].split("_")[0]
-    grieke_stars = ["p330e", "p177d", "16cygb", "18sco", "hd106252", "hd142331",
-                    "hd159222", "hd167060", "hd205905", "hd37962", "ngc2506_g31"]
+    grieke_stars = [
+        "p330e",
+        "p177d",
+        "16cygb",
+        "18sco",
+        "hd106252",
+        "hd142331",
+        "hd159222",
+        "hd167060",
+        "hd205905",
+        "hd37962",
+        "ngc2506_g31",
+    ]
     if (cname in grieke_stars) & grieke:
         gcfile = f"Models/grieke23_{cname}.dat"
         print(f"using grieke model for {cname}")
@@ -102,7 +113,9 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
         otab["wave"] = mwave
         otab["flux"] = mflux_Jy
         otab.write(gcfile.replace(".dat", ".fits"), overwrite=True)
-        otab.write(gcfile.replace(".dat", "_ipac.dat"), format="ascii.ipac", overwrite=True)
+        otab.write(
+            gcfile.replace(".dat", "_ipac.dat"), format="ascii.ipac", overwrite=True
+        )
     else:
         # surpress the annoying units warning
         with warnings.catch_warnings():
@@ -120,7 +133,9 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
         rwave, cwave, ceff = bandpasses[cband]
         rwaves[cband.upper()] = rwave
         bflux_lambda = compute_bandflux(mwave, mflux, cwave, ceff)
-        bflux_nu = bflux_lambda.to(u.Jy, equivalencies=u.spectral_density(rwave * u.micron))
+        bflux_nu = bflux_lambda.to(
+            u.Jy, equivalencies=u.spectral_density(rwave * u.micron)
+        )
         bfluxes[cband.upper()] = [bflux_nu]
 
     if imgfile is not None:
@@ -158,7 +173,9 @@ def get_band_fluxes(cfile, bandpasses, imgfile=None,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--irac", help="Do irac instead of miri", action="store_true")
-    parser.add_argument("--grieke", help="Use grieke models for some G stars", action="store_true")
+    parser.add_argument(
+        "--grieke", help="Use grieke models for some G stars", action="store_true"
+    )
     args = parser.parse_args()
 
     # models to use
@@ -189,8 +206,10 @@ if __name__ == "__main__":
         ntab["name"] = [model_names[(cfile.split("/")[1]).split("_stis")[0]]]
         print(f"working on {cfile}")
         onemod = get_band_fluxes(
-            cfile, bandpasses, cfile.replace(".fits", "_absfluxbands.png"),
-            grieke=args.grieke
+            cfile,
+            bandpasses,
+            cfile.replace(".fits", "_absfluxbands.png"),
+            grieke=args.grieke,
         )
         onemod = hstack([ntab, onemod])
 
