@@ -433,9 +433,9 @@ def plot_calfactors(
 
     # use sigma clipping to remove the extreme outliers
     if filter == "FND":
-        sigcut = 3.0
+        sigcut = 3.5
     else:
-        sigcut = 4.0
+        sigcut = 3.5
 
     meanval, meanstd, meanstdmean, filtered_data, npts = compute_stats(
         allfacs[gvals], weights[gvals], sigcut
