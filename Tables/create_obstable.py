@@ -29,11 +29,11 @@ if __name__ == '__main__':
                 if targname == "J1802271":
                     targname = "2MASS J18022716+6043356"
                 if targname == "GD153":
-                    targname == "GD 153"
+                    targname = "GD 153"
                 if targname == "PG 1057+719":
-                    targname == "WD 1057+719"
+                    targname = "WD 1057+719"
                 if targname == "10LAC":
-                    targname == "10 Lac"
+                    targname = "10 Lac"
                 name.append(targname)
                 filter.append(hdr["FILTER"])
                 pid.append(hdr["PROGRAM"][1:])
