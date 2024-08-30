@@ -317,6 +317,7 @@ def plot_calfactors(
     allnames = []
     allsubarr = []
     xvals = []
+    pxvals = []
     meanfull = None
     for k, dir in enumerate(dirs):
         # print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
@@ -340,6 +341,7 @@ def plot_calfactors(
             xvals.append(cfacs[2])
             allnames.append(cfacs[4])
             allsubarr.append(cfacs[3])
+            cpxvals = []
             for cfactor, cfactor_unc, xval, subarray, cname in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3], cfacs[4]
             ):
@@ -364,6 +366,7 @@ def plot_calfactors(
                     pxval = subarr_vals[xval] + rng.normal(mu, sigma)
                 else:
                     pxval = xval
+                cpxvals.append(pxval)
 
                 allfacs.append(cfactor)
                 ax.errorbar(
@@ -395,18 +398,15 @@ def plot_calfactors(
                     # )
                 if subarray == "FULL":
                     meanfull = cfactor
-            # special code to give the differneces between the subarrays
-            # if not applysubarrcor:
-            #     print(cfacs[3])
-            #     if meanfull is not None:
-            #         print(cfacs[0] / meanfull)
-            # exit()
+            pxvals.append(cpxvals)
+
     # allfacs = np.concatenate(allfacs)
     allfacs = np.array(allfacs)
     allfacuncs = np.concatenate(allfacuncs)
     allnames = np.concatenate(allnames)
     allsubarr = np.concatenate(allsubarr)
     xvals = np.concatenate(xvals)
+    pxvals = np.concatenate(pxvals)
 
     # compute the number of times each star has been observed
     # usful for reducing the weight of often observed stars so they do not dominate the average
@@ -415,12 +415,6 @@ def plot_calfactors(
     for cname, ccount in zip(uniq_names[0], uniq_names[1]):
         weights[cname == allnames] = 1.0 / ccount
 
-    # print the top 4 calibration factors with names
-    # aindxs = np.flip(np.argsort(allfacs))
-    # print(allfacs[atindxs[0:4]])
-    # print(allnames[aindxs[0:4]])
-
-    # ignore the 4 "high" stars
     gvals = []
     for k, cname in enumerate(allnames):
         if (cname in ignore_names) or (
@@ -446,7 +440,7 @@ def plot_calfactors(
     ax.axhline(y=meanval + meanstd, color="k", linestyle=":", alpha=0.5)
     ax.axhline(y=meanval - meanstd, color="k", linestyle=":", alpha=0.5)
     ax.scatter(
-        (xvals[gvals])[filtered_data.mask],
+        (pxvals[gvals])[filtered_data.mask],
         (allfacs[gvals])[filtered_data.mask],
         s=200,
         facecolor="none",
