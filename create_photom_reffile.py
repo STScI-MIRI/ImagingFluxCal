@@ -153,7 +153,7 @@ if __name__ == "__main__":
     new_model = MirImgPhotomModel(phot_table=data, timecoeff=data_time)
     d1 = datetime.datetime
     new_model.meta.date = d1.isoformat(d1.today())
-    new_model.meta.filename = f"jwst_miri_photom_31jul24.fits"
+    new_model.meta.filename = f"jwst_miri_photom_30aug24.fits"
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
@@ -173,4 +173,4 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_31jul24.fits")
+    new_model.save(f"Photom/jwst_miri_photom_flight_30aug24.fits")

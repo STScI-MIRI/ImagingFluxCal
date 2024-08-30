@@ -32,8 +32,8 @@ if __name__ == "__main__":
 
     files = ["CalFactors/jwst_miri_photom_0079.fits",
              "CalFactors/jwst_miri_photom_0201.fits",
-             "Photom/jwst_miri_photom_flight_31jul24.fits"]
-    dates = ["2022-06", "2023-09", "2024-07"]
+             "Photom/jwst_miri_photom_flight_30Aug24.fits"]
+    dates = ["2022-06", "2023-09", "2024-08"]
     cols = ["b", "c", "g"]
 
     xtick_num = []

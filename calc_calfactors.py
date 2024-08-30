@@ -263,7 +263,8 @@ def plot_calfactors(
         ignore_names = []
     else:
         # ignore_names = ["GSPC P177-D", "16 Cyg B", "del UMi"]
-        ignore_names = ["HD 180609", "mu Col"]
+        # ignore_names = ["HD 180609", "mu Col"]
+        ignore_names = ["HD 180609"]
     # numbers in comments are from Bohlin et al. 2022 between IRAC 3.6/CALSPEC
     #  (is ratio "measured" from MIRI)
     # not used
@@ -452,7 +453,7 @@ def plot_calfactors(
         edgecolor="m",
     )
     if np.sum(filtered_data.mask) > 0:
-        print("sigma-clipped names", (allnames[gvals])[filtered_data.mask])
+        print(f"{filter} sigma-clipped names", (allnames[gvals])[filtered_data.mask])
     perstd = 100.0 * meanstd / meanval
     perstdmean = 100.0 * meanstdmean / meanval
 

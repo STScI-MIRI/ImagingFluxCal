@@ -8,7 +8,7 @@ import cdspyreadme
 
 if __name__ == "__main__":
 
-    pfile = "Photom/jwst_miri_photom_flight_2jul24.fits"
+    pfile = "Photom/jwst_miri_photom_flight_30aug24.fits"
     cftab = QTable.read(pfile, hdu=1)
     cftab_time = QTable.read(pfile, hdu=2)
     pixarea = 2.8606325654256e-13

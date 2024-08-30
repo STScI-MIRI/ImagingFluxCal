@@ -58,6 +58,7 @@ if __name__ == "__main__":
         x2ndaxis=False,
         notext=True,
         legonly=True,
+        grieke=args.grieke,
     )
     ax[0,0].get_xaxis().set_visible(False)
     ax[0,0].get_yaxis().set_visible(False)
