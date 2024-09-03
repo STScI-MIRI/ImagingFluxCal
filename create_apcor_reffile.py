@@ -1,6 +1,7 @@
 import numpy as np
 import datetime
 from astropy.table import QTable
+from astropy.io import fits
 
 from jwst.datamodels import MirImgApcorrModel
 
@@ -87,12 +88,6 @@ if __name__ == "__main__":
         aapcor = np.average(apcors, axis=1)
         aapcor_std = np.std(apcors, axis=1)
 
-        # print(cfilter)
-        # print(aradii)
-        # print(aradii_std)
-        # print(aapcor)
-        # print(aapcor_std)
-
         outline = f"{cfilter}"
         outline = f"{outline} & ${aradii[-3]:.2f} \pm {aradii_std[-3]:.2f}$"
         outline = f"{outline} & ${aradii[-2]:.2f} \pm {aradii_std[-2]:.2f}$"
@@ -156,7 +151,14 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "the SKYIN and SKYOUT columns."
     new_model.history.append(entry)
-    new_model.save("ApCor/jwst_miri_apcorr_flight_31jul24.fits")
+    apcorr_reffile = "ApCor/jwst_miri_apcorr_flight_31jul24.fits"
+    new_model.save(apcorr_reffile)
+
+    # read/write to add 
+    hduref = fits.open(apcorr_reffile)  # read in each file
+    hd = hduref[0].header  # get header
+    hd["CHANNEL"] = "N/A"
+    hduref.writeto(apcorr_reffile, overwrite=True)  # write file
 
     print(fulltab)
     fulltab.write("ApCor/jwst_miri_apcorr_flight_31jul24_full.fits", overwrite=True)
