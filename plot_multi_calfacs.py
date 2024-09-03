@@ -59,6 +59,7 @@ if __name__ == "__main__":
         notext=True,
         legonly=True,
         grieke=args.grieke,
+        nofiltername=True,
     )
     ax[0,0].get_xaxis().set_visible(False)
     ax[0,0].get_yaxis().set_visible(False)
@@ -110,6 +111,8 @@ if __name__ == "__main__":
             applytime=applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            fontsize=fontsize,
+            nofiltername=True,
             # fitline=True,
         )
         ax[px, py].set_ylabel("C")

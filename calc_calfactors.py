@@ -90,12 +90,13 @@ def get_calfactors(
         # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
         gvals = obstab["name"] == "BD+60 1753"
         obstab = obstab[gvals]
-    elif subtrans: 
+    elif subtrans:
         if filter == "F1280W":
             gvals = (obstab["name"] == "2MASS J18022716+6043356") & (
-                abs(obstab["timemid"].value - 60177.3) < 1.0)
+                abs(obstab["timemid"].value - 60177.3) < 1.0
+            )
             obstab = obstab[gvals]
-        else: # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
+        else:  # only use 2MASS J17571324+6703409 HJD around 59818.2693130625
             gvals = (obstab["name"] == "2MASS J17571324+6703409") & (
                 abs(obstab["timemid"].value - 59818.3) < 1.0
             )
@@ -206,6 +207,8 @@ def plot_calfactors(
     noignore=False,
     legonly=False,
     fitline=False,
+    fontsize=14,
+    nofiltername=False,
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -248,9 +251,9 @@ def plot_calfactors(
     # based on calibration factor ratios and dedicated subarray transfer observations
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.005, 
+        "BRIGHTSKY": 1.005,
         "SUB256": 0.98,
-        "SUB128": 1.00, 
+        "SUB128": 1.00,
         "SUB64": 0.966,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
@@ -297,19 +300,19 @@ def plot_calfactors(
         extstr = ""
 
     # used for making srctype and subarr plots have better x distributions
-    srctype_vals = {"HotStars": 0.0,
-                    "ADwarfs": 1.0,
-                    "SolarAnalogs": 2.0}
-    subarr_vals = {"FULL": 0.0,
-                    "BRIGHTSKY": 1.0,
-                    "SUB256": 2.0,
-                    "SUB128": 3.0,
-                    "SUB64": 4.0,
-                    "MASK1065": 5.0,
-                    "MASK1140": 6.0,
-                    "MASK1550": 7.0,
-                    "MASKLYOT": 8.0}
-    mu, sigma = 0, 0.12 # mean and standard deviation
+    srctype_vals = {"HotStars": 0.0, "ADwarfs": 1.0, "SolarAnalogs": 2.0}
+    subarr_vals = {
+        "FULL": 0.0,
+        "BRIGHTSKY": 1.0,
+        "SUB256": 2.0,
+        "SUB128": 3.0,
+        "SUB64": 4.0,
+        "MASK1065": 5.0,
+        "MASK1140": 6.0,
+        "MASK1550": 7.0,
+        "MASKLYOT": 8.0,
+    }
+    mu, sigma = 0, 0.12  # mean and standard deviation
     rng = np.random.default_rng()
 
     allfacs = []
@@ -357,7 +360,9 @@ def plot_calfactors(
                 #     )
                 if applysubarrcor:
                     cfactor = cfactor * subarr_cor[subarray]
-                if xaxisval == "welldepth":  # set the maximum well depth to the saturation level
+                if (
+                    xaxisval == "welldepth"
+                ):  # set the maximum well depth to the saturation level
                     xval = min([xval, 60000.0])
 
                 if xaxisval == "srctype":
@@ -468,7 +473,7 @@ def plot_calfactors(
                 outvals[k, :] = res[0:3]
         if savefile:
             otab = QTable()
-            otab["name"] =  list(psubsym.keys())
+            otab["name"] = list(psubsym.keys())
             otab["calfacs"] = outvals[:, 0]
             otab["calfacs_unc"] = outvals[:, 1]
             otab["calfacs_uncmean"] = outvals[:, 2]
@@ -495,7 +500,7 @@ def plot_calfactors(
                 outvals[k, :] = res[0:3]
         if savefile:
             otab = QTable()
-            otab["name"] =  list(dirs)
+            otab["name"] = list(dirs)
             otab["calfacs"] = outvals[:, 0]
             otab["calfacs_unc"] = outvals[:, 1]
             otab["calfacs_uncmean"] = outvals[:, 2]
@@ -630,7 +635,17 @@ def plot_calfactors(
         ax.set_xlabel("Model Flux Density [mJy]")
 
     ax.set_ylabel("C [(MJy/sr) / (DN/s/pix)]")
-    ax.set_title(f"{filter} / EEFRAC {eefraction}")
+    # ax.set_title(f"{filter} / EEFRAC {eefraction}")
+    if not nofiltername:
+        ax.text(
+            0.95,
+            0.95,
+            filter,
+            fontsize=1.3 * fontsize,
+            horizontalalignment="right",
+            verticalalignment="top",
+            transform=ax.transAxes,
+        )
 
     ax.set_ylim(0.90 * meanval, 1.10 * meanval)
 
@@ -910,7 +925,7 @@ if __name__ == "__main__":
 
         fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
         plot_calfactors(
-            ax[0,0],
+            ax[0, 0],
             args.filter,
             "mflux",
             showleg=True,
@@ -927,7 +942,7 @@ if __name__ == "__main__":
             noignore=args.noignore,
         )
         plot_calfactors(
-            ax[0,1],
+            ax[0, 1],
             args.filter,
             "bkg",
             showleg=False,
@@ -944,7 +959,7 @@ if __name__ == "__main__":
             noignore=args.noignore,
         )
         plot_calfactors(
-            ax[1,0],
+            ax[1, 0],
             args.filter,
             "timemid",
             showleg=False,
@@ -961,7 +976,7 @@ if __name__ == "__main__":
             noignore=args.noignore,
         )
         plot_calfactors(
-            ax[1,1],
+            ax[1, 1],
             args.filter,
             "srctype",
             showleg=False,
