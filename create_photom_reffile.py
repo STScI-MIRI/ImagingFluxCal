@@ -66,7 +66,7 @@ if __name__ == "__main__":
                                   format="ascii.commented_header")
         amp = ntab_repeat[f"fit_exp_amp_{cfilter}"][0]
         tau = ntab_repeat[f"fit_exp_tau_{cfilter}"][0]
-        if cfilter not in coron_filters:  # amplitude is reported in percentage, not absolute
+        if cfilter not in coron_filters:  # amplitude is reported as absolute not percentage
             c = ntab_repeat[f"fit_exp_const_{cfilter}"][0]
             per_amp = amp / c
         else:
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         else:
             repeat_per = ntab_repeat[f"fit_exp_std_per_{cfilter}"][0]
 
-        # average of all stars after correcting for time dependence
+        # average of all stars after correcting for time and subarray dependences
         ntab = QTable.read(f"CalFacs/miri_calfactors{rstr}_grieke_subarracor_timecor_{cfilter}_ave.dat",
                            format="ascii.commented_header")
         cfac_ave = ntab[f"avecalfac_{cfilter}"][0]
@@ -90,14 +90,17 @@ if __name__ == "__main__":
         #perfac = (per_amp * np.exp(days/tau)) + 1.0
         #ncfacs = (perfac / (per_amp + 1)) * cfac_ave
 
-        amp = (per_amp / (per_amp + 1)) * cfac_ave
-        const = (1.0 / (per_amp + 1)) * cfac_ave
+        #amp = (per_amp / (per_amp + 1)) * cfac_ave
+        #const = (1.0 / (per_amp + 1)) * cfac_ave
+
+        amp = per_amp * cfac_ave
+        #const = cfac_ave
         # ncfacs = (amp * np.exp(days/tau)) + const
 
         fulltab.add_row([cfilter, amp, -1.*tau, cfac_ave, startday, cfac_unc])
 
-        frac_change = (const + amp) / const
-        amp_per = (np.absolute(amp) / const) * 100.0
+        #frac_change = (const + amp) / const
+        amp_per = (np.absolute(amp) / cfac_ave) * 100.0
 
         # calculated the value for the first 100 days
         #  approximates Commissioning so we can compare to the previous value

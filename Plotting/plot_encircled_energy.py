@@ -147,7 +147,7 @@ if __name__ == "__main__":
                 offval = (3 - k) * 0.1
                 textradius = 4.5
             else:
-                offval = (8 - k) * 0.1
+                offval = (9 - k) * 0.1
                 textradius = 2.5
         else:
             offval = 0.0
