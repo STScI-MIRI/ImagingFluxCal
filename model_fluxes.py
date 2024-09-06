@@ -231,4 +231,5 @@ if __name__ == "__main__":
     if args.grieke:
         extstr = f"{extstr}_grieke"
     mmods.write(f"Models/model_phot{extstr}.fits", overwrite=True)
+    mmods.write(f"Models/model_phot{extstr}.dat", format="ascii.ipac", overwrite=True)
     print(mmods)
