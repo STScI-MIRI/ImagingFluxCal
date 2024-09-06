@@ -60,6 +60,7 @@ if __name__ == "__main__":
         legonly=True,
         grieke=args.grieke,
         nofiltername=True,
+        applytime=True,
     )
     ax[0,0].get_xaxis().set_visible(False)
     ax[0,0].get_yaxis().set_visible(False)
@@ -117,7 +118,7 @@ if __name__ == "__main__":
         )
         ax[px, py].set_ylabel("C")
         ax[px, py].set_title("")
-        if px < 6:
+        if px < 7:
             ax[px, py].set_xlabel("")
 
         ax[px, py].text(0.1, 0.9, cfilter,

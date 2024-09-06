@@ -13,7 +13,8 @@ if __name__ == '__main__':
         # fmt: off
         choices=["F560W", "F770W", "F1000W",
                  "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
-                 "F1065C", "F1140C", "F1550C", "F2300C"],
+                 "F1065C", "F1140C", "F1550C", "F2300C",
+                 "FND"],
         # fmt: on
     )
     args = parser.parse_args()
@@ -23,5 +24,5 @@ if __name__ == '__main__':
     print(tab[(tab["subarray"] == "FULL") & (tab["filter"] == args.filter)])
 
     print("New")
-    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_27jul23.fits")
+    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_31jul24.fits")
     print(tab[(tab["subarray"] == "FULL") & (tab["filter"] == args.filter)])
