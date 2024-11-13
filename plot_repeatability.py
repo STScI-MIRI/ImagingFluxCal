@@ -33,8 +33,10 @@ if __name__ == "__main__":
     fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(16, 10))
 
     if args.show_prev:
-        cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=1)
-        cftab_time = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=2)
+        # cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=1)
+        # cftab_time = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=2)
+        cftab = QTable.read("Photom/jwst_miri_photom_flight_30aug24.fits", hdu=1)
+        cftab_time = QTable.read("Photom/jwst_miri_photom_flight_30aug24.fits", hdu=2)
 
     ax = axs[0]
     startday = 59720
