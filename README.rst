@@ -10,6 +10,13 @@ filter.  This enables tests of the sensitivity of the flux calibration
 to changes in the jwst pipeline or any of the steps in the flux calibration
 factor calculation.
 
+Citation
+--------
+
+The results of this work are published in
+`Gordon et al. 2025, AJ, 169, 6 <https://ui.adsabs.harvard.edu/abs/2025AJ....169....6G>`_.
+Please cite this paper if this repository is used.
+
 Contributors
 ------------
 Karl Gordon
