@@ -35,6 +35,7 @@ from photutils.aperture import (
 
 def aper_image(
     filename,
+    filter,
     aprad,
     annrad,
     apcor,
@@ -59,7 +60,10 @@ def aper_image(
         targname = "10 Lac"
     elif targname == "HR 6538":
         targname = "HD 159222"
-    filter = hdul[0].header["FILTER"]
+    # filter = hdul[0].header["FILTER"]
+    # can be incorrect in the header as for coronagraphy and FND,
+    # set to the nearest imaging filter to get the pipeline to run image3
+    # as image3 not normally run for those filters
     if "PHOTMJSR" in hdul[1].header.keys():
         photmjysr = hdul[1].header["PHOTMJSR"]
     else:
@@ -399,6 +403,7 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
 
         one_res = aper_image(
             cfile,
+            filter,
             aprad,
             annrad,
             apcor,
