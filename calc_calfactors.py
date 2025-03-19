@@ -514,6 +514,34 @@ def plot_calfactors(
                 format="ascii.commented_header",
             )
 
+    # compute averages in bins
+    if xaxisval == "dither":
+        txvals = xvals[gvals][~filtered_data.mask]
+        tallfacs = allfacs[gvals][~filtered_data.mask]
+        tweights = weights[gvals][~filtered_data.mask]
+
+        gvals2 = txvals == "1"
+        refres = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
+        dithers = ["1", "2", "3", "4"]
+        outvals = np.zeros((4, 3))
+        for k, csub in enumerate(dithers):
+            gvals2 = txvals == csub
+            res = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
+            if res[0] is not None:
+                print(csub, res[0] / refres[0])
+                outvals[k, :] = res[0:3]
+        if savefile:
+            otab = QTable()
+            otab["name"] = list(dithers)
+            otab["calfacs"] = outvals[:, 0]
+            otab["calfacs_unc"] = outvals[:, 1]
+            otab["calfacs_uncmean"] = outvals[:, 2]
+            otab.write(
+                savefile.replace(".fits", "_dithernum.dat"),
+                overwrite=True,
+                format="ascii.commented_header",
+            )
+
     if (xaxisval == "timemid") and (not applytime):
         fit = fitting.LevMarLSQFitter()
         mod_init = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Const1D(
