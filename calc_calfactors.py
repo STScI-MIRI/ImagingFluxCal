@@ -146,6 +146,8 @@ def get_calfactors(
             xval = dir
         elif xaxisval == "subarr":
             xval = obstab["subarray"][k]
+        elif xaxisval == "dither":
+            xval = obstab["exposure"][k]
         else:
             xval = mflux * 1e3
 
@@ -369,6 +371,8 @@ def plot_calfactors(
                     pxval = srctype_vals[xval] + rng.normal(mu, sigma)
                 elif xaxisval == "subarr":
                     pxval = subarr_vals[xval] + rng.normal(mu, sigma)
+                elif xaxisval == "dither":
+                    pxval = float(xval) + rng.normal(mu, sigma)
                 else:
                     pxval = xval
                 cpxvals.append(pxval)
@@ -630,6 +634,10 @@ def plot_calfactors(
             ax.set_xlim(4.5, 8.5)
         else:
             ax.set_xlim(-0.5, 4.5)
+    elif xaxisval == "dither":
+        ax.set_xticks([1, 2, 3, 4])
+        ax.set_xticklabels(["1", "2", "3", "4"])
+        ax.set_xlabel("Dither #")
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Model Flux Density [mJy]")
@@ -759,6 +767,7 @@ if __name__ == "__main__":
             "inttime",
             "srctype",
             "subarr",
+            "dither",
         ],
     )
     parser.add_argument(
