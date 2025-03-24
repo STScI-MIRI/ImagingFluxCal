@@ -50,7 +50,7 @@ def get_calfactors(
     grieke=False,
 ):
     """
-    Read in the observed and model fluxes and computer the calibration factors
+    Read in the observed and model fluxes and compute the calibration factors
     """
     if bkgsub:
         extstr = "_bkgsub"
