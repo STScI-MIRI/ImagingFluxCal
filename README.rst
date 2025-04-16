@@ -152,3 +152,12 @@ Tables
 5. Output from creating Subarray dependence.
 
 6. Output from `create_photom_reffile.py`.
+
+
+Since paper
+-----------
+
+Work continues.
+
+1. Plotting relative photometry versus dither position.  `Plotting/plot_dither_pos.py`
+   Results published as a JWST report.
