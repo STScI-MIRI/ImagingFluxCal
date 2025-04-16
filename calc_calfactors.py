@@ -50,7 +50,7 @@ def get_calfactors(
     grieke=False,
 ):
     """
-    Read in the observed and model fluxes and computer the calibration factors
+    Read in the observed and model fluxes and compute the calibration factors
     """
     if bkgsub:
         extstr = "_bkgsub"
@@ -146,6 +146,8 @@ def get_calfactors(
             xval = dir
         elif xaxisval == "subarr":
             xval = obstab["subarray"][k]
+        elif xaxisval == "dither":
+            xval = obstab["exposure"][k]
         else:
             xval = mflux * 1e3
 
@@ -369,6 +371,8 @@ def plot_calfactors(
                     pxval = srctype_vals[xval] + rng.normal(mu, sigma)
                 elif xaxisval == "subarr":
                     pxval = subarr_vals[xval] + rng.normal(mu, sigma)
+                elif xaxisval == "dither":
+                    pxval = float(xval) + rng.normal(mu, sigma)
                 else:
                     pxval = xval
                 cpxvals.append(pxval)
@@ -510,6 +514,34 @@ def plot_calfactors(
                 format="ascii.commented_header",
             )
 
+    # compute averages in bins
+    if xaxisval == "dither":
+        txvals = xvals[gvals][~filtered_data.mask]
+        tallfacs = allfacs[gvals][~filtered_data.mask]
+        tweights = weights[gvals][~filtered_data.mask]
+
+        gvals2 = txvals == "1"
+        refres = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
+        dithers = ["1", "2", "3", "4"]
+        outvals = np.zeros((4, 3))
+        for k, csub in enumerate(dithers):
+            gvals2 = txvals == csub
+            res = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
+            if res[0] is not None:
+                print(csub, res[0] / refres[0])
+                outvals[k, :] = res[0:3]
+        if savefile:
+            otab = QTable()
+            otab["name"] = list(dithers)
+            otab["calfacs"] = outvals[:, 0]
+            otab["calfacs_unc"] = outvals[:, 1]
+            otab["calfacs_uncmean"] = outvals[:, 2]
+            otab.write(
+                savefile.replace(".fits", "_dithernum.dat"),
+                overwrite=True,
+                format="ascii.commented_header",
+            )
+
     if (xaxisval == "timemid") and (not applytime):
         fit = fitting.LevMarLSQFitter()
         mod_init = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Const1D(
@@ -630,6 +662,10 @@ def plot_calfactors(
             ax.set_xlim(4.5, 8.5)
         else:
             ax.set_xlim(-0.5, 4.5)
+    elif xaxisval == "dither":
+        ax.set_xticks([1, 2, 3, 4])
+        ax.set_xticklabels(["1", "2", "3", "4"])
+        ax.set_xlabel("Dither #")
     else:
         ax.set_xscale("log")
         ax.set_xlabel("Model Flux Density [mJy]")
@@ -759,6 +795,7 @@ if __name__ == "__main__":
             "inttime",
             "srctype",
             "subarr",
+            "dither",
         ],
     )
     parser.add_argument(

@@ -142,7 +142,7 @@ if __name__ == "__main__":
                     f.write("level = INFO\n")
 
                 print(f"detector1 for {ckey}")
-                miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg", rscdfile=rscdfile)
+                miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg", rscdfile=rscdfile, save_jump_info=True)
 
             if args.stage in ["stage2", "stage23", "all"]:
                 # calwebb_image2

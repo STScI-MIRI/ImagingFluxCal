@@ -68,9 +68,11 @@ def aper_image(
         photmjysr = hdul[1].header["PHOTMJSR"]
     else:
         photmjysr = 1.0
-    print(targname, filter)
     targra = hdul[0].header["TARG_RA"]
     targdec = hdul[0].header["TARG_DEC"]
+    exposure = hdul[0].header["EXPOSURE"]
+
+    print(targname, filter, exposure)
 
     orig_data = hdul[1].data
     orig_err = hdul["ERR"].data
@@ -237,6 +239,7 @@ def aper_image(
     tphot["name"] = [targname]
     tphot["ra_deg"] = [ncoord.ra.degree]
     tphot["dec_deg"] = [ncoord.dec.degree]
+    tphot["exposure"] = [exposure]
     tphot["filter"] = filter.upper()
     tphot["subarray"] = hdul[0].header["SUBARRAY"]
     tphot["readpattern"] = hdul[0].header["READPATT"]
