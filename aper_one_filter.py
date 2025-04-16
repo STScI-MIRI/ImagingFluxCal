@@ -269,6 +269,7 @@ def aper_image(
     tot_bkg_err = bkg.std * np.sqrt(aper.area)
     phot["pix_max"] = phot_stats.max * u.DN / u.s
     phot["mean_bkg"] = bkg.mean * u.DN / u.s
+    phot["mean_bkg_std"] = bkg.std * u.DN / u.s
     phot["aperture_area"] = aper.area
     phot["total_bkg"] = tot_bkg * u.DN / u.s
     phot["aperture_sum_bkgsub"] = phot["aperture_sum"] - phot["total_bkg"]
