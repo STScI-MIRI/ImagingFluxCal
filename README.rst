@@ -121,7 +121,7 @@ Figures
 5. Time dependent sensitivity loss: `plot_repeatability.py`
 
 6. Subarray dependence: `plot_subtrans_allobs.py`.
-   `plot_subtrans.py --filter=770W` and `plot_subtrans.py --filter=F1280W` need
+   `plot_subtrans.py --filter=F770W` and `plot_subtrans.py --filter=F1280W` need
    to be run first to get the values for the dedicated subarray transfer observations.
 
 7. Source dependencies:
