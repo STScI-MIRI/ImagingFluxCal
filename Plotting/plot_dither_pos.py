@@ -50,6 +50,7 @@ if __name__ == "__main__":
         help="use results from individual cal images instead of the individual mosaics",
         action="store_true",
     )
+    parser.add_argument("--bkg", help="include background measurements", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -107,6 +108,15 @@ if __name__ == "__main__":
                         fmt=f"{pcols[cdir]}{psubsym[subarrs[0]]}",
                         alpha=0.5,
                         markersize=10)
+
+            if args.bkg:
+                obsbkg = obstab["mean_bkg"][gvals]
+                avebkg = np.average(obsbkg)
+                ax.errorbar(xvals, 0.05 + obsbkg / avebkg,
+                            fmt=f"k{psubsym[subarrs[0]]}",
+                            alpha=0.5,
+                            markersize=10)
+
             all_ratios = np.concatenate([all_ratios, obsflux / aveobs])
             all_uncs = np.concatenate([all_uncs, obsfluxunc / aveobs])
             all_dithers = np.concatenate([all_dithers, dithvals])
@@ -140,7 +150,10 @@ if __name__ == "__main__":
     ax.set_xticklabels(["1", "2", "3", "4"])
     ax.set_xlabel("Dither #")
     ax.set_ylabel("flux/(ave flux)")
-    ax.set_ylim(0.965, 1.025)
+    if args.bkg:
+        ax.set_ylim(0.965, 1.075)
+    else:
+        ax.set_ylim(0.965, 1.025)
 
     # make space for the legend
     ylim = ax.get_ylim()
@@ -189,6 +202,8 @@ if __name__ == "__main__":
     plt.tight_layout()
 
     fname = f"ditherpos_{filter}"
+    if args.bkg:
+        fname = f"{fname}_wbkg"
     if args.indivcals:
         fname = f"{fname}_cals"
     if args.png:

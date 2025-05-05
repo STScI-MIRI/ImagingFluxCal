@@ -104,7 +104,7 @@ if __name__ == "__main__":
         flatfile = args.flatfile
     elif args.nflats:
         print("using new flats")
-        flatfile = f"Nicolas_Flats/skyflat_{args.filter}_median.fits"
+        flatfile = f"Flats_2025/jwst_miri_flat_{args.filter}_master.fits"
     else:
         flatfile = None
 

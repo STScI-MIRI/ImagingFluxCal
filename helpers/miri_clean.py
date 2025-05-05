@@ -477,7 +477,7 @@ def make_sky(
             "FND": 3.7,
         }
 
-        hdul = fits.open(files[0])
+        hdul = fits.open(files[1])
         targra = hdul[0].header["TARG_RA"]
         targdec = hdul[0].header["TARG_DEC"]
 
@@ -514,7 +514,13 @@ def make_sky(
 
         # get the new coordinates of the star in the original image
         # use the brightest source for the new center
-        sindx = np.flip(np.argsort(tbl["peak_value"]))
+        if tbl is None:
+            flat_index = np.argmax(data)
+            xi, yi = np.unravel_index(flat_index, data.shape)
+            print(xi, yi)
+            exit()
+        else:
+            sindx = np.flip(np.argsort(tbl["peak_value"]))
         ncoord = data_wcs.pixel_to_world(tbl["x_peak"][sindx[0]], tbl["y_peak"][sindx[0]])
 
         hdul.close()
