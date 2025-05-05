@@ -1,7 +1,8 @@
-#FSTAGE="all"
-FSTAGE="stage23"
+FSTAGE="all"
+#FSTAGE="stage23"
 #EXTOPT="--nflat"
-EXTOPT="--nflats"
+#EXTOPT="--nflats"
+EXTOPT=""
 #EXTOPT="--onlynew"
 EXTOPT_BKGSUB=""
 
