@@ -59,12 +59,12 @@ def column_clean(mfile, exclude_above=None):
     for k in range(ridata.data.shape[0]):
         cimage = copy.copy(ridata.data[k, :, :])
         # mask all the do_not_use data with NaNs
-        cimage[bdata] = np.NaN
+        cimage[bdata] = np.nan
         # also remove zeros due to 2nd+ integration bug
-        cimage[cimage == 0.0] = np.NaN
+        cimage[cimage == 0.0] = np.nan
         # mask data above a threshold
         if exclude_above is not None:
-            cimage[cimage > exclude_above] = np.NaN
+            cimage[cimage > exclude_above] = np.nan
         # compute the median of each column
         with warnings.catch_warnings():
             warnings.filterwarnings(
@@ -79,7 +79,7 @@ def column_clean(mfile, exclude_above=None):
         for j in range(cimage.shape[0]):
             colimage[j, :] = colmeds_sub
         # NaN all the no data pixels so they are not included in the median
-        colimage[bdata] = np.NaN
+        colimage[bdata] = np.nan
         # subtarct the mean as we only want to remove residuals
         colimage -= np.nanmedian(colimage)
         # zero all the no data pixels
@@ -137,14 +137,14 @@ def row_clean(mfile, exclude_above=None):
     for k in range(ridata.data.shape[0]):
         rimage = copy.copy(ridata.data[k, :, :])
         # mask all the do_not_use data with NaNs
-        rimage[bdata] = np.NaN
+        rimage[bdata] = np.nan
         # also remove zeros due to 2nd+ integration bug
-        rimage[rimage == 0.0] = np.NaN
+        rimage[rimage == 0.0] = np.nan
         # mask data above a threshold
         if exclude_above is not None:
-            rimage[rimage > exclude_above] = np.NaN
+            rimage[rimage > exclude_above] = np.nan
         # exclude everything to the left of the imager FOV (basically the Lyot)
-        rimage[:, 0:325] = np.NaN
+        rimage[:, 0:325] = np.nan
 
         # compute the median of each column
         with warnings.catch_warnings():
@@ -160,7 +160,7 @@ def row_clean(mfile, exclude_above=None):
         for i in range(rimage.shape[1]):
             rowimage[:, i] = rowmeds_sub
         # NaN all the no data pixels so they are not included in the median
-        rowimage[bdata] = np.NaN
+        rowimage[bdata] = np.nan
         # subtarct the mean as we only want to remove residuals
         rowimage -= np.nanmedian(rowimage)
         # zero all the no data pixels
@@ -210,7 +210,7 @@ def cal_column_clean(mfile, exclude_above=None):
     colimage = np.zeros(rimage.shape)
 
     # mask all the do_not_use data with NaNs
-    rimage[bdata] = np.NaN
+    rimage[bdata] = np.nan
 
     # compute the median of each column
     with warnings.catch_warnings():
@@ -224,7 +224,7 @@ def cal_column_clean(mfile, exclude_above=None):
     for j in range(rdata.shape[0]):
         colimage[j, :] = colmeds_sub
     # NaN all the no data pixels so they are not included in the median
-    colimage[bdata] = np.NaN
+    colimage[bdata] = np.nan
     # subtarct the mean as we only want to remove residuals
     colimage -= np.nanmedian(colimage)
     # zero all the no data pixels
@@ -265,14 +265,14 @@ def cal_row_clean(mfile, exclude_above=None):
     rowimage = np.zeros(rdata.data.shape)
 
     # mask all the do_not_use data with NaNs
-    rimage[bdata] = np.NaN
+    rimage[bdata] = np.nan
     # also remove zeros due to 2nd+ integration bug
-    rimage[rimage == 0.0] = np.NaN
+    rimage[rimage == 0.0] = np.nan
     # mask data above a threshold
     if exclude_above is not None:
-        rimage[rimage > exclude_above] = np.NaN
+        rimage[rimage > exclude_above] = np.nan
     # exclude everything to the left of the imager FOV (basically the Lyot)
-    rimage[:, 0:325] = np.NaN
+    rimage[:, 0:325] = np.nan
 
     # compute the median of each column
     with warnings.catch_warnings():
@@ -286,7 +286,7 @@ def cal_row_clean(mfile, exclude_above=None):
     for i in range(rimage.shape[1]):
         rowimage[:, i] = rowmeds_sub
     # NaN all the no data pixels so they are not included in the median
-    rowimage[bdata] = np.NaN
+    rowimage[bdata] = np.nan
     # subtarct the mean as we only want to remove residuals
     rowimage -= np.nanmedian(rowimage)
     # zero all the no data pixels
@@ -316,7 +316,7 @@ def flat_column_clean(rdata):
 
     # where to save the residual column data subtracted
     rdata_cols = copy.copy(rdata)
-    bdata = rdata == np.NaN
+    bdata = rdata == np.nan
 
     colimage = np.zeros(rdata.data.shape)
 
@@ -330,7 +330,7 @@ def flat_column_clean(rdata):
     for j in range(rdata.shape[0]):
         colimage[j, :] = colmeds_sub
     # NaN all the no data pixels so they are not included in the median
-    colimage[bdata] = np.NaN
+    colimage[bdata] = np.nan
     # subtarct the mean as we only want to remove residuals
     colimage -= np.nanmedian(colimage)
     # zero all the no data pixels
@@ -358,8 +358,8 @@ def fix_rateints_to_rate(mfile):
     rdata = datamodels.open(mfile)
     ridata = datamodels.open(rifile)
 
-    ridata.data[ridata.data == 0.0] = np.NaN
-    # ridata.data[ridata.data > 8000.0] = np.NaN
+    ridata.data[ridata.data == 0.0] = np.nan
+    # ridata.data[ridata.data > 8000.0] = np.nan
 
     # median average new rateints to get the new rate image
     with warnings.catch_warnings():
@@ -546,10 +546,10 @@ def make_sky(
 
         # remove all the non imager data
         bdata = cdata.dq & dqflags.pixel["DO_NOT_USE"] > 0
-        tdata[bdata] = np.NaN
+        tdata[bdata] = np.nan
 
         if exclude_above is not None:
-            tdata[tdata > exclude_above] = np.NaN
+            tdata[tdata > exclude_above] = np.nan
 
         if ds9regions is not None:
             # radeg, decdeg = cdata.meta.wcs([500., 600.], [500., 400.])
@@ -573,7 +573,7 @@ def make_sky(
             skycoord = SkyCoord(imagera, imagedec, unit="deg")
             for creg in ereg:
                 inoutimage = creg.contains(skycoord, cwcs)
-                tdata[inoutimage] = np.NaN
+                tdata[inoutimage] = np.nan
             cdata.data = tdata
             cdata.write(cfile.replace("cal.fits", "cal_mask.fits"))
             # fits.writeto("test.fits", inoutimage * 1., overwrite=True)
@@ -582,7 +582,7 @@ def make_sky(
         print(f"median sky = {istackmed[k]}")
 
         if exclude_delta is not None:
-            tdata[tdata > istackmed[k] + exclude_delta] = np.NaN
+            tdata[tdata > istackmed[k] + exclude_delta] = np.nan
 
         istack[:, :, k] = tdata
 
@@ -753,7 +753,7 @@ def fix_rowcol_pull_updown(
                         caxis = 1
                         # remove all data outside the imager FOV
                         if creg == "left":
-                            subimage[:, 0:350] = np.NaN
+                            subimage[:, 0:350] = np.nan
                     cvals = np.nanmedian(subimage, axis=caxis)
 
                     # fit a line

@@ -76,7 +76,7 @@ def aper_image(
 
     orig_data = hdul[1].data
     orig_err = hdul["ERR"].data
-    orig_data[orig_data == 0.0] = np.NaN
+    orig_data[orig_data == 0.0] = np.nan
     orig_data /= photmjysr
     orig_err /= photmjysr
 
@@ -228,8 +228,8 @@ def aper_image(
     if ((aprad > pix_coord[0]) | (aprad > (orig_data.shape[0] - pix_coord[0]))
         | (aprad > pix_coord[1]) | (aprad > (orig_data.shape[1] - pix_coord[1]))
         | (not nan_ok)):
-        phot["aperture_sum"] = np.NaN
-        phot["aperture_sum_err"] = np.NaN
+        phot["aperture_sum"] = np.nan
+        phot["aperture_sum_err"] = np.nan
 
     # modify the properites of the output table
     phot.remove_column("id")
