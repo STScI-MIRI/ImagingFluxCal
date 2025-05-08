@@ -204,8 +204,8 @@ def aper_image(
 
     # check if a final small shift is needed
     if override_center is None:
-        shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0].value)
-                    + np.square(phot_stats.centroid[1] - phot["ycenter"][0].value))
+        shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0])
+                    + np.square(phot_stats.centroid[1] - phot["ycenter"][0]))
         # fmt: on
         if np.sqrt(shift_rad) > 0.01:
             print(
