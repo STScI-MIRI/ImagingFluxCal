@@ -260,7 +260,8 @@ if __name__ == "__main__":
 
         sindxs = np.argsort(xvals)
         yoff0 = k * 0.25
-        yoff = yoff0 + (np.average(yvals) - np.average(yvals[sindxs[-5:]]))
+        ydiff0 = (np.average(yvals) - np.average(yvals[sindxs[-5:]]))
+        yoff = yoff0 + ydiff0
         yoff2 = k * 0.12
         ax.errorbar(
             xvals, yvals + yoff, yerr=yvals_unc, fmt="ko", alpha=0.5, label=plab[0]
@@ -286,6 +287,17 @@ if __name__ == "__main__":
 
         axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
         # axs[1].plot(pxvals, modvals + yoff2, "m-")
+
+        # predict the throughput in 1 and 2 years
+        predx = 0.0 + np.array([0.0, 3*365, 6*365])
+        print(cfilter)
+        print(Time(predx + startday, format="mjd").to_value(format="iso", subfmt="date"))
+        predy = meanval / mod_fit(predx)
+        print(predy / predy[0], f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year")
+        predy = meanval / mod_fit2(predx)
+        print(predy / predy[0], f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year")
+        predy = meanval / mod_fit3(predx)
+        print(predy / predy[0], f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year")
 
         shifty = 0.05
         ax.text(425.0, 1.0 + yoff + shifty, cfilter)
