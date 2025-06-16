@@ -183,11 +183,13 @@ if __name__ == "__main__":
         else:
             mod_init[0].tau.bounds = [-400.0, -100.0]
 
-        mod_init2 = PowerLaw1D_Shift(amplitude=0.70, x_0=60.0, alpha=0.5)
-        mod_init2.amplitude.bounds = [0.1, None]
-        mod_init2.x_0.bounds = [50.0, 200.0]
-        # mod_init2.x_0.fixed = True
-        # mod_init2.x_0.fixed = True
+        mod_init2 = PowerLaw1D_Shift(amplitude=0.70, x_0=60.0, alpha=0.5)+ models.Const1D(
+            amplitude=0.70
+        )
+        # mod_init2[0].amplitude.bounds = [0.1, None]
+        mod_init2[0].x_0.bounds = [50.0, 200.0]
+        mod_init2[1].amplitude = 0.0
+        mod_init2[1].amplitude.fixed = True
 
         mod_init3 = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Linear1D(
             slope=-0.5, intercept=1.0
@@ -219,9 +221,9 @@ if __name__ == "__main__":
 
         print(
             "powerlaw amp/shift/alpha:",
-            mod_fit2.amplitude.value,
-            mod_fit2.x_0.value,
-            mod_fit2.alpha.value,
+            mod_fit2[0].amplitude.value,
+            mod_fit2[0].x_0.value,
+            mod_fit2[0].alpha.value,
         )
         print("exp tau/amp", mod_fit[0].tau.value, mod_fit[0].amplitude.value)
         print("exp+line tau/amp", mod_fit3[0].tau.value, mod_fit3[0].amplitude.value)
