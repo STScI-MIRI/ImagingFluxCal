@@ -329,47 +329,39 @@ if __name__ == "__main__":
         axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
         # axs[1].plot(pxvals, modvals + yoff2, "m-")
 
-        # predict the throughput in 1 and 2 years
+        # predict the throughput in 3 and 6 years
         predx = 0.0 + np.array([0.0, 3 * 365, 6 * 365])
         print(cfilter)
         print(
             Time(predx + startday, format="mjd").to_value(format="iso", subfmt="date")
         )
-        predy = meanval / mod_fit(predx)
-        print(
-            "     exp:",
-            predy / predy[0],
-            f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
-        )
-        predy = meanval / mod_fit2(predx)
-        print(
-            "powerlaw:",
-            predy / predy[0],
-            f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
-        )
-        predy = meanval / mod_fit3(predx)
-        print(
-            "exp+line:",
-            predy / predy[0],
-            f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
-        )
+        all_fits = [mod_fit, mod_fit2, mod_fit3]
+        all_names = ["     exp:", "powerlaw:", "exp+line:"]
         if args.dexp:
-            predy = meanval / mod_fit4(predx)
+            all_fits.append(mod_fit4)
+            all_names.append(" exp+exp:")
+        for cfit, cfname in zip(all_fits, all_names):
+            predy = meanval / cfit(predx)
             print(
-                " exp+exp:",
+                cfname,
                 predy / predy[0],
                 f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
             )
 
+        bfit = mod_fit3
+        bpredx = [min(fitx), max(fitx)]
+        bvals = 1.0 / mod_fit3(bpredx)
+        per_decrease = 100.0 * (bvals[1] - bvals[0]) / bvals[0]
+
         shifty = 0.05
         ax.text(425.0, 1.0 + yoff + shifty, cfilter)
-        # ax.text(
-        #    0.0,
-        #    yoff + shifty + modvals[0],
-        #    rf"A={-1.*per_amp:.1f}% / $\tau$={-1.*mod_fit[0].tau.value:.0f} days / $\sigma$={per_dev:.1f}%",
-        #    backgroundcolor="w",
-        #    fontsize=0.8 * fontsize,
-        # )
+        ax.text(
+           0.0,
+           yoff + shifty + 0.03 + modvals[0],
+           rf"$\Delta$={-1.*per_decrease:.1f}%",
+           backgroundcolor="w",
+           fontsize=0.8 * fontsize,
+        )
 
         sigtext = rf"$\sigma$(exp)={per_dev:.2f}%; $\sigma$(powlaw)={per_dev2:.2f}%; $\sigma$(exp+line)={per_dev3:.2f}%"
         if args.dexp:
