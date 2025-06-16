@@ -76,6 +76,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--show_prev", help="show previous time dependence", action="store_true"
     )
+    parser.add_argument("--dexp", help="include exp+exp model", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -186,14 +187,21 @@ if __name__ == "__main__":
         mod_init2.amplitude.bounds = [0.1, None]
         mod_init2.x_0.bounds = [50.0, 200.0]
         # mod_init2.x_0.fixed = True
+        # mod_init2.x_0.fixed = True
 
         mod_init3 = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Linear1D(
             slope=-0.5, intercept=1.0
         )
 
-        # mod_init4 = models.Exponential1D(
-        #    tau=-100.0, amplitude=-0.2
-        # ) + models.Exponential1D(tau=-300.0, amplitude=-0.2)
+        mod_init4 = (
+            models.Exponential1D(tau=-100.0, amplitude=-0.2)
+            + models.Exponential1D(tau=-500.0, amplitude=-0.1)
+            + models.Const1D(amplitude=0.70)
+        )
+        # mod_init4[0].tau.bounds = (-150.0, -50.0)
+        mod_init4[0].amplitude.bounds = (-0.2, 0.0)
+        # mod_init4[1].tau.bounds = (-1000.0, -300.0)
+        # mod_init4[1].amplitude.bounds = (-1.0, 0.0)
 
         fitx = xvals[gvals]
         fity = yvals[gvals]
@@ -201,16 +209,40 @@ if __name__ == "__main__":
         mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs])
         mod_fit2 = fit(mod_init2, fitx[sindxs], fity[sindxs])
         mod_fit3 = fit(mod_init3, fitx[sindxs], fity[sindxs])
-        # mod_fit4 = fit(mod_init3, fitx[sindxs], fity[sindxs])
+
+        if args.dexp:
+            mod_init4[0].tau = mod_fit3[0].tau.value
+            mod_init4[0].tau.fixed = True
+            mod_fit4 = fit(mod_init4, fitx[sindxs], fity[sindxs])
+
+        # print(mod_fit3)
+
+        print(
+            "powerlaw amp/shift/alpha:",
+            mod_fit2.amplitude.value,
+            mod_fit2.x_0.value,
+            mod_fit2.alpha.value,
+        )
+        print("exp tau/amp", mod_fit[0].tau.value, mod_fit[0].amplitude.value)
+        print("exp+line tau/amp", mod_fit3[0].tau.value, mod_fit3[0].amplitude.value)
+        if args.dexp:
+            print("exp+exp taus", mod_fit4[0].tau.value, mod_fit4[1].tau.value)
+            print(
+                "exp+exp amps", mod_fit4[0].amplitude.value, mod_fit4[1].amplitude.value
+            )
 
         per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
-        per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 2)))
+        per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 3)))
 
         per_dev2 = (mod_fit2(fitx) - fity) / mod_fit2(fitx)
-        per_dev2 = 100.0 * np.sqrt(np.sum(np.square(per_dev2) / (len(fitx) - 2)))
+        per_dev2 = 100.0 * np.sqrt(np.sum(np.square(per_dev2) / (len(fitx) - 3)))
 
         per_dev3 = (mod_fit3(fitx) - fity) / mod_fit3(fitx)
-        per_dev3 = 100.0 * np.sqrt(np.sum(np.square(per_dev3) / (len(fitx) - 2)))
+        per_dev3 = 100.0 * np.sqrt(np.sum(np.square(per_dev3) / (len(fitx) - 4)))
+
+        if args.dexp:
+            per_dev4 = (mod_fit4(fitx) - fity) / mod_fit4(fitx)
+            per_dev4 = 100.0 * np.sqrt(np.sum(np.square(per_dev4) / (len(fitx) - 5)))
 
         mod_dev = mod_fit(fitx) - fity
         mod_dev = np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
@@ -248,19 +280,20 @@ if __name__ == "__main__":
         modvals3 = mod_fit3(pxvals)
         modvals3 = np.average(mod_fit3(xvals)) / modvals3
 
-        # modvals4 = mod_fit4(pxvals)
-        # modvals4 = max(mod_fit4(xvals)) / modvals4
+        if args.dexp:
+            modvals4 = mod_fit4(pxvals)
+            modvals4 = np.average(mod_fit4(xvals)) / modvals4
 
         yvals = meanval / yvals
 
         if cfilter == "F2550W":
-            plab = ["data", "exp", "powerlaw", "exp+line"]
+            plab = ["data", "exp", "powerlaw", "exp+line", "exp+exp"]
         else:
-            plab = [None, None, None, None]
+            plab = [None, None, None, None, None]
 
         sindxs = np.argsort(xvals)
         yoff0 = k * 0.25
-        ydiff0 = (np.average(yvals) - np.average(yvals[sindxs[-5:]]))
+        ydiff0 = np.average(yvals) - np.average(yvals[sindxs[-5:]])
         yoff = yoff0 + ydiff0
         yoff2 = k * 0.12
         ax.errorbar(
@@ -270,7 +303,8 @@ if __name__ == "__main__":
         ax.plot(pxvals, modvals + yoff, "m-", label=plab[1])
         ax.plot(pxvals, modvals2 + yoff, "r-", label=plab[2])
         ax.plot(pxvals, modvals3 + yoff, "g-", label=plab[3])
-        # ax.plot(pxvals, modvals4 + yoff, "c-")
+        if args.dexp:
+            ax.plot(pxvals, modvals4 + yoff, "c-", label=plab[4])
 
         modxvals = meanval / mod_fit(xvals)
         axs[1].errorbar(
@@ -284,40 +318,69 @@ if __name__ == "__main__":
         axs[1].errorbar(
             xvals, (yvals - modxvals3) + yoff2, yerr=yvals_unc, fmt="go", alpha=0.5
         )
+        if args.dexp:
+            modxvals4 = meanval / mod_fit4(xvals)
+            axs[1].errorbar(
+                xvals, (yvals - modxvals4) + yoff2, yerr=yvals_unc, fmt="co", alpha=0.5
+            )
 
         axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
         # axs[1].plot(pxvals, modvals + yoff2, "m-")
 
         # predict the throughput in 1 and 2 years
-        predx = 0.0 + np.array([0.0, 3*365, 6*365])
+        predx = 0.0 + np.array([0.0, 3 * 365, 6 * 365])
         print(cfilter)
-        print(Time(predx + startday, format="mjd").to_value(format="iso", subfmt="date"))
+        print(
+            Time(predx + startday, format="mjd").to_value(format="iso", subfmt="date")
+        )
         predy = meanval / mod_fit(predx)
-        print(predy / predy[0], f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year")
+        print(
+            "     exp:",
+            predy / predy[0],
+            f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
+        )
         predy = meanval / mod_fit2(predx)
-        print(predy / predy[0], f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year")
+        print(
+            "powerlaw:",
+            predy / predy[0],
+            f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
+        )
         predy = meanval / mod_fit3(predx)
-        print(predy / predy[0], f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year")
+        print(
+            "exp+line:",
+            predy / predy[0],
+            f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
+        )
+        if args.dexp:
+            predy = meanval / mod_fit4(predx)
+            print(
+                " exp+exp:",
+                predy / predy[0],
+                f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
+            )
 
         shifty = 0.05
         ax.text(425.0, 1.0 + yoff + shifty, cfilter)
-        #ax.text(
+        # ax.text(
         #    0.0,
         #    yoff + shifty + modvals[0],
         #    rf"A={-1.*per_amp:.1f}% / $\tau$={-1.*mod_fit[0].tau.value:.0f} days / $\sigma$={per_dev:.1f}%",
         #    backgroundcolor="w",
         #    fontsize=0.8 * fontsize,
-        #)
+        # )
 
+        sigtext = rf"$\sigma$(exp)={per_dev:.2f}%; $\sigma$(powlaw)={per_dev2:.2f}%; $\sigma$(exp+line)={per_dev3:.2f}%"
+        if args.dexp:
+            sigtext = rf"{sigtext}; $\sigma$(exp+exp)={per_dev4:.2f}%"
         shifty2 = 0.04
         axs[1].text(
             100.0,
             yoff2 + shifty2,
-            rf"$\sigma$(exp)={per_dev:.2f}%; $\sigma$(powlaw)={per_dev2:.2f}%; $\sigma$(exp+line)={per_dev3:.2f}%",
+            sigtext,
             backgroundcolor="w",
             fontsize=0.6 * fontsize,
         )
-        #axs[1].text(550.0, 0.0 + yoff2 + shifty2, cfilter)
+        # axs[1].text(550.0, 0.0 + yoff2 + shifty2, cfilter)
 
         if args.show_prev:
             amp = cftab_time["amplitude"][cftab["filter"] == cfilter][0]
