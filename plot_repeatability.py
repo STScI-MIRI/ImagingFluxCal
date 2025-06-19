@@ -383,9 +383,22 @@ if __name__ == "__main__":
             mod_fit[0].amplitude = amp
             mod_fit[0].tau = -1.0 * tau
             modvals = meanval / mod_fit(pxvals)
-            ax.plot(pxvals, modvals + yoff, "b:")
 
-    ax.legend(fontsize=0.7 * fontsize)
+            # get the offset to match the range used for the current photom up to 800 days 
+            # a better visual comparison of the change between the delivered
+            # and current time dependence
+            tmodvals = meanval / mod_fit(xvals)
+            tvals = xvals < 800.0
+            extoff = np.average(yvals[tvals] - tmodvals[tvals])
+
+            if cfilter == "F2550W":
+                tlab = "current photom"
+            else:
+                tlab = None
+
+            ax.plot(pxvals, modvals + yoff + extoff, "b:", label=tlab)
+
+    ax.legend(fontsize=0.7 * fontsize, ncol=2)
 
     ax.set_ylim(0.9, 3.6)
     ntvals = np.arange(0, max(fitx) + 50, 100)
