@@ -77,6 +77,7 @@ if __name__ == "__main__":
         "--show_prev", help="show previous time dependence", action="store_true"
     )
     parser.add_argument("--dexp", help="include exp+exp model", action="store_true")
+    parser.add_argument("--docs", help="include only exp+line model", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -302,20 +303,22 @@ if __name__ == "__main__":
             xvals, yvals + yoff, yerr=yvals_unc, fmt="ko", alpha=0.5, label=plab[0]
         )
         ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
-        ax.plot(pxvals, modvals + yoff, "m-", label=plab[1])
-        ax.plot(pxvals, modvals2 + yoff, "r-", label=plab[2])
+        if not args.docs:
+            ax.plot(pxvals, modvals + yoff, "m-", label=plab[1])
+            ax.plot(pxvals, modvals2 + yoff, "r-", label=plab[2])
         ax.plot(pxvals, modvals3 + yoff, "g-", label=plab[3])
         if args.dexp:
             ax.plot(pxvals, modvals4 + yoff, "c-", label=plab[4])
 
         modxvals = meanval / mod_fit(xvals)
-        axs[1].errorbar(
-            xvals, (yvals - modxvals) + yoff2, yerr=yvals_unc, fmt="mo", alpha=0.5
-        )
-        modxvals2 = meanval / mod_fit2(xvals)
-        axs[1].errorbar(
-            xvals, (yvals - modxvals2) + yoff2, yerr=yvals_unc, fmt="ro", alpha=0.5
-        )
+        if not args.docs:
+            axs[1].errorbar(
+                xvals, (yvals - modxvals) + yoff2, yerr=yvals_unc, fmt="mo", alpha=0.5
+            )
+            modxvals2 = meanval / mod_fit2(xvals)
+            axs[1].errorbar(
+                xvals, (yvals - modxvals2) + yoff2, yerr=yvals_unc, fmt="ro", alpha=0.5
+            )
         modxvals3 = meanval / mod_fit3(xvals)
         axs[1].errorbar(
             xvals, (yvals - modxvals3) + yoff2, yerr=yvals_unc, fmt="go", alpha=0.5
@@ -363,7 +366,10 @@ if __name__ == "__main__":
            fontsize=0.8 * fontsize,
         )
 
-        sigtext = rf"$\sigma$(exp)={per_dev:.2f}%; $\sigma$(powlaw)={per_dev2:.2f}%; $\sigma$(exp+line)={per_dev3:.2f}%"
+        if args.docs:
+            sigtext = rf"$\sigma$(exp+line)={per_dev3:.2f}%"
+        else:
+            sigtext = rf"$\sigma$(exp)={per_dev:.2f}%; $\sigma$(powlaw)={per_dev2:.2f}%; $\sigma$(exp+line)={per_dev3:.2f}%"
         if args.dexp:
             sigtext = rf"{sigtext}; $\sigma$(exp+exp)={per_dev4:.2f}%"
         shifty2 = 0.04
@@ -433,6 +439,8 @@ if __name__ == "__main__":
     plt.tight_layout()
 
     fname = "all_repeatability"
+    if args.docs:
+        fname = f"{fname}_docs"
     if args.png:
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:
