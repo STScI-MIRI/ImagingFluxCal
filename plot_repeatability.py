@@ -93,7 +93,7 @@ if __name__ == "__main__":
         "F2100W",
         "F2550W",
     ]
-    filters = np.flip(filters)
+    # filters = np.flip(filters)
 
     # make plot
     fontsize = 16
@@ -154,9 +154,7 @@ if __name__ == "__main__":
                 nxvals = cfacs2[2][nvals]
                 nyvals = cfacs2[0][nvals]
                 nyvals_unc = cfacs2[1][nvals]
-                # print(sname, cfilter)
-                # print(nyvals)
-                # exit()
+
                 # find the value of BD+60 1753 that is closest to the last value
                 # use this value to adjust the new star to be on the same scale
                 #    later interpolate between values
@@ -179,7 +177,6 @@ if __name__ == "__main__":
         # mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2)
         #             + models.Linear1D(intercept=0.70, slope=0.0))
         mod_init[0].amplitude.bounds = [None, 0.0]
-        # mod_init[1].slope.bounds = [0.0, 1e-10]
         if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W"]:
             mod_init[0].tau.fixed = True
         else:
@@ -188,7 +185,6 @@ if __name__ == "__main__":
         mod_init2 = PowerLaw1D_Shift(amplitude=0.70, x_0=60.0, alpha=0.5)+ models.Const1D(
             amplitude=0.70
         )
-        # mod_init2[0].amplitude.bounds = [0.1, None]
         mod_init2[0].x_0.bounds = [50.0, 200.0]
         mod_init2[1].amplitude = 0.0
         mod_init2[1].amplitude.fixed = True
@@ -204,182 +200,147 @@ if __name__ == "__main__":
         )
         # mod_init4[0].tau.bounds = (-150.0, -50.0)
         mod_init4[0].amplitude.bounds = (-0.2, 0.0)
+        #mod_init4[0].tau = mod_fit3[0].tau.value
+        #mod_init4[0].tau.fixed = True
         # mod_init4[1].tau.bounds = (-1000.0, -300.0)
         # mod_init4[1].amplitude.bounds = (-1.0, 0.0)
 
         fitx = xvals[gvals]
         fity = yvals[gvals]
         sindxs = np.argsort(fitx)
-        mod_fit = fit(mod_init, fitx[sindxs], fity[sindxs])
-        mod_fit2 = fit(mod_init2, fitx[sindxs], fity[sindxs])
-        mod_fit3 = fit(mod_init3, fitx[sindxs], fity[sindxs])
 
-        if args.dexp:
-            mod_init4[0].tau = mod_fit3[0].tau.value
-            mod_init4[0].tau.fixed = True
-            mod_fit4 = fit(mod_init4, fitx[sindxs], fity[sindxs])
-
-        # print(mod_fit3)
-
-        print(
-            "powerlaw amp/shift/alpha:",
-            mod_fit2[0].amplitude.value,
-            mod_fit2[0].x_0.value,
-            mod_fit2[0].alpha.value,
-        )
-        print("exp tau/amp", mod_fit[0].tau.value, mod_fit[0].amplitude.value)
-        print("exp+line tau/amp", mod_fit3[0].tau.value, mod_fit3[0].amplitude.value)
-        if args.dexp:
-            print("exp+exp taus", mod_fit4[0].tau.value, mod_fit4[1].tau.value)
-            print(
-                "exp+exp amps", mod_fit4[0].amplitude.value, mod_fit4[1].amplitude.value
-            )
-
-        per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
-        per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - 3)))
-
-        per_dev2 = (mod_fit2(fitx) - fity) / mod_fit2(fitx)
-        per_dev2 = 100.0 * np.sqrt(np.sum(np.square(per_dev2) / (len(fitx) - 3)))
-
-        per_dev3 = (mod_fit3(fitx) - fity) / mod_fit3(fitx)
-        per_dev3 = 100.0 * np.sqrt(np.sum(np.square(per_dev3) / (len(fitx) - 4)))
-
-        if args.dexp:
-            per_dev4 = (mod_fit4(fitx) - fity) / mod_fit4(fitx)
-            per_dev4 = 100.0 * np.sqrt(np.sum(np.square(per_dev4) / (len(fitx) - 5)))
-
-        mod_dev = mod_fit(fitx) - fity
-        mod_dev = np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
-
-        mod_dev3 = mod_fit3(fitx) - fity
-        mod_dev3 = np.sqrt(np.sum(np.square(mod_dev3) / (len(fitx) - 2)))
-
-        print(mod_fit3)
-        print(365.0 * 100.0 * mod_fit3[1].slope.value / mod_fit3[1].intercept)
-        exit()
-
-        # save the fit results - update for exp+line 26 Aug 2025
-        atab = QTable()
-        atab[f"fit_exp_amp_{cfilter}"] = [mod_fit3[0].amplitude.value]
-        atab[f"fit_exp_tau_{cfilter}"] = [mod_fit3[0].tau.value]
-        # atab[f"fit_exp_const_{cfilter}"] = [mod_fit3[1].amplitude.value]
-        atab[f"fit_exp_intercept_{cfilter}"] = [mod_fit3[1].intercept.value]
-        atab[f"fit_exp_slope_{cfilter}"] = [mod_fit3[1].slope.value]
-        atab[f"fit_exp_startday_{cfilter}"] = [startday]
-        atab[f"fit_exp_std_{cfilter}"] = [mod_dev3]
-        atab[f"fit_exp_std_per_{cfilter}"] = [per_dev3]
-        sext = "_fit.dat"
-        atab.write(
-            f"CalFacs/miri_calfactors{rstr}_repeat_{cfilter}_fit.dat",
-            format="ascii.commented_header",
-            overwrite=True,
-        )
-
-        pxvals = np.arange(0, max(fitx))
-
-        per_amp = 100.0 * (mod_fit[0].amplitude.value / mod_fit[1].amplitude.value)
-        # per_amp = 100. * (mod_fit[0].amplitude.value / mod_fit[1].intercept.value)
-
+        # plot the data
         meanval = np.average(yvals)
-
-        meanmod = np.average(mod_fit(xvals))
-        modvals = meanval / mod_fit(pxvals)
-
-        modvals2 = mod_fit2(pxvals)
-        modvals2 = np.average(mod_fit2(xvals)) / modvals2
-
-        modvals3 = mod_fit3(pxvals)
-        modvals3 = np.average(mod_fit3(xvals)) / modvals3
-
-        if args.dexp:
-            modvals4 = mod_fit4(pxvals)
-            modvals4 = np.average(mod_fit4(xvals)) / modvals4
-
         yvals = meanval / yvals
-
-        if cfilter == "F2550W":
-            plab = ["data", "exp", "powerlaw", "exp+line", "exp+exp"]
-        else:
-            plab = [None, None, None, None, None]
-
         sindxs = np.argsort(xvals)
         yoff0 = k * 0.25
         ydiff0 = np.average(yvals) - np.average(yvals[sindxs[-5:]])
         yoff = yoff0 + ydiff0
         yoff2 = k * 0.12
+        if cfilter == "F2550W":
+            lname = "data"
+        else:
+            lname = None
         ax.errorbar(
-            xvals, yvals + yoff, yerr=yvals_unc, fmt="ko", alpha=0.5, label=plab[0]
+            xvals, yvals + yoff, yerr=yvals_unc, fmt="ko", alpha=0.5, label=lname
         )
         ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
-        if not args.docs:
-            ax.plot(pxvals, modvals + yoff, "m-", label=plab[1])
-            ax.plot(pxvals, modvals2 + yoff, "r-", label=plab[2])
-        ax.plot(pxvals, modvals3 + yoff, "g-", label=plab[3])
-        if args.dexp:
-            ax.plot(pxvals, modvals4 + yoff, "c-", label=plab[4])
-
-        modxvals = meanval / mod_fit(xvals)
-        if not args.docs:
-            axs[1].errorbar(
-                xvals, (yvals - modxvals) + yoff2, yerr=yvals_unc, fmt="mo", alpha=0.5
-            )
-            modxvals2 = meanval / mod_fit2(xvals)
-            axs[1].errorbar(
-                xvals, (yvals - modxvals2) + yoff2, yerr=yvals_unc, fmt="ro", alpha=0.5
-            )
-        modxvals3 = meanval / mod_fit3(xvals)
-        axs[1].errorbar(
-            xvals, (yvals - modxvals3) + yoff2, yerr=yvals_unc, fmt="go", alpha=0.5
-        )
-        if args.dexp:
-            modxvals4 = meanval / mod_fit4(xvals)
-            axs[1].errorbar(
-                xvals, (yvals - modxvals4) + yoff2, yerr=yvals_unc, fmt="co", alpha=0.5
-            )
-
         axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
-        # axs[1].plot(pxvals, modvals + yoff2, "m-")
 
-        # predict the throughput in 3 and 6 years
-        predx = 0.0 + np.array([0.0, 3 * 365, 6 * 365])
-        print(cfilter)
-        print(
-            Time(predx + startday, format="mjd").to_value(format="iso", subfmt="date")
-        )
-        all_fits = [mod_fit, mod_fit2, mod_fit3]
-        all_names = ["     exp:", "powerlaw:", "exp+line:"]
+        # print(
+        #     "powerlaw amp/shift/alpha:",
+        #     mod_fit2[0].amplitude.value,
+        #     mod_fit2[0].x_0.value,
+        #     mod_fit2[0].alpha.value,
+        # )
+        # print("exp tau/amp", mod_fit[0].tau.value, mod_fit[0].amplitude.value)
+        # print("exp+line tau/amp", mod_fit3[0].tau.value, mod_fit3[0].amplitude.value)
+        # if args.dexp:
+        #     print("exp+exp taus", mod_fit4[0].tau.value, mod_fit4[1].tau.value)
+        #     print(
+        #         "exp+exp amps", mod_fit4[0].amplitude.value, mod_fit4[1].amplitude.value
+        #     )
+
+        modnames = ["exp", "powerlaw", "exp+line"]
+        allmods = [mod_init, mod_init2, mod_init3]
+        allnparam = [3, 3, 4]
+        pcol = ["m", "r", "g"]
         if args.dexp:
-            all_fits.append(mod_fit4)
-            all_names.append(" exp+exp:")
-        for cfit, cfname in zip(all_fits, all_names):
-            predy = meanval / cfit(predx)
-            print(
-                cfname,
-                predy / predy[0],
-                f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
-            )
+            modnames += ["exp+exp"]
+            allmods += [mod_init4]
+            allnparam += [5]
+            pcol += ["c"]
 
-        bfit = mod_fit3
-        bpredx = [min(fitx), max(fitx)]
-        bvals = 1.0 / mod_fit3(bpredx)
-        per_decrease = 100.0 * (bvals[1] - bvals[0]) / bvals[0]
+        sigtext = ""
+        for cname, cmod, cparam, ccol in zip(modnames, allmods, allnparam, pcol):
 
-        shifty = 0.05
-        ax.text(425.0, 1.0 + yoff + shifty, cfilter)
-        ax.text(
-           0.0,
-           yoff + shifty + 0.03 + modvals[0],
-           rf"$\Delta$={-1.*per_decrease:.1f}%",
-           backgroundcolor="w",
-           fontsize=0.8 * fontsize,
-        )
+            mod_fit = fit(cmod, fitx[sindxs], fity[sindxs])
 
-        if args.docs:
-            sigtext = rf"$\sigma$(exp+line)={per_dev3:.2f}%"
-        else:
-            sigtext = rf"$\sigma$(exp)={per_dev:.2f}%; $\sigma$(powlaw)={per_dev2:.2f}%; $\sigma$(exp+line)={per_dev3:.2f}%"
-        if args.dexp:
-            sigtext = rf"{sigtext}; $\sigma$(exp+exp)={per_dev4:.2f}%"
+            per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
+            per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - cparam)))
+
+            mod_dev = mod_fit(fitx) - fity
+            mod_dev = np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - cparam)))
+
+            # save the fit results - update for exp+line 26 Aug 2025
+            if cname == "exp+line":
+                atab = QTable()
+                atab[f"fit_exp_amp_{cfilter}"] = [mod_fit[0].amplitude.value]
+                atab[f"fit_exp_tau_{cfilter}"] = [mod_fit[0].tau.value]
+                atab[f"fit_exp_intercept_{cfilter}"] = [mod_fit[1].intercept.value]
+                atab[f"fit_exp_slope_{cfilter}"] = [mod_fit[1].slope.value]
+                atab[f"fit_exp_startday_{cfilter}"] = [startday]
+                atab[f"fit_exp_std_{cfilter}"] = [mod_dev]
+                atab[f"fit_exp_std_per_{cfilter}"] = [per_dev]
+                sext = "_fit.dat"
+                atab.write(
+                    f"CalFacs/miri_calfactors{rstr}_repeat_{cfilter}_fit.dat",
+                    format="ascii.commented_header",
+                    overwrite=True,
+                )
+
+            pxvals = np.arange(0, max(fitx))
+            modvals = np.average(mod_fit(xvals)) / mod_fit(pxvals)
+
+            show_plot = False
+            if args.docs:
+                if cname == "exp+line":
+                    show_plot = True
+            else:
+                show_plot = True
+
+            if cfilter == "F2550W":
+                lname = cname
+            else:
+                lname = None
+
+            if show_plot:
+                ax.plot(pxvals, modvals + yoff, f"{ccol}-", label=lname)
+                modxvals = meanval / mod_fit(xvals)
+                axs[1].errorbar(
+                    xvals, (yvals - modxvals) + yoff2, yerr=yvals_unc, fmt=f"{ccol}o", alpha=0.5
+                )
+                sigtext = rf"{sigtext}$\sigma$({cname})={per_dev:.2f}% "
+
+            # show the delta change
+            if cname == "exp+line":
+                bpredx = [min(fitx), max(fitx)]
+                bvals = 1.0 / mod_fit(bpredx)
+                per_decrease = 100.0 * (bvals[1] - bvals[0]) / bvals[0]
+
+                shifty = 0.05
+                ax.text(425.0, 1.0 + yoff + shifty, cfilter)
+                ax.text(
+                    0.0,
+                    yoff + shifty + 0.03 + modvals[0],
+                    rf"$\Delta$={-1.*per_decrease:.1f}%",
+                    backgroundcolor="w",
+                    fontsize=0.8 * fontsize,
+                )
+
+            if args.show_prev & (cname == "exp"):
+                amp = cftab_time["amplitude"][cftab["filter"] == cfilter][0]
+                tau = cftab_time["tau"][cftab["filter"] == cfilter][0]
+                startday = cftab_time["t0"][cftab["filter"] == cfilter][0]
+                mod_fit[0].amplitude = amp
+                mod_fit[0].tau = -1.0 * tau
+                modvals = meanval / mod_fit(pxvals)
+
+                # get the offset to match the range used for the current photom up to 800 days 
+                # a better visual comparison of the change between the delivered
+                # and current time dependence
+                tmodvals = meanval / mod_fit(xvals)
+                tvals = xvals < 800.0
+                extoff = np.average(yvals[tvals] - tmodvals[tvals])
+
+                if cfilter == "F2550W":
+                    tlab = "current photom"
+                else:
+                    tlab = None
+
+                ax.plot(pxvals, modvals + yoff + extoff, "b:", label=tlab)
+
+        # show percentage sigma text on diff plot
         shifty2 = 0.04
         axs[1].text(
             100.0,
@@ -388,29 +349,25 @@ if __name__ == "__main__":
             backgroundcolor="w",
             fontsize=0.6 * fontsize,
         )
-        # axs[1].text(550.0, 0.0 + yoff2 + shifty2, cfilter)
 
-        if args.show_prev:
-            amp = cftab_time["amplitude"][cftab["filter"] == cfilter][0]
-            tau = cftab_time["tau"][cftab["filter"] == cfilter][0]
-            startday = cftab_time["t0"][cftab["filter"] == cfilter][0]
-            mod_fit[0].amplitude = amp
-            mod_fit[0].tau = -1.0 * tau
-            modvals = meanval / mod_fit(pxvals)
-
-            # get the offset to match the range used for the current photom up to 800 days 
-            # a better visual comparison of the change between the delivered
-            # and current time dependence
-            tmodvals = meanval / mod_fit(xvals)
-            tvals = xvals < 800.0
-            extoff = np.average(yvals[tvals] - tmodvals[tvals])
-
-            if cfilter == "F2550W":
-                tlab = "current photom"
-            else:
-                tlab = None
-
-            ax.plot(pxvals, modvals + yoff + extoff, "b:", label=tlab)
+        # # predict the throughput in 3 and 6 years
+        # predx = 0.0 + np.array([0.0, 3 * 365, 6 * 365])
+        # print(cfilter)
+        # print(
+        #     Time(predx + startday, format="mjd").to_value(format="iso", subfmt="date")
+        # )
+        # all_fits = [mod_fit, mod_fit2, mod_fit3]
+        # all_names = ["     exp:", "powerlaw:", "exp+line:"]
+        # if args.dexp:
+        #     all_fits.append(mod_fit4)
+        #     all_names.append(" exp+exp:")
+        # for cfit, cfname in zip(all_fits, all_names):
+        #     predy = meanval / cfit(predx)
+        #     print(
+        #         cfname,
+        #         predy / predy[0],
+        #         f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
+        #     )
 
     ax.legend(fontsize=0.7 * fontsize, ncol=2)
 

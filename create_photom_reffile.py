@@ -143,7 +143,7 @@ if __name__ == "__main__":
         ],
     )
 
-    # create the photom reference file
+    # create the time dependence reference file
     data_time = np.array(
         data_list_time,
         dtype=[
