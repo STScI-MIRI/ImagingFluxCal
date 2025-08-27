@@ -76,6 +76,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--show_prev", help="show previous time dependence", action="store_true"
     )
+    parser.add_argument("--line", help="include linear model", action="store_true")
     parser.add_argument("--dexp", help="include exp+exp model", action="store_true")
     parser.add_argument("--docs", help="include only exp+line model", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
@@ -111,6 +112,8 @@ if __name__ == "__main__":
         # cftab_time = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=2)
         cftab = QTable.read("Photom/jwst_miri_photom_flight_30aug24.fits", hdu=1)
         cftab_time = QTable.read("Photom/jwst_miri_photom_flight_30aug24.fits", hdu=2)
+
+    print("filter, linear lossperyear, exp const, exp amp")
 
     ax = axs[0]
     startday = 59720
@@ -165,45 +168,15 @@ if __name__ == "__main__":
                 yvals_unc = np.append(yvals_unc, nyvals_unc)
                 xvals = np.append(xvals, nxvals)
 
-        # fit an exponential
+        # flip the CF to get the equivalent of flux
+        # changed 27 Aug 2025 to make it straightforward to get the time dependence
+        # separate from the overall calibration factor.  Needed for new photom ref file format.
+        yvals_unc = yvals_unc / yvals
+        yvals = 1.0 / yvals
+        yvals_unc *= yvals
+
         # ignore the bad data point for F770W
         gvals = abs(xvals - (60070.0 - startday)) > 20.0
-
-        fit = fitting.LevMarLSQFitter()
-        mod_init = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Const1D(
-            amplitude=0.70
-        )
-        # mod_init2 = models.PowerLaw1D(amplitude=0.70, x_0=1.0, alpha=-1.0)
-        # mod_init = (models.Exponential1D(tau=-150., amplitude=-0.2)
-        #             + models.Linear1D(intercept=0.70, slope=0.0))
-        mod_init[0].amplitude.bounds = [None, 0.0]
-        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W"]:
-            mod_init[0].tau.fixed = True
-        else:
-            mod_init[0].tau.bounds = [-400.0, -100.0]
-
-        mod_init2 = PowerLaw1D_Shift(amplitude=0.70, x_0=60.0, alpha=0.5)+ models.Const1D(
-            amplitude=0.70
-        )
-        mod_init2[0].x_0.bounds = [50.0, 200.0]
-        mod_init2[1].amplitude = 0.0
-        mod_init2[1].amplitude.fixed = True
-
-        mod_init3 = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Linear1D(
-            slope=-0.5, intercept=1.0
-        )
-
-        mod_init4 = (
-            models.Exponential1D(tau=-100.0, amplitude=-0.2)
-            + models.Exponential1D(tau=-500.0, amplitude=-0.1)
-            + models.Const1D(amplitude=0.70)
-        )
-        # mod_init4[0].tau.bounds = (-150.0, -50.0)
-        mod_init4[0].amplitude.bounds = (-0.2, 0.0)
-        #mod_init4[0].tau = mod_fit3[0].tau.value
-        #mod_init4[0].tau.fixed = True
-        # mod_init4[1].tau.bounds = (-1000.0, -300.0)
-        # mod_init4[1].amplitude.bounds = (-1.0, 0.0)
 
         fitx = xvals[gvals]
         fity = yvals[gvals]
@@ -211,7 +184,8 @@ if __name__ == "__main__":
 
         # plot the data
         meanval = np.average(yvals)
-        yvals = meanval / yvals
+        yvals = yvals / meanval
+        yvals_unc = yvals_unc / meanval
         sindxs = np.argsort(xvals)
         yoff0 = k * 0.25
         ydiff0 = np.average(yvals) - np.average(yvals[sindxs[-5:]])
@@ -226,6 +200,43 @@ if __name__ == "__main__":
         )
         ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
         axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
+
+        # setup the fitting
+        fit = fitting.LevMarLSQFitter()
+        mod_init = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Const1D(
+            amplitude=0.70
+        )
+        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W", "F1500W"]:
+            mod_init[0].tau.fixed = True
+        else:
+            mod_init[0].tau.bounds = [-400.0, -100.0]
+
+        mod_init0 = models.Linear1D(slope=-0.5, intercept=1.0)
+        # mod_init0.slope.bounds = [None, 0.0]
+
+        mod_init2 = PowerLaw1D_Shift(amplitude=0.70, x_0=60.0, alpha=0.5)+ models.Const1D(
+            amplitude=0.70
+        )
+        mod_init2[0].x_0.bounds = [50.0, 200.0]
+        mod_init2[1].amplitude = 0.0
+        mod_init2[1].amplitude.fixed = True
+
+        mod_init3 = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Linear1D(
+            slope=-0.5, intercept=1.0
+        )
+        mod_init3[1].slope.bounds = [None, 0.0]
+
+        mod_init4 = (
+            models.Exponential1D(tau=-100.0, amplitude=-0.2)
+            + models.Exponential1D(tau=-500.0, amplitude=-0.1)
+            + models.Const1D(amplitude=0.70)
+        )
+        # mod_init4[0].tau.bounds = (-150.0, -50.0)
+        mod_init4[0].amplitude.bounds = (-0.2, 0.0)
+        #mod_init4[0].tau = mod_fit3[0].tau.value
+        #mod_init4[0].tau.fixed = True
+        # mod_init4[1].tau.bounds = (-1000.0, -300.0)
+        # mod_init4[1].amplitude.bounds = (-1.0, 0.0)
 
         # print(
         #     "powerlaw amp/shift/alpha:",
@@ -245,6 +256,11 @@ if __name__ == "__main__":
         allmods = [mod_init, mod_init2, mod_init3]
         allnparam = [3, 3, 4]
         pcol = ["m", "r", "g"]
+        if args.line:
+            modnames += ["line"]
+            allmods += [mod_init0]
+            allnparam += [2]
+            pcol += ["y"]
         if args.dexp:
             modnames += ["exp+exp"]
             allmods += [mod_init4]
@@ -264,14 +280,21 @@ if __name__ == "__main__":
 
             # save the fit results - update for exp+line 26 Aug 2025
             if cname == "exp+line":
+                # coefficents for photom file
+                totamp = mod_fit[1].intercept.value + mod_fit[0].amplitude
+                lossperyear = 365.0 * mod_fit[1].slope.value / totamp
+                exp_amp = mod_fit[0].amplitude / totamp
+                exp_const = mod_fit[1].intercept / totamp
+                print(f"{cfilter} {lossperyear:.4f} {exp_const:.3f} {exp_amp:.3f}")
+
                 atab = QTable()
-                atab[f"fit_exp_amp_{cfilter}"] = [mod_fit[0].amplitude.value]
-                atab[f"fit_exp_tau_{cfilter}"] = [mod_fit[0].tau.value]
-                atab[f"fit_exp_intercept_{cfilter}"] = [mod_fit[1].intercept.value]
-                atab[f"fit_exp_slope_{cfilter}"] = [mod_fit[1].slope.value]
-                atab[f"fit_exp_startday_{cfilter}"] = [startday]
-                atab[f"fit_exp_std_{cfilter}"] = [mod_dev]
-                atab[f"fit_exp_std_per_{cfilter}"] = [per_dev]
+                atab[f"fit_linear_lossperyear_{cfilter}"] = [lossperyear]
+                atab[f"fit_exp_const_{cfilter}"] = [exp_const]
+                atab[f"fit_exp_amp_{cfilter}"] = [exp_amp]
+                atab[f"fit_tau_{cfilter}"] = [mod_fit[0].tau.value]
+                atab[f"fit_to_{cfilter}"] = [startday]
+                atab[f"fit_std_{cfilter}"] = [mod_dev]
+                atab[f"fit_std_per_{cfilter}"] = [per_dev]
                 sext = "_fit.dat"
                 atab.write(
                     f"CalFacs/miri_calfactors{rstr}_repeat_{cfilter}_fit.dat",
@@ -280,7 +303,7 @@ if __name__ == "__main__":
                 )
 
             pxvals = np.arange(0, max(fitx))
-            modvals = np.average(mod_fit(xvals)) / mod_fit(pxvals)
+            modvals = mod_fit(pxvals) / np.average(mod_fit(xvals))
 
             show_plot = False
             if args.docs:
@@ -296,7 +319,7 @@ if __name__ == "__main__":
 
             if show_plot:
                 ax.plot(pxvals, modvals + yoff, f"{ccol}-", label=lname)
-                modxvals = meanval / mod_fit(xvals)
+                modxvals = mod_fit(xvals) / meanval
                 axs[1].errorbar(
                     xvals, (yvals - modxvals) + yoff2, yerr=yvals_unc, fmt=f"{ccol}o", alpha=0.5
                 )
@@ -305,7 +328,7 @@ if __name__ == "__main__":
             # show the delta change
             if cname == "exp+line":
                 bpredx = [min(fitx), max(fitx)]
-                bvals = 1.0 / mod_fit(bpredx)
+                bvals = mod_fit(bpredx)
                 per_decrease = 100.0 * (bvals[1] - bvals[0]) / bvals[0]
 
                 shifty = 0.05
