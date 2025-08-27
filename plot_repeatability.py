@@ -93,6 +93,7 @@ if __name__ == "__main__":
         "F2100W",
         "F2550W",
     ]
+    filters = np.flip(filters)
 
     # make plot
     fontsize = 16
@@ -250,16 +251,23 @@ if __name__ == "__main__":
         mod_dev = mod_fit(fitx) - fity
         mod_dev = np.sqrt(np.sum(np.square(mod_dev) / (len(fitx) - 2)))
 
-        # save the fit results
+        mod_dev3 = mod_fit3(fitx) - fity
+        mod_dev3 = np.sqrt(np.sum(np.square(mod_dev3) / (len(fitx) - 2)))
+
+        print(mod_fit3)
+        print(365.0 * 100.0 * mod_fit3[1].slope.value / mod_fit3[1].intercept)
+        exit()
+
+        # save the fit results - update for exp+line 26 Aug 2025
         atab = QTable()
-        atab[f"fit_exp_amp_{cfilter}"] = [mod_fit[0].amplitude.value]
-        atab[f"fit_exp_tau_{cfilter}"] = [mod_fit[0].tau.value]
-        atab[f"fit_exp_const_{cfilter}"] = [mod_fit[1].amplitude.value]
-        # atab[f"fit_exp_intercept_{cfilter}"] = [mod_fit[1].intercept.value]
-        # atab[f"fit_exp_slope_{cfilter}"] = [mod_fit[1].slope.value]
+        atab[f"fit_exp_amp_{cfilter}"] = [mod_fit3[0].amplitude.value]
+        atab[f"fit_exp_tau_{cfilter}"] = [mod_fit3[0].tau.value]
+        # atab[f"fit_exp_const_{cfilter}"] = [mod_fit3[1].amplitude.value]
+        atab[f"fit_exp_intercept_{cfilter}"] = [mod_fit3[1].intercept.value]
+        atab[f"fit_exp_slope_{cfilter}"] = [mod_fit3[1].slope.value]
         atab[f"fit_exp_startday_{cfilter}"] = [startday]
-        atab[f"fit_exp_std_{cfilter}"] = [mod_dev]
-        atab[f"fit_exp_std_per_{cfilter}"] = [per_dev]
+        atab[f"fit_exp_std_{cfilter}"] = [mod_dev3]
+        atab[f"fit_exp_std_per_{cfilter}"] = [per_dev3]
         sext = "_fit.dat"
         atab.write(
             f"CalFacs/miri_calfactors{rstr}_repeat_{cfilter}_fit.dat",

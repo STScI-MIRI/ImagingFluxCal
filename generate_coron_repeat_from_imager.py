@@ -23,24 +23,28 @@ if __name__ == "__main__":
         # calculate the calibration factor versus time
         amp1 = ntab1[f"fit_exp_amp_{ifilter[0]}"][0]
         tau1 = ntab1[f"fit_exp_tau_{ifilter[0]}"][0]
-        c1 = ntab1[f"fit_exp_const_{ifilter[0]}"][0]
+        c11 = ntab1[f"fit_exp_intercept_{ifilter[0]}"][0]
+        c12 = ntab1[f"fit_exp_slope_{ifilter[0]}"][0]
         startday1 = ntab1[f"fit_exp_startday_{ifilter[0]}"][0]
 
         amp2 = ntab2[f"fit_exp_amp_{ifilter[1]}"][0]
         tau2 = ntab2[f"fit_exp_tau_{ifilter[1]}"][0]
-        c2 = ntab2[f"fit_exp_const_{ifilter[1]}"][0]
+        c21 = ntab2[f"fit_exp_intercept_{ifilter[0]}"][0]
+        c22 = ntab2[f"fit_exp_slope_{ifilter[0]}"][0]
         startday2 = ntab2[f"fit_exp_startday_{ifilter[1]}"][0]
 
         weight = (cwave - iwave[0])/(iwave[1] - iwave[0])
         
-        amp = (amp1 / c1) * (1 - weight) + (amp2 / c2) * weight
+        amp = (amp1 / c11) * (1 - weight) + (amp2 / c21) * weight
         tau = tau1 * (1 - weight) + tau2 * weight
+        slope = (c12 / c11) * (1 - weight) + (c22 / c21) * weight
         startday = startday1 * (1 - weight) + startday2 * weight
-        print(cfilter, amp, tau, startday)
+        print(cfilter, amp, tau, slope, startday)
 
         otab = QTable()
         otab[f"fit_exp_amp_{cfilter}"] = [amp]
         otab[f"fit_exp_tau_{cfilter}"] = [tau]
+        otab[f"fit_exp_slope_{cfilter}"] = [slope]
         otab[f"fit_exp_startday_{cfilter}"] = [startday]
         if cfilter == "FND":
             bstr = ""
