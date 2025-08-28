@@ -37,20 +37,20 @@ if __name__ == "__main__":
     }
 
     # current calibration factors
-    cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
+    # cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
 
     startday = 59720.
     days = np.arange(0.0, 1000.0, 1.0)
     comvals = days < 50.
 
     data_list = []
-    data_list_time = []
+    data_list_time_exp = []
+    data_list_time_linear = []
 
-    fulltab = QTable(names=("filter", "amplitude", "tau", "photmjysr", "startday", "uncertainty"),
-                     dtype=("str", "f", "f", "f", "f", "f"))
+    fulltab = QTable(names=("filter", "photomjsr", "expamplitude", "exptau", "expconts", "lossperyear", "startday", "uncertainty"),
+                     dtype=("str", "f", "f", "f", "f", "f", "f", "f"))
 
-    # print("filter, nfac, comfac, oldfac / comfac, comfac / oldfac")
-    print("filter   CF      amp     amp_per   tau   CF_unc  CF_unc_per repeat_per")
+    print("filter   CF      slope     amp       tau   const   CF_unc  CF_unc_per n_stars repeat_per")
     for cfilter in filters:
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
             rstr = "_bkgsub"
@@ -65,17 +65,16 @@ if __name__ == "__main__":
         ntab_repeat = QTable.read(f"CalFacs/miri_calfactors{rstr2}_repeat_{cfilter}_fit.dat",
                                   format="ascii.commented_header")
         amp = ntab_repeat[f"fit_exp_amp_{cfilter}"][0]
-        tau = ntab_repeat[f"fit_exp_tau_{cfilter}"][0]
-        if cfilter not in coron_filters:  # amplitude is reported as absolute not percentage
-            c = ntab_repeat[f"fit_exp_const_{cfilter}"][0]
-            per_amp = amp / c
-        else:
-            per_amp = amp
+        tau = -1.0 * ntab_repeat[f"fit_exp_tau_{cfilter}"][0]
+        const = ntab_repeat[f"fit_exp_const_{cfilter}"][0]
+        slope = -1.0 * ntab_repeat[f"fit_linear_lossperyear_{cfilter}"][0]
+        startday = ntab_repeat[f"fit_startday_{cfilter}"][0]
+
         # repeatability as a percentage for paper table
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C", "FND"]:
             repeat_per = 0.0
         else:
-            repeat_per = ntab_repeat[f"fit_exp_std_per_{cfilter}"][0]
+            repeat_per = ntab_repeat[f"fit_std_per_{cfilter}"][0]
 
         # average of all stars after correcting for time and subarray dependences
         ntab = QTable.read(f"CalFacs/miri_calfactors{rstr}_grieke_subarracor_timecor_{cfilter}_ave.dat",
@@ -86,27 +85,8 @@ if __name__ == "__main__":
         cfac_unc_per = 100.0 * cfac_unc / cfac_ave
         cfac_npts = ntab[f"avecalfac_npts_{cfilter}"][0]
 
-        # account the sensitivity loss to the startday
-        #perfac = (per_amp * np.exp(days/tau)) + 1.0
-        #ncfacs = (perfac / (per_amp + 1)) * cfac_ave
-
-        #amp = (per_amp / (per_amp + 1)) * cfac_ave
-        #const = (1.0 / (per_amp + 1)) * cfac_ave
-
-        amp = per_amp * cfac_ave
-        #const = cfac_ave
-        # ncfacs = (amp * np.exp(days/tau)) + const
-
-        fulltab.add_row([cfilter, amp, -1.*tau, cfac_ave, startday, cfac_unc])
-
-        #frac_change = (const + amp) / const
-        amp_per = (np.absolute(amp) / cfac_ave) * 100.0
-
-        # calculated the value for the first 100 days
-        #  approximates Commissioning so we can compare to the previous value
-        #  not used otherwise
-        # new_cfactor = np.average(ncfacs[comvals])
-        # pipe_cfactor = cftab["photmjsr"][cftab["filter"] == cfilter.split("_")[0]][0]
+        # full table
+        fulltab.add_row([cfilter, cfac_ave, amp, tau, const, slope, startday, cfac_unc])
         
         # build the data structure needed
         # allowed subarrays
@@ -117,17 +97,13 @@ if __name__ == "__main__":
         else:
             subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
 
-        print(f"{cfilter} & {cfac_ave:.4f} & {amp:.4f} & {amp_per:.1f} & {-1.*tau:.1f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
+        # for latex table
+        print(f"{cfilter} & {cfac_ave:.4f} & {slope:.4f} & {amp:.4f} & {tau:.1f} & {const:.4f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         for csub in subarray_values:
             data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
-            data_list_time.append((amp / subarr_cor[csub], -1.*tau, startday))
-
-    # temp fix for FND - remove once photom file includes this filter
-    #cfilter = "FND"
-    #csub = "FULL"
-    #data_list.append((cfilter, csub, 1.0, 0.1))
-    #data_list_time.append((0.0, -200., startday))
+            data_list_time_exp.append((cfilter, csub, amp, tau, startday, const))
+            data_list_time_linear.append((cfilter, csub, startday, slope))
 
     # save time dependent coefficients
     fulltab.write("CalFacs/jwst_miri_photom_coeff.dat", format="ipac", overwrite=True)
@@ -143,20 +119,36 @@ if __name__ == "__main__":
         ],
     )
 
-    # create the time dependence reference file
-    data_time = np.array(
-        data_list_time,
+    # create the exponentital time dependence
+    data_time_exp = np.array(
+        data_list_time_exp,
         dtype=[
-            ("amplitude", "<f4"),
-            ("tau", "<f4"),
-            ("t0", "<f4")
+                ("filter", "S12"),
+                ("subarray", "S15"),
+                ("amplitude", "<f4"),
+                ("tau", "<f4"),
+                ("t0", "<f4"),
+                ("const", "<f4"),
         ],
     )
 
-    new_model = MirImgPhotomModel(phot_table=data, timecoeff=data_time)
+    # create the linear time dependence
+    data_time_linear = np.array(
+        data_list_time_linear,
+        dtype=[
+                ("filter", "S12"),
+                ("subarray", "S15"),
+                ("t0", "<f4"),
+                ("lossperyear", "<f4"),
+        ],
+    )
+
+    new_model = MirImgPhotomModel(phot_table=data,
+                                  timecoeff_exponential=data_time_exp,
+                                  timecoeff_linear=data_time_linear)
     d1 = datetime.datetime
     new_model.meta.date = d1.isoformat(d1.today())
-    new_model.meta.filename = f"jwst_miri_photom_30aug24.fits"
+    new_model.meta.filename = f"jwst_miri_photom_28aug25.fits"
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
@@ -169,11 +161,11 @@ if __name__ == "__main__":
     new_model.meta.reftype = "PHOTOM"
     new_model.meta.author = "Karl Gordon"
     # updates to next 2 lines needed
-    new_model.meta.pedigree = "INFLIGHT 2022-05-21 2024-07-02"
+    new_model.meta.pedigree = "INFLIGHT 2022-05-21 2025-08-27"
     new_model.meta.useafter = "2022-04-01T00:00:00"
     new_model.meta.description = "Photom reference file."
-    entry = "The flux calibration factors calculated from exponential fits to the"
+    entry = "The flux calibration factors calculated from exponential + linear"
     new_model.history.append(entry)
-    entry = "time dependent flux calibration factors.  "
+    entry = "fits to the time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_30aug24.fits")
+    new_model.save(f"Photom/jwst_miri_photom_flight_28aug25.fits")
