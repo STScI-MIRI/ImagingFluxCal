@@ -78,13 +78,11 @@ def get_calfactors(
             repstr = ""
         ffilename = f"CalFacs/miri_calfactors{repstr}_repeat_{filter}_fit.dat"
         ntab = QTable.read(ffilename, format="ascii.commented_header")
-        # calculate the calibration factor versus time
-        amp = ntab[f"fit_exp_amp_{filter}"][0]
-        tau = ntab[f"fit_exp_tau_{filter}"][0]
-        if filter not in ["F1065C", "F1140C", "F1550C", "F2300C", "FND"]:
-            c = ntab[f"fit_exp_const_{filter}"][0]
-            amp = amp / c  # put in percentage terms like the coronagraphs
-        # print(filter, amp)
+        time_lossperyear = ntab[f"fit_linear_lossperyear_{filter}"][0]
+        time_amp = ntab[f"fit_exp_amp_{filter}"][0]
+        time_tau = ntab[f"fit_exp_tau_{filter}"][0]
+        time_const = ntab[f"fit_exp_const_{filter}"][0]
+        time_startday = ntab[f"fit_startday_{filter}"][0]
 
     if repeat:  # only use observations of BD+60 1753 and HD 2811
         # gvals = (obstab["name"] == "BD+60 1753") | (obstab["name"] == "HD 2811")
@@ -120,11 +118,15 @@ def get_calfactors(
         pixarea = obstab["pixarea"][k]
 
         if applytime:  # fix the time dependancies
-            ncfac = (amp * np.exp((obstab["timemid"][k].value - startday) / tau)) + 1.0
+            # ncfac = (amp * np.exp((obstab["timemid"][k].value - startday) / tau)) + 1.0
             # correct the sensitivity loss to the startday
             # oflux *= ncfac  #  / (amp + 1.)
             # correct the sensitivity loss to the value at infinite time
-            oflux *= ncfac
+            # oflux *= ncfac
+
+            ncfac_linear = 1.0 + time_lossperyear * ((obstab["timemid"][k].value - time_startday)/365.0)
+            ncfac_exp = time_amp * np.exp((obstab["timemid"][k].value - time_startday) / time_tau) + time_const
+            oflux /= (ncfac_linear * ncfac_exp)
 
         (mindx,) = np.where(modtab["name"] == cname)
         if len(mindx) < 1:

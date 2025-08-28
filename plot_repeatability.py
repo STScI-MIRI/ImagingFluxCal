@@ -221,9 +221,13 @@ if __name__ == "__main__":
         mod_init2[1].amplitude = 0.0
         mod_init2[1].amplitude.fixed = True
 
-        mod_init3 = models.Exponential1D(tau=-100.0, amplitude=-0.2) + models.Linear1D(
+        mod_init3 = models.Exponential1D(tau=-100.0, amplitude=0.2) + models.Linear1D(
             slope=-0.5, intercept=1.0
         )
+        # mod_init3 = (models.Exponential1D(tau=-100.0, amplitude=-0.2) 
+        #              + (models.Linear1D(slope=-0.5, intercept=1.0)
+        #              + models.Const1D(amplitude=1.0)))
+        # mod_init3[1].intercept.fixed = True
         mod_init3[1].slope.bounds = [None, 0.0]
         # mod_init3[0].amplitude.bounds = [0.0, None]
         if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
@@ -288,8 +292,8 @@ if __name__ == "__main__":
                 # coefficents for photom file
                 totamp = mod_fit[1].intercept.value + mod_fit[0].amplitude
                 lossperyear = 365.0 * mod_fit[1].slope.value / totamp
-                exp_amp = mod_fit[0].amplitude / totamp
-                exp_const = mod_fit[1].intercept / totamp
+                exp_amp = mod_fit[0].amplitude.value / totamp
+                exp_const = mod_fit[1].intercept.value / totamp
                 exp_tau = mod_fit[0].tau.value
                 print(f"{cfilter} {lossperyear:.4f} {exp_const:.3f} {exp_amp:.3f} {exp_tau:.1f}")
 
@@ -297,8 +301,8 @@ if __name__ == "__main__":
                 atab[f"fit_linear_lossperyear_{cfilter}"] = [lossperyear]
                 atab[f"fit_exp_const_{cfilter}"] = [exp_const]
                 atab[f"fit_exp_amp_{cfilter}"] = [exp_amp]
-                atab[f"fit_tau_{cfilter}"] = [exp_tau]
-                atab[f"fit_to_{cfilter}"] = [startday]
+                atab[f"fit_exp_tau_{cfilter}"] = [exp_tau]
+                atab[f"fit_startday_{cfilter}"] = [startday]
                 atab[f"fit_std_{cfilter}"] = [mod_dev]
                 atab[f"fit_std_per_{cfilter}"] = [per_dev]
                 sext = "_fit.dat"
