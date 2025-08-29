@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     if args.nmasks:
         print("using new bad pixel masks")
-        maskfile = "Masks/jwst_miri_mask_{args.filter}.fits"
+        maskfile = f"Masks/jwst_miri_mask_{args.filter}.fits"
     else:
         maskfile = None
 

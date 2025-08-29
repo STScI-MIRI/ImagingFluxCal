@@ -31,8 +31,12 @@ def miri_detector1(
     det1_dict["ipc"] = {"skip": True}
 
     # Use a custom mask file
+    if maskfile is not None:
+        det1_dict["dq_init"] = {"override_mask": maskfile}
+
+    # Use a custom RSCD file
     if rscdfile is not None:
-        det1_dict["dq_init"] = {"override_dq_init": maskfile}
+        det1_dict["rscd"] = {"override_rscd": rscdfile}
 
     if not firstframe:
         det1_dict["firstframe"] = {"skip": True}
@@ -87,6 +91,9 @@ def miri_detector1(
         save_calibrated_ramp = True
     else:
         save_calibrated_ramp = False
+
+    #print(det1_dict)
+    #exit()
 
     for miri_uncal_file in miri_uncal_files:
         print(miri_uncal_file)
