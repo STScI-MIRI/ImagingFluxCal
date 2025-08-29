@@ -82,6 +82,7 @@ if __name__ == "__main__":
         help="specific flat file to use",
         default=None,
     )
+    parser.add_argument("--nmasks", help="use new bad pixel masks", action="store_true")
     parser.add_argument("--nflats", help="use new flats", action="store_true")
     parser.add_argument("--nrscd", help="use new rscd file", action="store_true")
     parser.add_argument("--onlynew", help="only reduce new data", action="store_true")
@@ -93,6 +94,12 @@ if __name__ == "__main__":
     # no new flats for coronagraphy
     if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
         args.nflats = None
+
+    if args.nmasks:
+        print("using new bad pixel masks")
+        maskfile = "Masks/jwst_miri_mask_{args.filter}.fits"
+    else:
+        maskfile = None
 
     if args.nrscd:
         print("using new rscd parameter file")
@@ -142,7 +149,14 @@ if __name__ == "__main__":
                     f.write("level = INFO\n")
 
                 print(f"detector1 for {ckey}")
-                miri_detector1(objsets[ckey], ndir, logfile=f"{cbase}.cfg", rscdfile=rscdfile, save_jump_info=True)
+                miri_detector1(
+                    objsets[ckey],
+                    ndir,
+                    logfile=f"{cbase}.cfg",
+                    maskfile=maskfile,
+                    rscdfile=rscdfile,
+                    save_jump_info=True,
+                )
 
             if args.stage in ["stage2", "stage23", "all"]:
                 # calwebb_image2
@@ -154,13 +168,22 @@ if __name__ == "__main__":
 
                 ratefiles = glob.glob(f"{ndir}/*_rate.fits")
                 print(f"image2 for {ckey}")
-                miri_image2(ratefiles, ndir, logfile=f"{cbase}.cfg",
-                            flatfile=flatfile, photomfile="../Photom/jwst_miri_photom_flight_31jul24.fits")
+                miri_image2(
+                    ratefiles,
+                    ndir,
+                    logfile=f"{cbase}.cfg",
+                    flatfile=flatfile,
+                    photomfile="../Photom/jwst_miri_photom_flight_31jul24.fits",
+                )
 
             if args.bkgsub:
                 calfiles = glob.glob(f"{ndir}/*mirimage_cal.fits")
-                simage = make_sky(calfiles, exclude_delta=None, sourcereg=True, scalebkg=True)
-                fits.writeto(f"{ndir}/{args.filter}_median_bkg.fits", simage, overwrite=True)
+                simage = make_sky(
+                    calfiles, exclude_delta=None, sourcereg=True, scalebkg=True
+                )
+                fits.writeto(
+                    f"{ndir}/{args.filter}_median_bkg.fits", simage, overwrite=True
+                )
                 calext = "_skysub"
                 mosext = "_bkgsub"
             else:
@@ -173,11 +196,13 @@ if __name__ == "__main__":
 
                 # for coronagraphy, need to fake the data as imaging
                 if args.filter in ["F1065C", "F1140C", "F1550C", "F2300C", "FND"]:
-                    nfilt = {"F1065C": "F1000W",
-                             "F1140C": "F1130W",
-                             "F1550C": "F1500W",
-                             "F2300C": "F2100W",
-                             "FND": "F1280W"}
+                    nfilt = {
+                        "F1065C": "F1000W",
+                        "F1140C": "F1130W",
+                        "F1550C": "F1500W",
+                        "F2300C": "F2100W",
+                        "FND": "F1280W",
+                    }
                     for cfile in calfiles:
                         hdul = fits.open(cfile)
                         hdul[0].header["EXP_TYPE"] = "MIR_IMAGE"
@@ -212,5 +237,9 @@ if __name__ == "__main__":
 
                 print(f"image3 for {ckey}")
                 miri_image3(
-                    miri_asn_file, ndir, logfile=f"{cbase}.cfg", sourcecat=sourcecat, matchbkg=True,
+                    miri_asn_file,
+                    ndir,
+                    logfile=f"{cbase}.cfg",
+                    sourcecat=sourcecat,
+                    matchbkg=True,
                 )

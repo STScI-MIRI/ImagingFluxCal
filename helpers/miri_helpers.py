@@ -29,6 +29,11 @@ def miri_detector1(
     # setup the directory of step parameters
     det1_dict = {}
     det1_dict["ipc"] = {"skip": True}
+
+    # Use a custom mask file
+    if rscdfile is not None:
+        det1_dict["dq_init"] = {"override_dq_init": maskfile}
+
     if not firstframe:
         det1_dict["firstframe"] = {"skip": True}
 
