@@ -102,6 +102,7 @@ if __name__ == "__main__":
     # get the center for all the photometry
     tmp, ncenter = aper_image(
         filename_bkg,
+        cfilter,
         filter_fwhm[cfilter] * 5.0,
         [filter_fwhm[cfilter] * 5.0, filter_fwhm[cfilter] * 6.0],
         1.0,
