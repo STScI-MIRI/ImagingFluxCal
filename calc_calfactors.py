@@ -124,9 +124,15 @@ def get_calfactors(
             # correct the sensitivity loss to the value at infinite time
             # oflux *= ncfac
 
-            ncfac_linear = 1.0 + time_lossperyear * ((obstab["timemid"][k].value - time_startday)/365.0)
-            ncfac_exp = time_amp * np.exp((obstab["timemid"][k].value - time_startday) / time_tau) + time_const
-            oflux /= (ncfac_linear * ncfac_exp)
+            ncfac_linear = 1.0 + time_lossperyear * (
+                (obstab["timemid"][k].value - time_startday) / 365.0
+            )
+            ncfac_exp = (
+                time_amp
+                * np.exp((obstab["timemid"][k].value - time_startday) / time_tau)
+                + time_const
+            )
+            oflux /= ncfac_linear * ncfac_exp
 
         (mindx,) = np.where(modtab["name"] == cname)
         if len(mindx) < 1:
@@ -145,7 +151,7 @@ def get_calfactors(
         elif xaxisval == "inttime":
             xval = obstab["tgroup"][k] * obstab["ngroups"][k] * u.s
         elif xaxisval == "srctype":
-            xval = dir
+            xval = dir.split("/")[-1]
         elif xaxisval == "subarr":
             xval = obstab["subarray"][k]
         elif xaxisval == "dither":
@@ -213,6 +219,7 @@ def plot_calfactors(
     fitline=False,
     fontsize=14,
     nofiltername=False,
+    basedir="./",
 ):
     """
     Plot the calibration factors versus the requested xaxis.
@@ -330,7 +337,7 @@ def plot_calfactors(
         # print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
         if exists(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits"):
             cfacs = get_calfactors(
-                dir,
+                f"{basedir}/{dir}",
                 filter,
                 xaxisval=xaxisval,
                 bkgsub=bkgsub,
@@ -764,6 +771,9 @@ if __name__ == "__main__":
         # fmt: on
     )
     parser.add_argument(
+        "--basedir", help="base directory for star type subdirs", default="./"
+    )
+    parser.add_argument(
         "--bkgsub",
         help="use results from background subtraction run",
         action="store_true",
@@ -903,6 +913,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         plot_calfactors(
             ax[0, 1],
@@ -921,6 +932,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         plot_calfactors(
             ax[1, 0],
@@ -938,6 +950,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         plot_calfactors(
             ax[1, 1],
@@ -955,6 +968,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         fname = f"miri_calfactors_{args.filter}_detmulti"
     elif args.sourcemulti:
@@ -979,6 +993,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         plot_calfactors(
             ax[0, 1],
@@ -996,6 +1011,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         plot_calfactors(
             ax[1, 0],
@@ -1013,6 +1029,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         plot_calfactors(
             ax[1, 1],
@@ -1030,6 +1047,7 @@ if __name__ == "__main__":
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         fname = f"miri_calfactors_{args.filter}_sourcemulti"
     else:
@@ -1051,6 +1069,7 @@ if __name__ == "__main__":
             grieke=args.grieke,
             shownames=args.shownames,
             noignore=args.noignore,
+            basedir=args.basedir,
         )
         fname = f"miri_calfactors_{args.filter}_{args.xaxisval}"
 
