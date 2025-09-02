@@ -14,9 +14,9 @@ from astropy.stats import sigma_clipped_stats, SigmaClip
 import astropy.units as u
 from astropy.table import QTable, vstack, hstack
 from astropy.wcs.utils import proj_plane_pixel_area
-from astropy.time import Time
+#from astropy.time import Time
 from astropy.wcs import FITSFixedWarning
-from astropy.utils.exceptions import ErfaWarning
+#from astropy.utils.exceptions import ErfaWarning
 from astropy.io.fits.verify import VerifyWarning
 from astropy.convolution import interpolate_replace_nans
 from astropy.convolution import Gaussian2DKernel
