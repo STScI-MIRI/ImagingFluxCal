@@ -126,7 +126,7 @@ if __name__ == "__main__":
     new_model = MirImgApcorrModel(apcorr_table=data)
     d1 = datetime.datetime
     new_model.meta.date = d1.isoformat(d1.today())
-    new_model.meta.filename = "jwst_miri_apcorr_flight_31jul24.fits"
+    new_model.meta.filename = "jwst_miri_apcorr_flight_02sep25.fits"
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "the SKYIN and SKYOUT columns."
     new_model.history.append(entry)
-    apcorr_reffile = "ApCor/jwst_miri_apcorr_flight_31jul24.fits"
+    apcorr_reffile = "ApCor/jwst_miri_apcorr_flight_02sep25.fits"
     new_model.save(apcorr_reffile)
 
     # read/write to add 
@@ -161,4 +161,4 @@ if __name__ == "__main__":
     hduref.writeto(apcorr_reffile, overwrite=True)  # write file
 
     print(fulltab)
-    fulltab.write("ApCor/jwst_miri_apcorr_flight_31jul24_full.fits", overwrite=True)
+    fulltab.write("ApCor/jwst_miri_apcorr_flight_02sep25_full.fits", overwrite=True)
