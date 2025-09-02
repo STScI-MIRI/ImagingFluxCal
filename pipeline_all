@@ -2,7 +2,7 @@ FSTAGE="all"
 #FSTAGE="stage23"
 #EXTOPT="--nflat"
 #EXTOPT="--nflats"
-EXTOPT=""
+EXTOPT="--nmasks"
 #EXTOPT="--onlynew"
 EXTOPT_BKGSUB=""
 
