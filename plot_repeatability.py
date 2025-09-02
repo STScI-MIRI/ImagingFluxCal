@@ -78,7 +78,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--line", help="include linear model", action="store_true")
     parser.add_argument("--dexp", help="include exp+exp model", action="store_true")
-    parser.add_argument("--docs", help="include only exp+line model", action="store_true")
+    parser.add_argument(
+        "--docs", help="include only exp+line model", action="store_true"
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -95,6 +97,20 @@ if __name__ == "__main__":
         "F2550W",
     ]
     # filters = np.flip(filters)
+
+    # based on calibration factor ratios and dedicated subarray transfer observations
+    subarr_cor = {
+        "FULL": 1.0,
+        "BRIGHTSKY": 1.005,
+        "SUB256": 0.98,
+        "SUB128": 1.00,
+        "SUB64": 0.966,
+        "MASK1065": 1.0,
+        "MASK1140": 1.0,
+        "MASK1550": 1.0,
+        "MASKLYOT": 1.0,
+        "SLITLESSPRISM": 1.0,
+    }
 
     # make plot
     fontsize = 16
@@ -141,6 +157,7 @@ if __name__ == "__main__":
         yvals = cfacs[0][~gvals]
         yvals_unc = cfacs[1][~gvals]
         xvals = cfacs[2][~gvals]
+        subarrs = cfacs[3][~gvals]
 
         # now get the two stars that we repeated twice to fill in the time gap
         for stype, sname in zip(["SolarAnalogs", "ADwarfs"], ["HD 37962", "del UMi"]):
@@ -157,6 +174,7 @@ if __name__ == "__main__":
                 nxvals = cfacs2[2][nvals]
                 nyvals = cfacs2[0][nvals]
                 nyvals_unc = cfacs2[1][nvals]
+                nsubarrs = cfacs2[3][nvals]
 
                 # find the value of BD+60 1753 that is closest to the last value
                 # use this value to adjust the new star to be on the same scale
@@ -167,6 +185,7 @@ if __name__ == "__main__":
                 yvals = np.append(yvals, nyvals)
                 yvals_unc = np.append(yvals_unc, nyvals_unc)
                 xvals = np.append(xvals, nxvals)
+                subarrs = np.append(subarrs, nsubarrs)
 
         # flip the CF to get the equivalent of flux
         # changed 27 Aug 2025 to make it straightforward to get the time dependence
@@ -174,6 +193,10 @@ if __name__ == "__main__":
         yvals_unc = yvals_unc / yvals
         yvals = 1.0 / yvals
         yvals_unc *= yvals
+
+        # correct the few FULL obs to SUB256 (most obs)
+        fvals = subarrs == "FULL"
+        yvals[fvals] *= subarr_cor["SUB256"]
 
         # ignore the bad data point for F770W
         gvals = abs(xvals - (60070.0 - startday)) > 20.0
@@ -214,9 +237,9 @@ if __name__ == "__main__":
         mod_init0 = models.Linear1D(slope=-0.5, intercept=1.0)
         # mod_init0.slope.bounds = [None, 0.0]
 
-        mod_init2 = PowerLaw1D_Shift(amplitude=0.70, x_0=60.0, alpha=0.5)+ models.Const1D(
-            amplitude=0.70
-        )
+        mod_init2 = PowerLaw1D_Shift(
+            amplitude=0.70, x_0=60.0, alpha=0.5
+        ) + models.Const1D(amplitude=0.70)
         mod_init2[0].x_0.bounds = [50.0, 200.0]
         mod_init2[1].amplitude = 0.0
         mod_init2[1].amplitude.fixed = True
@@ -224,7 +247,7 @@ if __name__ == "__main__":
         mod_init3 = models.Exponential1D(tau=-100.0, amplitude=0.2) + models.Linear1D(
             slope=-0.5, intercept=1.0
         )
-        # mod_init3 = (models.Exponential1D(tau=-100.0, amplitude=-0.2) 
+        # mod_init3 = (models.Exponential1D(tau=-100.0, amplitude=-0.2)
         #              + (models.Linear1D(slope=-0.5, intercept=1.0)
         #              + models.Const1D(amplitude=1.0)))
         # mod_init3[1].intercept.fixed = True
@@ -242,8 +265,8 @@ if __name__ == "__main__":
         )
         # mod_init4[0].tau.bounds = (-150.0, -50.0)
         mod_init4[0].amplitude.bounds = (-0.2, 0.0)
-        #mod_init4[0].tau = mod_fit3[0].tau.value
-        #mod_init4[0].tau.fixed = True
+        # mod_init4[0].tau = mod_fit3[0].tau.value
+        # mod_init4[0].tau.fixed = True
         # mod_init4[1].tau.bounds = (-1000.0, -300.0)
         # mod_init4[1].amplitude.bounds = (-1.0, 0.0)
 
@@ -295,7 +318,9 @@ if __name__ == "__main__":
                 exp_amp = mod_fit[0].amplitude.value / totamp
                 exp_const = mod_fit[1].intercept.value / totamp
                 exp_tau = mod_fit[0].tau.value
-                print(f"{cfilter} {lossperyear:.4f} {exp_const:.3f} {exp_amp:.3f} {exp_tau:.1f}")
+                print(
+                    f"{cfilter} {lossperyear:.4f} {exp_const:.3f} {exp_amp:.3f} {exp_tau:.1f}"
+                )
 
                 atab = QTable()
                 atab[f"fit_linear_lossperyear_{cfilter}"] = [lossperyear]
@@ -331,7 +356,11 @@ if __name__ == "__main__":
                 ax.plot(pxvals, modvals + yoff, f"{ccol}-", label=lname)
                 modxvals = mod_fit(xvals) / meanval
                 axs[1].errorbar(
-                    xvals, (yvals - modxvals) + yoff2, yerr=yvals_unc, fmt=f"{ccol}o", alpha=0.5
+                    xvals,
+                    (yvals - modxvals) + yoff2,
+                    yerr=yvals_unc,
+                    fmt=f"{ccol}o",
+                    alpha=0.5,
                 )
                 sigtext = rf"{sigtext}$\sigma$({cname})={per_dev:.2f}% "
 
@@ -359,7 +388,7 @@ if __name__ == "__main__":
                 mod_fit[0].tau = -1.0 * tau
                 modvals = meanval / mod_fit(pxvals)
 
-                # get the offset to match the range used for the current photom up to 800 days 
+                # get the offset to match the range used for the current photom up to 800 days
                 # a better visual comparison of the change between the delivered
                 # and current time dependence
                 tmodvals = meanval / mod_fit(xvals)

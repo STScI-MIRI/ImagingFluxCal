@@ -101,7 +101,7 @@ if __name__ == "__main__":
         print(f"{cfilter} & {cfac_ave:.4f} & {slope:.4f} & {amp:.4f} & {tau:.1f} & {const:.4f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         for csub in subarray_values:
-            data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
+            data_list.append((cfilter, csub, cfac_ave * subarr_cor[csub], cfac_unc * subarr_cor[csub]))
             data_list_time_exp.append((cfilter, csub, amp, tau, startday, const))
             data_list_time_linear.append((cfilter, csub, startday, slope))
 

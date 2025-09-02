@@ -11,13 +11,24 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--grieke", help="use GRieke models for the 10 G-stars, CALSPEC models for the rest", action="store_true",
+        "--grieke",
+        help="use GRieke models for the 10 G-stars, CALSPEC models for the rest",
+        action="store_true",
     )
     parser.add_argument(
         "--xaxisval",
         help="x-axis values",
         default="mflux",
-        choices=["mflux", "timemid", "rate", "welldepth", "bkg", "inttime", "srctype", "subarr"],
+        choices=[
+            "mflux",
+            "timemid",
+            "rate",
+            "welldepth",
+            "bkg",
+            "inttime",
+            "srctype",
+            "subarr",
+        ],
     )
     parser.add_argument(
         "--subarrcor",
@@ -33,9 +44,22 @@ if __name__ == "__main__":
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
 
-    filters = ["F560W", "F770W", "F1000W", "F1130W", "F1280W",
-               "FND", "F1500W", "F1800W", "F2100W", "F2550W",
-               "F1065C", "F1140C", "F1550C", "F2300C"]
+    filters = [
+        "F560W",
+        "F770W",
+        "F1000W",
+        "F1130W",
+        "F1280W",
+        "FND",
+        "F1500W",
+        "F1800W",
+        "F2100W",
+        "F2550W",
+        "F1065C",
+        "F1140C",
+        "F1550C",
+        "F2300C",
+    ]
 
     # make plot
     fontsize = 12
@@ -54,7 +78,7 @@ if __name__ == "__main__":
         "F560W",
         args.xaxisval,
         showleg=True,
-        showcurval=False, 
+        showcurval=False,
         x2ndaxis=False,
         notext=True,
         legonly=True,
@@ -62,19 +86,19 @@ if __name__ == "__main__":
         nofiltername=True,
         applytime=True,
     )
-    ax[0,0].get_xaxis().set_visible(False)
-    ax[0,0].get_yaxis().set_visible(False)
-    ax[0,0].set_ylim(1.0, 2.)
-    ax[0,0].set_title("")
-    ax[0,0].axis('off')
+    ax[0, 0].get_xaxis().set_visible(False)
+    ax[0, 0].get_yaxis().set_visible(False)
+    ax[0, 0].set_ylim(1.0, 2.0)
+    ax[0, 0].set_title("")
+    ax[0, 0].axis("off")
 
-    ax[0,1].get_xaxis().set_visible(False)
-    ax[0,1].get_yaxis().set_visible(False)
-    ax[0,1].set_ylim(1.0, 2.)
-    ax[0,1].set_title("")
-    ax[0,1].axis('off')
+    ax[0, 1].get_xaxis().set_visible(False)
+    ax[0, 1].get_yaxis().set_visible(False)
+    ax[0, 1].set_ylim(1.0, 2.0)
+    ax[0, 1].set_title("")
+    ax[0, 1].axis("off")
 
-    startday = 59720.
+    startday = 59720.0
     for k, cfilter in enumerate(filters):
 
         if cfilter in ["F1065C", "F1140C", "F1550C", "F2300C"]:
@@ -107,8 +131,8 @@ if __name__ == "__main__":
             applysubarrcor=args.subarrcor,
             savefile=savefacs,
             showleg=False,
-            showcurval=False,
-            bkgsub=bkgsub, 
+            showcurval=True,
+            bkgsub=bkgsub,
             applytime=applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -121,15 +145,14 @@ if __name__ == "__main__":
         if px < 7:
             ax[px, py].set_xlabel("")
 
-        ax[px, py].text(0.1, 0.9, cfilter,
-                        transform=ax[px, py].transAxes)
+        ax[px, py].text(0.1, 0.9, cfilter, transform=ax[px, py].transAxes)
 
-    #ax[0, 1].set_ylim(0.42, 0.48)
-    #ax[2, 0].set_ylim(1.0, 1.2)
-    #ax[4, 1].set_ylim(0.65, 0.8)
+    # ax[0, 1].set_ylim(0.42, 0.48)
+    # ax[2, 0].set_ylim(1.0, 1.2)
+    # ax[4, 1].set_ylim(0.65, 0.8)
 
     if args.xaxisval == "welldepth":
-        ax[0, 0].set_xlim(1e2, 65000.)
+        ax[0, 0].set_xlim(1e2, 65000.0)
     elif args.xaxisval == "rate":
         ax[0, 0].set_xlim(1e1, 1e5)
     elif args.xaxisval == "inttime":

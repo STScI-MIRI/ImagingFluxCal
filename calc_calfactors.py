@@ -641,8 +641,11 @@ def plot_calfactors(
     # get the current pipeline calibration factor and plot
     if showcurval:
         # cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
-        cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=1)
-        pipe_cfactor = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
+        cftab = QTable.read("CalFactors/jwst_miri_photom_0218.fits", hdu=1)
+        pipe_endoflife = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
+        cftab_time = QTable.read("CalFactors/jwst_miri_photom_0218.fits", hdu=2)
+        pipe_amp = cftab_time["amplitude"][cftab["filter"] == filter.split("_")[0]][0]
+        pipe_cfactor = pipe_endoflife + pipe_amp
         ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
 
     # now make the plot nice
