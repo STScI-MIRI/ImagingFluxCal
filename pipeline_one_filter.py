@@ -84,7 +84,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--nmasks", help="use new bad pixel masks", action="store_true")
     parser.add_argument(
-        "--nmasks", help="use old (ground-based) bad pixel masks", action="store_true"
+        "--omask", help="use old (ground-based) bad pixel masks", action="store_true"
     )
     parser.add_argument("--nflats", help="use new flats", action="store_true")
     parser.add_argument("--nrscd", help="use new rscd file", action="store_true")
