@@ -83,6 +83,9 @@ if __name__ == "__main__":
         default=None,
     )
     parser.add_argument("--nmasks", help="use new bad pixel masks", action="store_true")
+    parser.add_argument(
+        "--nmasks", help="use old (ground-based) bad pixel masks", action="store_true"
+    )
     parser.add_argument("--nflats", help="use new flats", action="store_true")
     parser.add_argument("--nrscd", help="use new rscd file", action="store_true")
     parser.add_argument("--onlynew", help="only reduce new data", action="store_true")
@@ -98,6 +101,9 @@ if __name__ == "__main__":
     if args.nmasks:
         print("using new bad pixel masks")
         maskfile = f"Masks/jwst_miri_mask_{args.filter}.fits"
+    elif args.omask:
+        print("using old (ground-based) pixel masks")
+        maskfile = "/grp/crds/jwst/references/jwst/jwst_miri_mask_0028.fits"
     else:
         maskfile = None
 
