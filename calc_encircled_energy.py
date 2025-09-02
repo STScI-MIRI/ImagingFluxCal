@@ -121,11 +121,12 @@ if __name__ == "__main__":
             imgfile_bkg = None
 
         cphot = aper_image(
-            filename, crad, annrad, 1.0, imgfile=imgfile, override_center=ncenter,
+            filename, cfilter, crad, annrad, 1.0, imgfile=imgfile, override_center=ncenter,
         )
 
         cphot_bkg = aper_image(
             filename_bkg,
+            cfilter,
             crad,
             annrad,
             1.0,
