@@ -376,6 +376,7 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
        apfilter = repfilter[filter]
     else:
         apfilter = filter
+    print(apfilter)
     gval = (
         (tab["filter"] == apfilter.split("_")[0])
         & (tab["eefraction"] == eefraction)
