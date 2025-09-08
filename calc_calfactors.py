@@ -642,14 +642,50 @@ def plot_calfactors(
 
     # get the current pipeline calibration factor and plot
     if showcurval:
-        # cftab = QTable.read("CalFactors/jwst_miri_photom_0079.fits")
         cftab = QTable.read("CalFactors/jwst_miri_photom_0218.fits", hdu=1)
         pipe_endoflife = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
         cftab_time = QTable.read("CalFactors/jwst_miri_photom_0218.fits", hdu=2)
         pipe_amp = cftab_time["amplitude"][cftab["filter"] == filter.split("_")[0]][0]
+        pipe_tau = cftab_time["tau"][cftab["filter"] == filter.split("_")[0]][0]
         pipe_cfactor = pipe_endoflife + pipe_amp
-        print(f"{filter} & {pipe_cfactor:.4f} & {meanval:.4f} &  {(100. * (meanval - pipe_cfactor) / pipe_cfactor):.2f} \\\\")
         ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
+
+        if (xaxisval == "timemid") & applytime:
+            pxvals = np.arange(0, max(xvals))
+            oldmod = models.Exponential1D(tau=-1.0 * pipe_tau, amplitude=pipe_amp) + models.Const1D(
+                amplitude=pipe_endoflife
+            )
+
+            # determine the range of change
+            oldvals = oldmod(pxvals)
+            ax.plot(pxvals, oldvals, "k:")
+
+
+            if filter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
+                repstr = "_bkgsub"
+            else:
+                repstr = ""
+            ffilename = f"CalFacs/miri_calfactors{repstr}_repeat_{filter}_fit.dat"
+            ntab = QTable.read(ffilename, format="ascii.commented_header")
+            time_lossperyear = ntab[f"fit_linear_lossperyear_{filter}"][0]
+            time_amp = ntab[f"fit_exp_amp_{filter}"][0]
+            time_tau = ntab[f"fit_exp_tau_{filter}"][0]
+            time_const = ntab[f"fit_exp_const_{filter}"][0]
+            ncfac_linear = 1.0 + time_lossperyear * (
+                (pxvals) / 365.0
+            )
+            ncfac_exp = (
+                time_amp
+                * np.exp((pxvals) / time_tau)
+                + time_const
+            )
+
+            newvals = meanval / (ncfac_linear * ncfac_exp)
+            ax.plot(pxvals, newvals, "k--")
+
+            pchange = 100.0 * (newvals - oldvals) / oldvals
+
+            print(f"{filter} & {min(pchange):.2f} to {max(pchange):.2f} \\\\")
 
     # now make the plot nice
     if xaxisval == "timemid":
