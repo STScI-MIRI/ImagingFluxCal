@@ -159,6 +159,20 @@ if __name__ == "__main__":
         xvals = cfacs[2][~gvals]
         subarrs = cfacs[3][~gvals]
 
+        # flip the CF to get the equivalent of flux
+        # changed 27 Aug 2025 to make it straightforward to get the time dependence
+        # separate from the overall calibration factor.  Needed for new photom ref file format.
+        yvals_unc = yvals_unc / yvals
+        yvals = 1.0 / yvals
+        yvals_unc *= yvals
+
+        # correct the few subarray obs to SUB256 (most obs)
+        findxs, = np.where(subarrs != "SUB256")
+        for kk in findxs:
+            yvals[kk] *= (subarr_cor["SUB256"] / subarr_cor[subarrs[kk]])
+            yvals_unc[kk] *= (subarr_cor["SUB256"] / subarr_cor[subarrs[kk]])
+            print(f"{cfilter}: correcting {subarrs[kk]} to SUB256, date = {xvals[kk]:.1f}")
+
         # now get the two stars that we repeated twice to fill in the time gap
         for stype, sname in zip(["SolarAnalogs", "ADwarfs"], ["HD 37962", "del UMi"]):
             cfacs2 = get_calfactors(
@@ -176,6 +190,11 @@ if __name__ == "__main__":
                 nyvals_unc = cfacs2[1][nvals]
                 nsubarrs = cfacs2[3][nvals]
 
+                # flip to get the equivalent of flux
+                nyvals_unc = nyvals_unc / nyvals
+                nyvals = 1.0 / nyvals
+                nyvals_unc *= nyvals
+
                 # find the value of BD+60 1753 that is closest to the last value
                 # use this value to adjust the new star to be on the same scale
                 #    later interpolate between values
@@ -186,17 +205,6 @@ if __name__ == "__main__":
                 yvals_unc = np.append(yvals_unc, nyvals_unc)
                 xvals = np.append(xvals, nxvals)
                 subarrs = np.append(subarrs, nsubarrs)
-
-        # flip the CF to get the equivalent of flux
-        # changed 27 Aug 2025 to make it straightforward to get the time dependence
-        # separate from the overall calibration factor.  Needed for new photom ref file format.
-        yvals_unc = yvals_unc / yvals
-        yvals = 1.0 / yvals
-        yvals_unc *= yvals
-
-        # correct the few FULL obs to SUB256 (most obs)
-        fvals = subarrs == "FULL"
-        yvals[fvals] *= subarr_cor["SUB256"]
 
         # ignore the bad data point for F770W
         # if cfilter == "F770W":
@@ -264,7 +272,7 @@ if __name__ == "__main__":
         if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
             mod_init3[0].tau.fixed = True
         else:
-            mod_init3[0].tau.bounds = [-200.0, 100.0]
+            mod_init3[0].tau.bounds = [-400.0, 100.0]
 
         mod_init4 = (
             models.Exponential1D(tau=-100.0, amplitude=-0.2)
@@ -441,7 +449,7 @@ if __name__ == "__main__":
 
     ax.legend(fontsize=0.7 * fontsize, ncol=2)
 
-    ax.set_ylim(0.9, 3.6)
+    #ax.set_ylim(0.9, 3.6)
     ntvals = np.arange(0, max(fitx) + 50, 100)
     ax.set_xticks(ntvals)
     ax.set_xticklabels(
