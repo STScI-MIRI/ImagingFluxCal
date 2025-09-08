@@ -199,7 +199,13 @@ if __name__ == "__main__":
         yvals[fvals] *= subarr_cor["SUB256"]
 
         # ignore the bad data point for F770W
-        gvals = abs(xvals - (60070.0 - startday)) > 20.0
+        # if cfilter == "F770W":
+        #     gvals = abs(xvals - (60070.0 - startday)) > 20.0
+        #     print(gvals)
+        if cfilter == "F1800W":
+            gvals = abs(xvals - 40.0) > 3.0
+        else:
+            gvals = [True] * len(xvals)
 
         fitx = xvals[gvals]
         fity = yvals[gvals]
@@ -209,9 +215,9 @@ if __name__ == "__main__":
         meanval = np.average(yvals)
         yvals = yvals / meanval
         yvals_unc = yvals_unc / meanval
-        sindxs = np.argsort(xvals)
+        sindxs2 = np.argsort(xvals)
         yoff0 = k * 0.25
-        ydiff0 = np.average(yvals) - np.average(yvals[sindxs[-5:]])
+        ydiff0 = np.average(yvals) - np.average(yvals[sindxs2[-5:]])
         yoff = yoff0 + ydiff0
         yoff2 = k * 0.12
         if cfilter == "F2550W":
@@ -219,8 +225,9 @@ if __name__ == "__main__":
         else:
             lname = None
         ax.errorbar(
-            xvals, yvals + yoff, yerr=yvals_unc, fmt="ko", alpha=0.5, label=lname
+            xvals[gvals], yvals[gvals] + yoff, yerr=yvals_unc[gvals], fmt="ko", alpha=0.5, label=lname
         )
+
         ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
         axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
 
@@ -251,12 +258,13 @@ if __name__ == "__main__":
         #              + (models.Linear1D(slope=-0.5, intercept=1.0)
         #              + models.Const1D(amplitude=1.0)))
         # mod_init3[1].intercept.fixed = True
+        # mod_init3[0].amplitude.bounds = [0.0, None]
         mod_init3[1].slope.bounds = [None, 0.0]
         # mod_init3[0].amplitude.bounds = [0.0, None]
         if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
             mod_init3[0].tau.fixed = True
         else:
-            mod_init[0].tau.bounds = [-200.0, 100.0]
+            mod_init3[0].tau.bounds = [-200.0, 100.0]
 
         mod_init4 = (
             models.Exponential1D(tau=-100.0, amplitude=-0.2)
@@ -356,9 +364,9 @@ if __name__ == "__main__":
                 ax.plot(pxvals, modvals + yoff, f"{ccol}-", label=lname)
                 modxvals = mod_fit(xvals) / meanval
                 axs[1].errorbar(
-                    xvals,
-                    (yvals - modxvals) + yoff2,
-                    yerr=yvals_unc,
+                    xvals[gvals],
+                    (yvals[gvals] - modxvals[gvals]) + yoff2,
+                    yerr=yvals_unc[gvals],
                     fmt=f"{ccol}o",
                     alpha=0.5,
                 )

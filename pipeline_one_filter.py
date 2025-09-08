@@ -179,7 +179,7 @@ if __name__ == "__main__":
                     ndir,
                     logfile=f"{cbase}.cfg",
                     flatfile=flatfile,
-                    photomfile="../Photom/jwst_miri_photom_flight_31jul24.fits",
+                    photomfile="../Photom/jwst_miri_photom_flight_28aug25.fits",
                 )
 
             if args.bkgsub:

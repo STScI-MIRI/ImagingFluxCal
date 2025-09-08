@@ -447,6 +447,8 @@ def plot_calfactors(
     # use sigma clipping to remove the extreme outliers
     if filter == "FND":
         sigcut = 3.5
+    elif filter == "F560W":
+        sigcut = 3.0
     else:
         sigcut = 3.5
 
@@ -646,6 +648,7 @@ def plot_calfactors(
         cftab_time = QTable.read("CalFactors/jwst_miri_photom_0218.fits", hdu=2)
         pipe_amp = cftab_time["amplitude"][cftab["filter"] == filter.split("_")[0]][0]
         pipe_cfactor = pipe_endoflife + pipe_amp
+        print(f"{filter} & {pipe_cfactor:.4f} & {meanval:.4f} &  {(100. * (meanval - pipe_cfactor) / pipe_cfactor):.2f} \\\\")
         ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
 
     # now make the plot nice
