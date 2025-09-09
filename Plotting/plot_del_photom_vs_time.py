@@ -36,7 +36,7 @@ if __name__ == "__main__":
              "Photom/jwst_miri_photom_flight_09sep25.fits",
             ]
     dates = ["2022-06", "2023-09", "2024-08", "2025-09"]
-    cols = ["b", "c", "g", "r"]
+    cols = ["b", "c", "g", "m"]
 
     xtick_num = []
     xtick_txt = []
@@ -82,17 +82,17 @@ if __name__ == "__main__":
                         amp = cftab_time["amplitude"][cftab["filter"] == cfilter][0]
                         startval = pipe_cfactor + amp
                         endval = pipe_cfactor
-                    ax.plot([fvals[k] + ll * delt], [startval], f"{cols[ll]}o")
-                    ax.errorbar(fvals[k] + ll * delt, endval, yerr=pipe_unc, fmt=f"{cols[ll]}o", fillstyle="none")
+                    ax.plot([fvals[k] + ll * delt], [startval], f"{cols[ll]}o", alpha=0.5)
+                    ax.errorbar(fvals[k] + ll * delt, endval, yerr=pipe_unc, fmt=f"{cols[ll]}o", fillstyle="none", alpha=0.5)
 
                     ax.plot(np.array([1.0, 1.0]) * (fvals[k] + ll * delt), [endval, startval],
                             f"{cols[ll]}-", alpha=0.5)
                 else:
-                    ax.errorbar(fvals[k] + ll * delt, pipe_cfactor, yerr=pipe_unc, fmt=f"{cols[ll]}o")
+                    ax.errorbar(fvals[k] + ll * delt, pipe_cfactor, yerr=pipe_unc, fmt=f"{cols[ll]}o", alpha=0.5)
 
                 if ll == 2:
                     ax.plot(cfilter, [100.0])
-                    ax.plot(np.array([1.0, 1.0])*(fvals[k] - delt), [0.0, 100.0], "k:", alpha=0.7)
+                    ax.plot(np.array([1.0, 1.0])*(fvals[k] - delt), [0.0, 100.0], "k:", alpha=0.5)
 
     axs[0].tick_params(axis='x', labelrotation=60)
     axs[1].tick_params(axis='x', labelrotation=60)
