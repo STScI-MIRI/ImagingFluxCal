@@ -278,6 +278,7 @@ def aper_image(
     )
     phot["x_offset_from_expected"] = xoff * u.pixel
     phot["y_offset_from_expected"] = yoff * u.pixel
+    phot["photmjysr"] = photmjysr
 
     if imgfile is not None:
         # show an image of the source and apertures used

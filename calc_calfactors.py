@@ -105,6 +105,7 @@ def get_calfactors(
     cfactors = []
     cfactors_unc = []
     subarrs = []
+    pipecf = []
     for k, cname in enumerate(obstab["name"]):
         if cname == "J1802271":
             cname = "2MASS J18022716+6043356"
@@ -172,6 +173,8 @@ def get_calfactors(
             cfactors.append(cfactor)
             cfactors_unc.append(cfactor_unc)
             subarrs.append(obstab["subarray"][k])
+            if "photmysr" in obstab.keys():
+                pipecf.append(obstab["photmjysr"][k])
 
     if xaxisval == "timemid":
         xvals = np.array(xvals) - startday
@@ -191,7 +194,7 @@ def get_calfactors(
         subarrs = subarrs[sindxs]
         names = names[sindxs]
 
-    res = (cfactors, cfactors_unc, xvals, subarrs, names)
+    res = (cfactors, cfactors_unc, xvals, subarrs, names, pipecf)
     return res
 
 
@@ -330,6 +333,7 @@ def plot_calfactors(
     allfacuncs = []
     allnames = []
     allsubarr = []
+    allpipecfs = []
     xvals = []
     pxvals = []
     meanfull = None
@@ -355,6 +359,7 @@ def plot_calfactors(
             xvals.append(cfacs[2])
             allnames.append(cfacs[4])
             allsubarr.append(cfacs[3])
+            allpipecfs.append(cfacs[5])
             cpxvals = []
             for cfactor, cfactor_unc, xval, subarray, cname in zip(
                 cfacs[0], cfacs[1], cfacs[2], cfacs[3], cfacs[4]
@@ -423,6 +428,7 @@ def plot_calfactors(
     allfacuncs = np.concatenate(allfacuncs)
     allnames = np.concatenate(allnames)
     allsubarr = np.concatenate(allsubarr)
+    allpipecfs = np.concatenate(allpipecfs)
     xvals = np.concatenate(xvals)
     pxvals = np.concatenate(pxvals)
 
@@ -584,9 +590,9 @@ def plot_calfactors(
             ha="right",
         )
 
-        # now see if we can derive the function to remove the trend
-        # mod_div = (mod_fit[0].amplitude.value - mod_fit(pxvals))
-        # print(mod_div)
+        # plot the calibration factors from the pipeline
+        # useful to check if the pipeline is reading the photom file correctly
+        ax.plot(xvals, allpipecfs, "co")
 
     # fit a line
     if fitline:
@@ -650,7 +656,7 @@ def plot_calfactors(
         pipe_cfactor = pipe_endoflife + pipe_amp
         ax.axhline(y=pipe_cfactor, color="b", linestyle="--", alpha=0.5)
 
-        if (xaxisval == "timemid") & applytime:
+        if (xaxisval == "timemid"):
             pxvals = np.arange(0, max(xvals))
             oldmod = models.Exponential1D(tau=-1.0 * pipe_tau, amplitude=pipe_amp) + models.Const1D(
                 amplitude=pipe_endoflife
@@ -660,6 +666,15 @@ def plot_calfactors(
             oldvals = oldmod(pxvals)
             ax.plot(pxvals, oldvals, "k:")
 
+            cftab = QTable.read("Photom/jwst_miri_photom_flight_28aug25.fits", hdu=1)
+            cftab_time = QTable.read("Photom/jwst_miri_photom_flight_28aug25.fits", hdu=2)
+            cftab_time2 = QTable.read("Photom/jwst_miri_photom_flight_28aug25.fits", hdu=3)
+            file_cfactor = cftab["photmjsr"][cftab["filter"] == filter][0]
+            file_amp = cftab_time2["amplitude"][cftab["filter"] == filter][0]
+            file_const = cftab_time2["const"][cftab["filter"] == filter][0]
+            file_tau = cftab_time2["tau"][cftab["filter"] == filter][0]
+            file_t0 = cftab_time2["t0"][cftab["filter"] == filter][0]
+            file_lossperyear = cftab_time["lossperyear"][cftab["filter"] == filter][0]
 
             if filter in ["F2550W", "F1065C", "F1140C", "F1550C", "F2300C"]:
                 repstr = "_bkgsub"
@@ -668,24 +683,28 @@ def plot_calfactors(
             ffilename = f"CalFacs/miri_calfactors{repstr}_repeat_{filter}_fit.dat"
             ntab = QTable.read(ffilename, format="ascii.commented_header")
             time_lossperyear = ntab[f"fit_linear_lossperyear_{filter}"][0]
-            time_amp = ntab[f"fit_exp_amp_{filter}"][0]
-            time_tau = ntab[f"fit_exp_tau_{filter}"][0]
-            time_const = ntab[f"fit_exp_const_{filter}"][0]
-            ncfac_linear = 1.0 + time_lossperyear * (
-                (pxvals) / 365.0
+
+            print(file_lossperyear, time_lossperyear)
+
+            ncfac_linear = 1.0 - (file_lossperyear * (
+                (pxvals) / 365.0)
             )
             ncfac_exp = (
-                time_amp
-                * np.exp((pxvals) / time_tau)
-                + time_const
+                file_amp
+                * np.exp(-1.0 * (pxvals) / file_tau)
+                + file_const
             )
 
-            newvals = meanval / (ncfac_linear * ncfac_exp)
+            newvals = file_cfactor / (ncfac_linear * ncfac_exp)
             ax.plot(pxvals, newvals, "k--")
 
             pchange = 100.0 * (newvals - oldvals) / oldvals
 
             print(f"{filter} & {min(pchange):.2f} to {max(pchange):.2f} \\\\")
+
+            # plot the calibration factors from the pipeline
+            # useful to check if the pipeline is reading the photom file correctly
+            ax.plot(xvals, allpipecfs, "co")
 
     # now make the plot nice
     if xaxisval == "timemid":
