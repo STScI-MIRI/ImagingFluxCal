@@ -592,7 +592,8 @@ def plot_calfactors(
 
         # plot the calibration factors from the pipeline
         # useful to check if the pipeline is reading the photom file correctly
-        ax.plot(xvals, allpipecfs, "co")
+        if len(allpipecfs) > 0:
+            ax.plot(xvals, allpipecfs, "co")
 
     # fit a line
     if fitline:
@@ -664,7 +665,6 @@ def plot_calfactors(
 
             # determine the range of change
             oldvals = oldmod(pxvals)
-            ax.plot(pxvals, oldvals, "k:")
 
             cftab = QTable.read("Photom/jwst_miri_photom_flight_28aug25.fits", hdu=1)
             cftab_time = QTable.read("Photom/jwst_miri_photom_flight_28aug25.fits", hdu=2)
@@ -684,8 +684,6 @@ def plot_calfactors(
             ntab = QTable.read(ffilename, format="ascii.commented_header")
             time_lossperyear = ntab[f"fit_linear_lossperyear_{filter}"][0]
 
-            print(file_lossperyear, time_lossperyear)
-
             ncfac_linear = 1.0 - (file_lossperyear * (
                 (pxvals) / 365.0)
             )
@@ -696,15 +694,19 @@ def plot_calfactors(
             )
 
             newvals = file_cfactor / (ncfac_linear * ncfac_exp)
-            ax.plot(pxvals, newvals, "k--")
 
             pchange = 100.0 * (newvals - oldvals) / oldvals
 
-            print(f"{filter} & {min(pchange):.2f} to {max(pchange):.2f} \\\\")
+            print(f"{filter} & {min(pchange):.2f} & {max(pchange):.2f} \\\\")
 
-            # plot the calibration factors from the pipeline
-            # useful to check if the pipeline is reading the photom file correctly
-            ax.plot(xvals, allpipecfs, "co")
+            if not applytime:
+                ax.plot(pxvals, oldvals, "k:")
+                ax.plot(pxvals, newvals, "k--")
+
+                # plot the calibration factors from the pipeline
+                # useful to check if the pipeline is reading the photom file correctly
+                if len(allpipecfs) > 0:
+                    ax.plot(xvals, allpipecfs, "co")
 
     # now make the plot nice
     if xaxisval == "timemid":

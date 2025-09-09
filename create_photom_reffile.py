@@ -148,7 +148,7 @@ if __name__ == "__main__":
                                   timecoeff_linear=data_time_linear)
     d1 = datetime.datetime
     new_model.meta.date = d1.isoformat(d1.today())
-    new_model.meta.filename = f"jwst_miri_photom_08sep25.fits"
+    new_model.meta.filename = f"jwst_miri_photom_09sep25.fits"
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
@@ -168,4 +168,4 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "fits to the time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_08sep25.fits")
+    new_model.save(f"Photom/jwst_miri_photom_flight_09sep25.fits")
