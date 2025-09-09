@@ -173,7 +173,7 @@ def get_calfactors(
             cfactors.append(cfactor)
             cfactors_unc.append(cfactor_unc)
             subarrs.append(obstab["subarray"][k])
-            if "photmysr" in obstab.keys():
+            if "photmjysr" in obstab.keys():
                 pipecf.append(obstab["photmjysr"][k])
 
     if xaxisval == "timemid":
