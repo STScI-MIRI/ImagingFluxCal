@@ -131,7 +131,7 @@ if __name__ == "__main__":
             applysubarrcor=args.subarrcor,
             savefile=savefacs,
             showleg=False,
-            showcurval=True,
+            showcurval=False,
             bkgsub=bkgsub,
             applytime=applytime,
             grieke=args.grieke,
