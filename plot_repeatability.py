@@ -131,6 +131,9 @@ if __name__ == "__main__":
 
     print("filter, linear lossperyear, exp const, exp amp, exp tau")
 
+    cov_time = []
+    cov_delta = []
+
     ax = axs[0]
     startday = 59720
     for k, cfilter in enumerate(filters):
@@ -167,11 +170,13 @@ if __name__ == "__main__":
         yvals_unc *= yvals
 
         # correct the few subarray obs to SUB256 (most obs)
-        findxs, = np.where(subarrs != "SUB256")
+        (findxs,) = np.where(subarrs != "SUB256")
         for kk in findxs:
-            yvals[kk] *= (subarr_cor["SUB256"] / subarr_cor[subarrs[kk]])
-            yvals_unc[kk] *= (subarr_cor["SUB256"] / subarr_cor[subarrs[kk]])
-            print(f"{cfilter}: correcting {subarrs[kk]} to SUB256, date = {xvals[kk]:.1f}")
+            yvals[kk] *= subarr_cor["SUB256"] / subarr_cor[subarrs[kk]]
+            yvals_unc[kk] *= subarr_cor["SUB256"] / subarr_cor[subarrs[kk]]
+            print(
+                f"{cfilter}: correcting {subarrs[kk]} to SUB256, date = {xvals[kk]:.1f}"
+            )
 
         # now get the two stars that we repeated twice to fill in the time gap
         for stype, sname in zip(["SolarAnalogs", "ADwarfs"], ["HD 37962", "del UMi"]):
@@ -233,7 +238,12 @@ if __name__ == "__main__":
         else:
             lname = None
         ax.errorbar(
-            xvals[gvals], yvals[gvals] + yoff, yerr=yvals_unc[gvals], fmt="ko", alpha=0.5, label=lname
+            xvals[gvals],
+            yvals[gvals] + yoff,
+            yerr=yvals_unc[gvals],
+            fmt="ko",
+            alpha=0.5,
+            label=lname,
         )
 
         ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
@@ -396,6 +406,10 @@ if __name__ == "__main__":
                     fontsize=0.8 * fontsize,
                 )
 
+                # save the deltas for covariance analysis
+                cov_time.append(xvals[gvals])
+                cov_delta.append(yvals[gvals] - modxvals[gvals])
+
             if args.show_prev & (cname == "exp"):
                 amp = cftab_time["amplitude"][cftab["filter"] == cfilter][0]
                 tau = cftab_time["tau"][cftab["filter"] == cfilter][0]
@@ -447,9 +461,47 @@ if __name__ == "__main__":
         #         f"{100.0 * (predy[2] - predy[1]) / 3.0:.3f}%/year",
         #     )
 
+    # covariance calcuation
+
+    # first get the days where there are observations in multiple bands
+    nfilters = len(filters)
+    cov_sums = np.zeros((nfilters, nfilters))
+    cov_num = np.zeros((nfilters, nfilters))
+    for j, cday in enumerate(pxvals):
+        tdelts = np.zeros(nfilters)
+        tdata = np.full(nfilters, False)
+        for k, cfilter in enumerate(filters):
+            cvals = (cov_time[k] >= cday) & (cov_time[k] < (cday + 1.0))
+            if np.sum(cvals) == 1:
+                tdelts[k] = cov_delta[k][cvals][0]
+                tdata[k] = True
+            elif np.sum(cvals) > 1:
+                print(f"cov calculation: {cfilter}: more than one for day = {cday}")
+        # accumulate covariance sums
+        if np.sum(tdelts) > 0:
+            for l in range(nfilters):
+                for m in range(nfilters):
+                    if tdata[l] & tdata[m]:
+                        cov_sums[l, m] += tdelts[l] * tdelts[m]
+                        cov_num[l, m] += 1.0
+    cov_matrix = cov_sums / (cov_num - 1.0)
+    # correlation matrix
+    cor_matrix = np.zeros((nfilters, nfilters))
+    for l in range(nfilters):
+        for m in range(nfilters):
+            cor_matrix[l, m] = cov_matrix[l, m] / (
+                np.sqrt(cov_matrix[l, l]) * np.sqrt(cov_matrix[m, m])
+            )
+
+    np.set_printoptions(precision=2)
+    print(filters)
+    print(cor_matrix)
+
+    # plot details
+
     ax.legend(fontsize=0.7 * fontsize, ncol=2)
 
-    #ax.set_ylim(0.9, 3.6)
+    ax.set_ylim(0.9, 3.6)
     ntvals = np.arange(0, max(fitx) + 50, 100)
     ax.set_xticks(ntvals)
     ax.set_xticklabels(
