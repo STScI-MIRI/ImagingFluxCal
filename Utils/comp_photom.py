@@ -23,4 +23,4 @@ if __name__ == "__main__":
             gvals2 = (cftab2["filter"] == cfilter) & (cftab2["subarray"] == csubarr)
             fac1 = cftab1[gvals1]["photmjsr"].value[0]
             fac2 = cftab2[gvals2]["photmjsr"].value[0]
-            print(fac1/fac2, cfilter, csubarr)
+            print(fac1/fac2, cfilter, csubarr, fac2)
