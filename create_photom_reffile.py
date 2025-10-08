@@ -101,7 +101,7 @@ if __name__ == "__main__":
         print(f"{cfilter} & {cfac_ave:.4f} & {slope:.4f} & {amp:.4f} & {tau:.1f} & {const:.4f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         for csub in subarray_values:
-            data_list.append((cfilter, csub, cfac_ave * subarr_cor[csub], cfac_unc * subarr_cor[csub]))
+            data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
             data_list_time_exp.append((cfilter, csub, amp, tau, startday, const))
             data_list_time_linear.append((cfilter, csub, startday, slope))
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
                                   timecoeff_linear=data_time_linear)
     d1 = datetime.datetime
     new_model.meta.date = d1.isoformat(d1.today())
-    new_model.meta.filename = f"jwst_miri_photom_10sep25.fits"
+    new_model.meta.filename = f"jwst_miri_photom_8oct25.fits"
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
@@ -168,4 +168,4 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "fits to the time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_10sep25.fits")
+    new_model.save(f"Photom/jwst_miri_photom_flight_8oct25.fits")
