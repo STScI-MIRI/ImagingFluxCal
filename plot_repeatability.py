@@ -344,7 +344,7 @@ if __name__ == "__main__":
                 )
 
             pxvals = np.arange(0, max(fitx))
-            modvals = mod_fit(pxvals) / np.average(mod_fit(xvals))
+            modvals = mod_fit(pxvals)
 
             show_plot = False
             if args.docs:
@@ -359,7 +359,7 @@ if __name__ == "__main__":
                 lname = None
 
             if cname == "exp+line":
-                bpredx = [min(fitx), max(fitx)]
+                bpredx = [0, max(fitx)]
                 bvals = mod_fit(bpredx)
                 per_decrease = 100.0 * (bvals[1] - bvals[0]) / bvals[0]
             else:
@@ -367,14 +367,15 @@ if __name__ == "__main__":
 
             if show_plot:
                 # plot the data
-                meanval = np.average(yvals)
+                # meanval = np.average(yvals)
+                meanval = bvals[0]
                 yvals = yvals / meanval
                 yvals_unc = yvals_unc / meanval
                 sindxs2 = np.argsort(xvals)
                 yoff0 = k * 0.25
                 ydiff0 = np.average(yvals) - np.average(yvals[sindxs2])
                 if args.report:
-                    yoff = ydiff0 + per_decrease / 100.0
+                    yoff = 0.0
                 else:
                     yoff = yoff0 + ydiff0
                 if args.report:
@@ -400,7 +401,7 @@ if __name__ == "__main__":
                 axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
 
             if show_plot:
-                ax.plot(pxvals, modvals + yoff, color=pcols[k], linestyle="-", label=lname)
+                ax.plot(pxvals, modvals / bvals[0] + yoff, color=pcols[k], linestyle="-", label=lname)
                 modxvals = mod_fit(xvals) / meanval
 
             # show the delta change
@@ -533,7 +534,7 @@ if __name__ == "__main__":
         ax.legend(fontsize=0.7 * fontsize, ncol=2)
 
     if args.report:
-        ax.set_ylim(0.65, 1.04)
+        ax.set_ylim(0.72, 1.035)
     else:
         ax.set_ylim(0.9, 3.6)
     ntvals = np.arange(0, max(fitx) + 50, 100)
