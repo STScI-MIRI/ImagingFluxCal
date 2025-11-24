@@ -81,6 +81,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--docs", help="include only exp+line model", action="store_true"
     )
+    parser.add_argument("--report", help="for regular reporting", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -136,6 +137,10 @@ if __name__ == "__main__":
 
     ax = axs[0]
     startday = 59720
+    pcols = ["violet", "blueviolet", "blue",
+             "limegreen", "green",
+             "orange", "orangered",
+             "firebrick", "red"]
     for k, cfilter in enumerate(filters):
         if cfilter == "F2550W":
             bkgsub = True
@@ -224,31 +229,6 @@ if __name__ == "__main__":
         fity = yvals[gvals]
         sindxs = np.argsort(fitx)
 
-        # plot the data
-        meanval = np.average(yvals)
-        yvals = yvals / meanval
-        yvals_unc = yvals_unc / meanval
-        sindxs2 = np.argsort(xvals)
-        yoff0 = k * 0.25
-        ydiff0 = np.average(yvals) - np.average(yvals[sindxs2[-5:]])
-        yoff = yoff0 + ydiff0
-        yoff2 = k * 0.12
-        if cfilter == "F2550W":
-            lname = "data"
-        else:
-            lname = None
-        ax.errorbar(
-            xvals[gvals],
-            yvals[gvals] + yoff,
-            yerr=yvals_unc[gvals],
-            fmt="ko",
-            alpha=0.5,
-            label=lname,
-        )
-
-        ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
-        axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
-
         # setup the fitting
         fit = fitting.LevMarLSQFitter()
         mod_init = models.Exponential1D(tau=-200.0, amplitude=-0.2) + models.Const1D(
@@ -325,7 +305,7 @@ if __name__ == "__main__":
             allnparam += [5]
             pcol += ["c"]
 
-        sigtext = ""
+        sigtext = f"{cfilter}: "
         for cname, cmod, cparam, ccol in zip(modnames, allmods, allnparam, pcol):
 
             mod_fit = fit(cmod, fitx[sindxs], fity[sindxs])
@@ -378,33 +358,82 @@ if __name__ == "__main__":
             else:
                 lname = None
 
-            if show_plot:
-                ax.plot(pxvals, modvals + yoff, f"{ccol}-", label=lname)
-                modxvals = mod_fit(xvals) / meanval
-                axs[1].errorbar(
-                    xvals[gvals],
-                    (yvals[gvals] - modxvals[gvals]) + yoff2,
-                    yerr=yvals_unc[gvals],
-                    fmt=f"{ccol}o",
-                    alpha=0.5,
-                )
-                sigtext = rf"{sigtext}$\sigma$({cname})={per_dev:.2f}% "
-
-            # show the delta change
             if cname == "exp+line":
                 bpredx = [min(fitx), max(fitx)]
                 bvals = mod_fit(bpredx)
                 per_decrease = 100.0 * (bvals[1] - bvals[0]) / bvals[0]
+            else:
+                per_decrease = 0.0
+
+            if show_plot:
+                # plot the data
+                meanval = np.average(yvals)
+                yvals = yvals / meanval
+                yvals_unc = yvals_unc / meanval
+                sindxs2 = np.argsort(xvals)
+                yoff0 = k * 0.25
+                ydiff0 = np.average(yvals) - np.average(yvals[sindxs2])
+                if args.report:
+                    yoff = ydiff0 + per_decrease / 100.0
+                else:
+                    yoff = yoff0 + ydiff0
+                if args.report:
+                    yoff2 = 1.0 - k * 0.06
+                else:
+                    yoff2 = 1.0 - k * 0.12
+                if cfilter == "F2550W":
+                    lname = "data"
+                else:
+                    lname = None
+                ax.errorbar(
+                    xvals[gvals],
+                    yvals[gvals] + yoff,
+                    yerr=yvals_unc[gvals],
+                    color=pcols[k],
+                    marker="o",
+                    linestyle="none",
+                    alpha=0.5,
+                    label=lname,
+                )
+
+                ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
+                axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
+
+            if show_plot:
+                ax.plot(pxvals, modvals + yoff, color=pcols[k], linestyle="-", label=lname)
+                modxvals = mod_fit(xvals) / meanval
+
+            # show the delta change
+            if cname == "exp+line":
 
                 shifty = 0.05
-                ax.text(425.0, 1.0 + yoff + shifty, cfilter)
-                ax.text(
-                    0.0,
-                    yoff + shifty + 0.03 + modvals[0],
-                    rf"$\Delta$={-1.*per_decrease:.1f}%",
-                    backgroundcolor="w",
-                    fontsize=0.8 * fontsize,
+                if not args.report:
+                    ax.text(425.0, 1.0 + yoff + shifty, cfilter)
+                    ax.text(
+                        0.0,
+                        yoff + shifty + 0.03 + modvals[0],
+                        rf"$\Delta$={-1.*per_decrease:.1f}%",
+                        backgroundcolor="w",
+                        fontsize=0.8 * fontsize,
+                    )
+                else:
+                    sigtext = rf"{sigtext}; $\Delta$={-1.*per_decrease:.1f}%; "
+
+                if args.report:
+                    tcol = pcols[k]
+                else:
+                    tcol = ccol
+
+                axs[1].errorbar(
+                    xvals[gvals],
+                    (yvals[gvals] - modxvals[gvals]) + yoff2,
+                    yerr=yvals_unc[gvals],
+                    color=tcol,
+                    marker="o",
+                    linestyle="none",
+                    alpha=0.5,
                 )
+                sigtext = rf"{sigtext}$\sigma$({cname})={per_dev:.2f}% "
 
                 # save the deltas for covariance analysis
                 cov_time.append(xvals[gvals])
@@ -433,13 +462,14 @@ if __name__ == "__main__":
                 ax.plot(pxvals, modvals + yoff + extoff, "b:", label=tlab)
 
         # show percentage sigma text on diff plot
-        shifty2 = 0.04
+        shifty2 = 0.02
         axs[1].text(
             100.0,
             yoff2 + shifty2,
             sigtext,
-            backgroundcolor="w",
-            fontsize=0.6 * fontsize,
+            color=pcols[k],
+            backgroundcolor="none",
+            fontsize=0.8 * fontsize,
         )
 
         # # predict the throughput in 3 and 6 years
@@ -499,9 +529,13 @@ if __name__ == "__main__":
 
     # plot details
 
-    ax.legend(fontsize=0.7 * fontsize, ncol=2)
+    if not args.report:
+        ax.legend(fontsize=0.7 * fontsize, ncol=2)
 
-    ax.set_ylim(0.9, 3.6)
+    if args.report:
+        ax.set_ylim(0.65, 1.04)
+    else:
+        ax.set_ylim(0.9, 3.6)
     ntvals = np.arange(0, max(fitx) + 50, 100)
     ax.set_xticks(ntvals)
     ax.set_xticklabels(
@@ -509,12 +543,19 @@ if __name__ == "__main__":
     )
     ax.tick_params(axis="x", labelrotation=60)
     # ax.set_xlabel(f"Date")
-    ax.set_ylabel("Fractional change (+ const)")
+    if args.report:
+        ytext = "Fractional change"
+    else:
+        ytext = "Fractional change (+ const)"
+    ax.set_ylabel(ytext)
 
     axs[1].yaxis.tick_right()
     axs[1].yaxis.set_label_position("right")
     # axs[1].set_xlim(400., 800.)
-    axs[1].set_ylim(-0.04, 1.25)
+    if args.report:
+        axs[1].set_ylim(0.48, 1.04)
+    else:
+        axs[1].set_ylim(-0.04, 1.25)
     # axs[1].set_xlabel(f"Date")
 
     axs[1].set_xticks(ntvals)
@@ -536,6 +577,8 @@ if __name__ == "__main__":
     fname = "all_repeatability"
     if args.docs:
         fname = f"{fname}_docs"
+    if args.report:
+        fname = f"{fname}_report"
     if args.png:
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:
