@@ -462,6 +462,8 @@ if __name__ == "__main__":
 
                 ax.plot(pxvals, modvals + yoff + extoff, "b:", label=tlab)
 
+        sigtext = f"{sigtext}; line only %/yr = {(lossperyear * 100.0):.2f}"
+
         # show percentage sigma text on diff plot
         shifty2 = 0.02
         axs[1].text(
@@ -470,7 +472,7 @@ if __name__ == "__main__":
             sigtext,
             color=pcols[k],
             backgroundcolor="none",
-            fontsize=0.8 * fontsize,
+            fontsize=0.7 * fontsize,
         )
 
         # # predict the throughput in 3 and 6 years
