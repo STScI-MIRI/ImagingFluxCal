@@ -109,7 +109,8 @@ if __name__ == "__main__":
 
     if args.nrscd:
         print("using new rscd parameter file")
-        rscdfile = "RSCD/jwst_miri_rscd_kdg_updated.fits"
+        # rscdfile = "RSCD/jwst_miri_rscd_kdg_updated.fits"
+        rscdfile = "RSCD/MIRI_MIRIMAGE_RSCD_10.00.00.fits"
     else:
         rscdfile = None
 

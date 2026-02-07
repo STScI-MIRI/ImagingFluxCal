@@ -10,10 +10,12 @@ def miri_detector1(
     output_dir,
     jump_sigma=5.0,
     maskfile=None,
+    no_grow_saturation=False,
     reset=True,
     resetfile=None,
     darkfile=None,
     rscdfile=None,
+    bright_use_group1=False,
     linfile=None,
     save_jump_info=False,
     firstframe=True,
@@ -34,6 +36,10 @@ def miri_detector1(
     if maskfile is not None:
         det1_dict["dq_init"] = {"override_mask": maskfile}
 
+    # do not flag neighboring pixels of saturating pixels
+    if no_grow_saturation:
+        det1_dict["saturation"] = {"n_pix_grow_sat": False}
+
     # Use a custom RSCD file
     if rscdfile is not None:
         det1_dict["rscd"] = {"override_rscd": rscdfile}
@@ -51,8 +57,12 @@ def miri_detector1(
     det1_dict["emicorr"] = {"skip": True}
 
     # Use a custom RSCD file
+    det1_dict["rscd"] = {}
     if rscdfile is not None:
-        det1_dict["rscd"] = {"override_rscd": rscdfile}
+        det1_dict["rscd"]["override_rscd"] = rscdfile
+
+    if bright_use_group1:
+        det1_dict["rscd"]["bright_use_group1"] = True
 
     # Use the flight reset anomaly file
     if linfile is not None:
@@ -92,8 +102,7 @@ def miri_detector1(
     else:
         save_calibrated_ramp = False
 
-    #print(det1_dict)
-    #exit()
+    print(det1_dict)
 
     for miri_uncal_file in miri_uncal_files:
         print(miri_uncal_file)
