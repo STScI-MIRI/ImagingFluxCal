@@ -57,7 +57,8 @@ if __name__ == "__main__":
 
     pcols = {"HotStars": "b",
              "ADwarfs": "g", 
-             "SolarAnalogs": "r"}
+             "SolarAnalogs": "r",
+             "Asteroids": "k"}
 
     psubsym = {
         "FULL": "o",

@@ -407,6 +407,9 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
         else:
             loccoord = None
 
+        if subdir == "Asteroids":
+            loccoord = None
+
         one_res = aper_image(
             cfile,
             filter,
@@ -460,7 +463,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dir",
-        choices=["HotStars", "ADwarfs", "SolarAnalogs", "all"],
+        choices=["HotStars", "ADwarfs", "SolarAnalogs", "Asteroids", "all"],
         default="ADwarfs",
         help="directory to process",
     )

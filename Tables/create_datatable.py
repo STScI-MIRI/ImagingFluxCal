@@ -17,9 +17,11 @@ if __name__ == "__main__":
     filters = ["F560W", "F770W", "F1000W",
                "F1130W", "F1280W", "F1500W", "F1800W", "F2100W", "F2550W",
                "F1065C", "F1140C", "F1550C", "F2300C"]
+    filters = ["F560W"]
     # fmt: on
 
     dirs = ["HotStars", "ADwarfs", "SolarAnalogs"]
+    dirs = ["Asteroids"]
 
     colformats = {
         "name": "s",
@@ -96,8 +98,6 @@ if __name__ == "__main__":
             if os.path.isfile(fname):
 
                 tab = QTable.read(fname)
-                # print(tab.colnames)
-                # exit()
 
                 for cline in tab:
 

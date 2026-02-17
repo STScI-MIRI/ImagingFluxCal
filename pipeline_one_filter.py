@@ -67,7 +67,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dir",
-        choices=["HotStars", "ADwarfs", "SolarAnalogs", "all"],
+        choices=["HotStars", "ADwarfs", "SolarAnalogs", "Asteroids", "all"],
         default="ADwarfs",
         help="directory to process",
     )
