@@ -400,8 +400,6 @@ def plot_calfactors(
                     alpha=0.5,
                     markersize=10,
                 )
-                if shownames:
-                    ax.text(pxval, cfactor, cname, rotation=45.0)
                 # plot a red circle around those not used in the average
                 if (cname in ignore_names) or (
                     (cname == "BD+60 1753")
@@ -419,6 +417,9 @@ def plot_calfactors(
                     # ax.scatter(
                     #    [pxval], [cfactor * modfac[cname]], s=200, facecolor="k", edgecolor="m",
                     # )
+                else:
+                    if shownames:
+                        ax.text(pxval, cfactor, cname, rotation=45.0)
                 if subarray == "FULL":
                     meanfull = cfactor
             pxvals.append(cpxvals)
