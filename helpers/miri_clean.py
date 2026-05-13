@@ -575,7 +575,7 @@ def make_sky(
                 inoutimage = creg.contains(skycoord, cwcs)
                 tdata[inoutimage] = np.nan
             cdata.data = tdata
-            cdata.write(cfile.replace("cal.fits", "cal_mask.fits"))
+            cdata.save(cfile.replace("cal.fits", "cal_mask.fits"))
             # fits.writeto("test.fits", inoutimage * 1., overwrite=True)
 
         istackmed[k] = np.nanmedian(tdata)
@@ -614,7 +614,7 @@ def make_sky(
         ndata = np.isnan(cdata.data)
         cdata.data[ndata] = 0.0
         cdata.dq[ndata] = cdata.dq[ndata] & dqflags.pixel["DO_NOT_USE"]
-        cdata.write(cfile.replace("_cal.fits", "_skysub_cal.fits"))
+        cdata.save(cfile.replace("_cal.fits", "_skysub_cal.fits"))
 
     return skyflat_mean
 
