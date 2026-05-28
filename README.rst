@@ -70,12 +70,13 @@ Details
    Measures the flux using an aperture and background annulus.
    `aper_all.py` does this for all MIRI imaging and coronagraphic filters.
 
-6. Compute the sensitivity loss using the repeatability observations of 
-   BD+60 1753.  First run `plot_repeatability.py` to fit the observations with
-   an exponential model for all the Imager filters.  This produces data files
-   with the fit coeffiecients.  Then run `generate_coron_repeat_from_imager.py`
-   to create similar fit coefficient data files for the Coronagraphic filters 
-   based on interpolating the Imager results based on filter pivot wavelength.
+6. Compute the sensitivity loss using the repeatability observations of BD+60
+   1753. First run `plot_repeatability.py --docs --report` to fit the
+   observations with an exponential model for all the Imager filters. This
+   produces data files with the fit coeffiecients. Then run
+   `generate_coron_repeat_from_imager.py` to create similar fit coefficient data
+   files for the Coronagraphic filters based on interpolating the Imager results
+   based on filter pivot wavelength.
 
 7. Compute the model flux densities in all the filters: `model_fluxes.py --grieke`
 
