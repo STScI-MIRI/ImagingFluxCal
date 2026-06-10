@@ -1,6 +1,8 @@
 import numpy as np
 import datetime
 from jwst.datamodels import MirImgPhotomModel, open
+from astropy.table import QTable
+
 
 if __name__ == "__main__":
     cur_model = open("Photom/jwst_miri_photom_flight_8oct25.fits")
@@ -41,9 +43,9 @@ if __name__ == "__main__":
         dtype=[
                 ("filter", "S12"),
                 ("subarray", "S15"),
+                ("t0", "<f4"),
                 ("amplitude", "<f4"),
                 ("tau", "<f4"),
-                ("t0", "<f4"),
                 ("const", "<f4"),
         ],
     )
@@ -90,4 +92,7 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     entry = "fits to the time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_27may26.fits")
+    new_model.save("Photom/jwst_miri_photom_flight_27may26.fits")
+
+    ttab = QTable.read("Photom/jwst_miri_photom_flight_27may26.fits", hdu=3)
+    print(ttab)

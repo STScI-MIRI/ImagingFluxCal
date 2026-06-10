@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
         for csub in subarray_values:
             data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
-            data_list_time_exp.append((cfilter, csub, amp, tau, startday, const))
+            data_list_time_exp.append((cfilter, csub, startday, amp, tau, const))
             data_list_time_linear.append((cfilter, csub, startday, slope))
 
     # save time dependent coefficients
@@ -125,9 +125,9 @@ if __name__ == "__main__":
         dtype=[
                 ("filter", "S12"),
                 ("subarray", "S15"),
+                ("t0", "<f4"),
                 ("amplitude", "<f4"),
                 ("tau", "<f4"),
-                ("t0", "<f4"),
                 ("const", "<f4"),
         ],
     )
