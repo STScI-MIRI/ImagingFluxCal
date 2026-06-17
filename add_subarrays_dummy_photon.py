@@ -94,5 +94,5 @@ if __name__ == "__main__":
     new_model.history.append(entry)
     new_model.save("Photom/jwst_miri_photom_flight_27may26.fits")
 
-    ttab = QTable.read("Photom/jwst_miri_photom_flight_27may26.fits", hdu=3)
+    ttab = QTable.read("Photom/jwst_miri_photom_flight_27may26.fits", hdu=1)
     print(ttab)

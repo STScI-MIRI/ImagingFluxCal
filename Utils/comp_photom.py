@@ -3,10 +3,10 @@ from astropy.table import QTable
 
 if __name__ == "__main__":
 
-    files = ["CalFactors/jwst_miri_photom_0218.fits",
-             "Photom/jwst_miri_photom_flight_8oct25.fits",
+    files = ["CalFactors/jwst_miri_photom_0230.fits",
+             "Photom/jwst_miri_photom_flight_27may26.fits",
             ]
-    
+
 
     cftab1 = QTable.read(files[0], hdu=1)
     cftab2 = QTable.read(files[1], hdu=1)
