@@ -127,8 +127,12 @@ if __name__ == "__main__":
     if args.show_prev:
         # cftab = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=1)
         # cftab_time = QTable.read("CalFactors/jwst_miri_photom_0201.fits", hdu=2)
-        cftab = QTable.read("Photom/jwst_miri_photom_flight_30aug24.fits", hdu=1)
-        cftab_time = QTable.read("Photom/jwst_miri_photom_flight_30aug24.fits", hdu=2)
+        pname = "Photom/oct2025/jwst_miri_photom_flight_8oct25.fits"
+        cftab = QTable.read(pname, hdu=1)
+        cftab_line = QTable.read(pname, hdu=2)
+        cftab_exp = QTable.read(pname, hdu=3)
+        print(cftab_exp.colnames)
+        print(cftab_line.colnames)
 
     print("filter, linear lossperyear, exp const, exp amp, exp tau")
 
@@ -440,27 +444,22 @@ if __name__ == "__main__":
                 cov_time.append(xvals[gvals])
                 cov_delta.append(yvals[gvals] - modxvals[gvals])
 
-            if args.show_prev & (cname == "exp"):
-                amp = cftab_time["amplitude"][cftab["filter"] == cfilter][0]
-                tau = cftab_time["tau"][cftab["filter"] == cfilter][0]
-                startday = cftab_time["t0"][cftab["filter"] == cfilter][0]
-                mod_fit[0].amplitude = amp
-                mod_fit[0].tau = -1.0 * tau
-                modvals = meanval / mod_fit(pxvals)
+            if args.show_prev & (cname == "exp+line"):
+                amp = cftab_exp["amplitude"][cftab["filter"] == cfilter][0]
+                tau = cftab_exp["tau"][cftab["filter"] == cfilter][0]
+                const = cftab_exp["const"][cftab["filter"] == cfilter][0]
+                startday = cftab_exp["t0"][cftab["filter"] == cfilter][0]
+                lossperyear = cftab_line["lossperyear"][cftab["filter"] == cfilter][0]
 
-                # get the offset to match the range used for the current photom up to 800 days
-                # a better visual comparison of the change between the delivered
-                # and current time dependence
-                tmodvals = meanval / mod_fit(xvals)
-                tvals = xvals < 800.0
-                extoff = np.average(yvals[tvals] - tmodvals[tvals])
+                modvals = 1.0 - (lossperyear / 365.0) * pxvals
+                modvals *= amp * np.exp(-1.0 * (pxvals / tau)) + const
 
                 if cfilter == "F2550W":
                     tlab = "current photom"
                 else:
                     tlab = None
 
-                ax.plot(pxvals, modvals + yoff + extoff, "b:", label=tlab)
+                ax.plot(pxvals, modvals, "b:", label=tlab)
 
         sigtext = f"{sigtext}; line only %/yr = {(lossperyear * 100.0):.2f}"
 
