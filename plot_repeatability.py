@@ -445,14 +445,14 @@ if __name__ == "__main__":
                 cov_delta.append(yvals[gvals] - modxvals[gvals])
 
             if args.show_prev & (cname == "exp+line"):
-                amp = cftab_exp["amplitude"][cftab["filter"] == cfilter][0]
-                tau = cftab_exp["tau"][cftab["filter"] == cfilter][0]
-                const = cftab_exp["const"][cftab["filter"] == cfilter][0]
-                startday = cftab_exp["t0"][cftab["filter"] == cfilter][0]
-                lossperyear = cftab_line["lossperyear"][cftab["filter"] == cfilter][0]
+                famp = cftab_exp["amplitude"][cftab["filter"] == cfilter][0]
+                ftau = cftab_exp["tau"][cftab["filter"] == cfilter][0]
+                fconst = cftab_exp["const"][cftab["filter"] == cfilter][0]
+                fstartday = cftab_exp["t0"][cftab["filter"] == cfilter][0]
+                flossperyear = cftab_line["lossperyear"][cftab["filter"] == cfilter][0]
 
-                modvals = 1.0 - (lossperyear / 365.0) * pxvals
-                modvals *= amp * np.exp(-1.0 * (pxvals / tau)) + const
+                modvals = 1.0 - (flossperyear / 365.0) * pxvals
+                modvals *= famp * np.exp(-1.0 * (pxvals / ftau)) + fconst
 
                 if cfilter == "F2550W":
                     tlab = "current photom"
