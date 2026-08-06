@@ -70,6 +70,39 @@ class PowerLaw1D_Shift(Fittable1DModel):
         }
 
 
+class ExpFracChange(Fittable1DModel):
+    """
+    Exponential and Fractional change model.  Based on the compound interest equation where the compounding happens
+    daily.  A finer compounding step possible, but probably not needed.  x is assumed to be in years.
+
+    Parameters
+    ----------
+    amplitude : float
+        Model amplitude at the reference point
+    fchangeyear : float
+        fractional change per year
+
+    Notes
+    -----
+    Model formula (with :math:`A` for ``amplitude`` and :math:`\\alpha` for ``alpha``):
+
+        .. math:: f(x) = A (1 - fchange / 365) ^ {365 x}
+
+    """
+
+    eamp = Parameter(default=1, description="peak exp value at x = 0")
+    tau = Parameter(default=-200.0, description="e-folding time")
+    const = Parameter(default=0.0, description="exp const")
+    fchangeyear = Parameter(default=0.01, description="fractional change per year")
+
+    @staticmethod
+    def evaluate(x, eamp, tau, const, fchangeyear):
+        exp_part = eamp * np.exp(x / tau) + const
+        fchange_part = np.power(1 - fchangeyear / 365.0, x)
+
+        return exp_part + fchange_part
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -78,6 +111,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--line", help="include linear model", action="store_true")
     parser.add_argument("--dexp", help="include exp+exp model", action="store_true")
+    parser.add_argument(
+        "--fchange",
+        help="use fractional change model instead of linear",
+        action="store_true",
+    )
     parser.add_argument(
         "--docs", help="include only exp+line model", action="store_true"
     )
@@ -141,10 +179,17 @@ if __name__ == "__main__":
 
     ax = axs[0]
     startday = 59720
-    pcols = ["violet", "blueviolet", "blue",
-             "limegreen", "green",
-             "orange", "orangered",
-             "firebrick", "red"]
+    pcols = [
+        "violet",
+        "blueviolet",
+        "blue",
+        "limegreen",
+        "green",
+        "orange",
+        "orangered",
+        "firebrick",
+        "red",
+    ]
     for k, cfilter in enumerate(filters):
         if cfilter == "F2550W":
             bkgsub = True
@@ -256,9 +301,6 @@ if __name__ == "__main__":
         mod_init3 = models.Exponential1D(tau=-100.0, amplitude=0.2) + models.Linear1D(
             slope=-0.5, intercept=1.0
         )
-        # mod_init3 = (models.Exponential1D(tau=-100.0, amplitude=-0.2)
-        #              + (models.Linear1D(slope=-0.5, intercept=1.0)
-        #              + models.Const1D(amplitude=1.0)))
         # mod_init3[1].intercept.fixed = True
         # mod_init3[0].amplitude.bounds = [0.0, None]
         mod_init3[1].slope.bounds = [None, 0.0]
@@ -268,31 +310,12 @@ if __name__ == "__main__":
         else:
             mod_init3[0].tau.bounds = [-400.0, 100.0]
 
-        mod_init4 = (
-            models.Exponential1D(tau=-100.0, amplitude=-0.2)
-            + models.Exponential1D(tau=-500.0, amplitude=-0.1)
-            + models.Const1D(amplitude=0.70)
-        )
-        # mod_init4[0].tau.bounds = (-150.0, -50.0)
-        mod_init4[0].amplitude.bounds = (-0.2, 0.0)
-        # mod_init4[0].tau = mod_fit3[0].tau.value
-        # mod_init4[0].tau.fixed = True
-        # mod_init4[1].tau.bounds = (-1000.0, -300.0)
-        # mod_init4[1].amplitude.bounds = (-1.0, 0.0)
-
-        # print(
-        #     "powerlaw amp/shift/alpha:",
-        #     mod_fit2[0].amplitude.value,
-        #     mod_fit2[0].x_0.value,
-        #     mod_fit2[0].alpha.value,
-        # )
-        # print("exp tau/amp", mod_fit[0].tau.value, mod_fit[0].amplitude.value)
-        # print("exp+line tau/amp", mod_fit3[0].tau.value, mod_fit3[0].amplitude.value)
-        # if args.dexp:
-        #     print("exp+exp taus", mod_fit4[0].tau.value, mod_fit4[1].tau.value)
-        #     print(
-        #         "exp+exp amps", mod_fit4[0].amplitude.value, mod_fit4[1].amplitude.value
-        #     )
+        mod_init4 = ExpFracChange(tau=-100.0, fchangeyear=0.01)
+        # mod_init4.amplitude.bounds = (-100, 100.)
+        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
+            mod_init4.tau.fixed = True
+        else:
+            mod_init4.tau.bounds = [-400.0, 100.0]
 
         modnames = ["exp", "powerlaw", "exp+line"]
         allmods = [mod_init, mod_init2, mod_init3]
@@ -304,7 +327,7 @@ if __name__ == "__main__":
             allnparam += [2]
             pcol += ["y"]
         if args.dexp:
-            modnames += ["exp+exp"]
+            modnames += ["exp+fchange"]
             allmods += [mod_init4]
             allnparam += [5]
             pcol += ["c"]
@@ -312,7 +335,11 @@ if __name__ == "__main__":
         sigtext = f"{cfilter}: "
         for cname, cmod, cparam, ccol in zip(modnames, allmods, allnparam, pcol):
 
-            mod_fit = fit(cmod, fitx[sindxs], fity[sindxs])
+            # if cname == "exp+fchange":
+            #     cmod.amplitude = np.max(fity[sindxs])
+
+            mod_fit = fit(cmod, fitx[sindxs], fity[sindxs], maxiter=10000)
+            #print(fit.fit_info['message'])
 
             per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
             per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - cparam)))
@@ -349,6 +376,10 @@ if __name__ == "__main__":
 
             pxvals = np.arange(0, max(fitx))
             modvals = mod_fit(pxvals)
+
+            if cname == "exp+fchange":
+                ax.plot(pxvals, modvals / modvals[0], color=pcols[k], linestyle=":")
+                print(mod_fit)
 
             show_plot = False
             if args.docs:
@@ -402,10 +433,18 @@ if __name__ == "__main__":
                 )
 
                 ax.plot([0.0, max(fitx)], [1.0 + yoff0, 1.0 + yoff0], "k:", alpha=0.5)
-                axs[1].plot([0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5)
+                axs[1].plot(
+                    [0.0, max(fitx)], [0.0 + yoff2, 0.0 + yoff2], "k:", alpha=0.5
+                )
 
             if show_plot:
-                ax.plot(pxvals, modvals / bvals[0] + yoff, color=pcols[k], linestyle="-", label=lname)
+                ax.plot(
+                    pxvals,
+                    modvals / bvals[0] + yoff,
+                    color=pcols[k],
+                    linestyle="-",
+                    label=lname,
+                )
                 modxvals = mod_fit(xvals) / meanval
 
             # show the delta change
