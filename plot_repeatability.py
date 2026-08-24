@@ -310,12 +310,37 @@ if __name__ == "__main__":
         else:
             mod_init3[0].tau.bounds = [-400.0, 100.0]
 
-        mod_init4 = ExpFracChange(tau=-100.0, fchangeyear=0.01)
-        # mod_init4.amplitude.bounds = (-100, 100.)
-        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
-            mod_init4.tau.fixed = True
+        # mod_init4 = (
+        #     models.Exponential1D(tau=-100.0, amplitude=0.2)
+        #     + models.Exponential1D(tau=-500.0, amplitude=0.1)
+        #     + models.Const1D(amplitude=0.70)
+        # )
+        mod_init4 = (
+            models.Exponential1D(tau=-100.0, amplitude=0.2)
+            + models.Exponential1D(tau=-1500.0, amplitude=1.0)
+            + models.Const1D(amplitude=2.0)
+        )
+        if cfilter in ["F560W", "F770W"]:
+            mod_init4[0].amplitude = -0.5
+            mod_init4[0].amplitude.bounds = (-1.0, 0.0)
         else:
-            mod_init4.tau.bounds = [-400.0, 100.0]
+            mod_init4[0].amplitude.bounds = (0.0, 5.0)
+        # mod_init4[0].tau = mod_fit3[0].tau.value
+        #         # mod_init4[0].tau.fixed = True
+        # mod_init4[1].amplitude.fixed = True
+        mod_init4[1].tau.bounds = (-10000.0, -500.0)
+        mod_init4[1].amplitude.bounds = (0.0, 5.0)
+        if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
+            mod_init4[0].tau.fixed = True
+        else:
+            mod_init4[0].tau.bounds = [-250.0, -25.0]
+
+        # mod_init4 = ExpFracChange(tau=-100.0, fchangeyear=0.01)
+        # # mod_init4.amplitude.bounds = (-100, 100.)
+        # if cfilter in ["F560W", "F770W", "F1000W", "F1130W", "F1280W"]:
+        #     mod_init4.tau.fixed = True
+        # else:
+        #     mod_init4.tau.bounds = [-400.0, 100.0]
 
         modnames = ["exp", "powerlaw", "exp+line"]
         allmods = [mod_init, mod_init2, mod_init3]
@@ -327,7 +352,7 @@ if __name__ == "__main__":
             allnparam += [2]
             pcol += ["y"]
         if args.dexp:
-            modnames += ["exp+fchange"]
+            modnames += ["exp+exp"]
             allmods += [mod_init4]
             allnparam += [5]
             pcol += ["c"]
@@ -339,7 +364,10 @@ if __name__ == "__main__":
             #     cmod.amplitude = np.max(fity[sindxs])
 
             mod_fit = fit(cmod, fitx[sindxs], fity[sindxs], maxiter=10000)
-            #print(fit.fit_info['message'])
+            if cname == "exp+exp":
+                print(fit.fit_info['message'])
+                print(mod_fit)
+                print(1.0 / mod_fit[0].tau, 1.0/ mod_fit[1].tau)
 
             per_dev = (mod_fit(fitx) - fity) / mod_fit(fitx)
             per_dev = 100.0 * np.sqrt(np.sum(np.square(per_dev) / (len(fitx) - cparam)))
@@ -377,9 +405,11 @@ if __name__ == "__main__":
             pxvals = np.arange(0, max(fitx))
             modvals = mod_fit(pxvals)
 
-            if cname == "exp+fchange":
+            if cname == "exp+exp":
                 ax.plot(pxvals, modvals / modvals[0], color=pcols[k], linestyle=":")
-                print(mod_fit)
+
+                # tmodvals = mod_fit[1](pxvals) + mod_fit[2](pxvals)
+                # ax.plot(pxvals, tmodvals / tmodvals[0], color=pcols[k], linestyle="--")
 
             show_plot = False
             if args.docs:
