@@ -528,7 +528,7 @@ if __name__ == "__main__":
                 else:
                     tlab = None
 
-                ax.plot(pxvals, modvals, "b:", label=tlab)
+                ax.plot(pxvals, modvals, color=pcols[k], linestyle=":", label=tlab)
 
         sigtext = f"{sigtext}; line only %/yr = {(lossperyear * 100.0):.2f}"
 

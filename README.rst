@@ -162,3 +162,21 @@ Work continues.
 
 1. Plotting relative photometry versus dither position.  `Plotting/plot_dither_pos.py`
    Results published as a JWST report.
+
+2. Updated repeatability plots in new format.
+`plot_repeatability.py --docs --report --show_prev`
+This program doesn't really work without the --docs and --report anymore.
+
+3. Adding new repeatability/monitoring observations. Download new observations
+   and place the uncal files in the ADwarfs/F*W directories as appropriate. This
+   is done manually at this point.
+
+Reduces only new data in the ADwarfs subdir. Mostly. Does the background
+subtracted stage3 for all the data.
+
+`source pipeline_all_repeat`
+
+Does the aperture photometry for all the ADwarf data. Doesn't take long, so all
+is done instead of just the new observations.
+
+`python aper_all.py`
