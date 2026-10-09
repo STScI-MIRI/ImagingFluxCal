@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 10))
 
-    loss = 0.03
-    x = np.arange(20.0)
+    loss = 0.05
+    x = np.arange(10.0)
     y = np.power(1.0 - loss, x)
 
     ax.plot(x, y, "k-")
