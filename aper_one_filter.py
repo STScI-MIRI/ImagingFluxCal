@@ -32,6 +32,8 @@ from photutils.aperture import (
     aperture_photometry,
 )
 
+from jwst.datamodels import open as datamodels_open
+from stpipe import crds_client
 
 def aper_image(
     filename,
@@ -48,9 +50,9 @@ def aper_image(
     """
     hdul = fits.open(filename)
     targname = hdul[0].header["TARGNAME"]
-    if targname == "J1757132":
+    if targname == "J1757132" or targname == "2MASS J17571324+6703409":
         targname = "2MASS J17571324+6703409"
-    elif targname == "J1802271":
+    elif targname == "J1802271" or targname == "2MASS J18022716+6043356":
         targname = "2MASS J18022716+6043356"
     elif targname == "HD 1452331":
         targname = "HD 142331"
@@ -60,6 +62,9 @@ def aper_image(
         targname = "10 Lac"
     elif targname == "HR 6538":
         targname = "HD 159222"
+    else:
+        raise BaseException("ERROR: Unknown target name", targname)
+        return None
     # filter = hdul[0].header["FILTER"]
     # can be incorrect in the header as for coronagraphy and FND,
     # set to the nearest imaging filter to get the pipeline to run image3
@@ -364,9 +369,19 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
             print(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
             exit()
 
-    # get the aper info from the apcor reference file
+    # get the aper info from the apcor reference file, looked up via CRDS
+    # using the one of the actual exposure parameters (instrument, filter, subarray, date)
+    # assumes this is the same for all exposures in the mosaic
+    apcorr_model = datamodels_open(mosfiles[0])
+    apcorr_file = crds_client.get_reference_file(apcorr_model.get_crds_parameters(), 
+                                                 "apcorr", apcorr_model.crds_observatory
+                                                 )
+    print(f"Using apcorr file: {apcorr_file}")
+    apcorr_model.close()
+    tab = QTable.read(apcorr_file)
     # tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
-    tab = QTable.read("ApCor/jwst_miri_apcorr_flight_31jul24.fits")
+    # tab = QTable.read("ApCor/jwst_miri_apcorr_flight_31jul24.fits")
+
     # repfilter = {
     #     "F1065C": "F1130W",
     #     "F1140C": "F1130W",

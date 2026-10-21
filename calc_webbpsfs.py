@@ -1,5 +1,5 @@
 import argparse
-import webbpsf
+import stpsf as webbpsf
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

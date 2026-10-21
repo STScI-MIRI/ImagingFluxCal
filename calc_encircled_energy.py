@@ -4,7 +4,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.table import QTable
 
-import webbpsf
+import stpsf as webbpsf
 
 from aper_one_filter import aper_image
 
