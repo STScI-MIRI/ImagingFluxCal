@@ -64,7 +64,7 @@ def aper_image(
         targname = "HD 159222"
     else:
         raise BaseException("ERROR: Unknown target name", targname)
-    print(f"Working with target {targname}")
+
     # filter = hdul[0].header["FILTER"]
     # can be incorrect in the header as for coronagraphy and FND,
     # set to the nearest imaging filter to get the pipeline to run image3
@@ -369,18 +369,25 @@ def aper_one_filter(subdir, filter, bkgsub=False, eefraction=0.7, indivmos=False
             print(f"{subdir}/{filter}/*/miri*stage3{extstr}_asn_i2d.fits")
             exit()
 
-    # get the aper info from the apcor reference file, looked up via CRDS
-    # using the one of the actual exposure parameters (instrument, filter, subarray, date)
-    # assumes this is the same for all exposures in the mosaic
-    apcorr_model = datamodels_open(mosfiles[0])
-    apcorr_file = crds_client.get_reference_file(apcorr_model.get_crds_parameters(), 
-                                                 "apcorr", apcorr_model.crds_observatory
-                                                 )
+    try:
+        # get the apcor reference file you made from create_apcor_reffile (Step 3 in the README)
+        # tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
+        apcorr_file = "ApCor/jwst_miri_apcorr_flight_31jul24.fits"
+        tab = QTable.read(apcorr_file)
+    except(FileNotFoundError):
+        # get the aper info from the apcor reference file, looked up via CRDS
+        # using the one of the actual exposure parameters (instrument, filter, subarray, date)
+        # assumes this is the same for all exposures in the mosaic
+        print("Could not find a local apcorr file, pulling from CRDS")
+        apcorr_model = datamodels_open(mosfiles[0])
+        apcorr_file = crds_client.get_reference_file(apcorr_model.get_crds_parameters(), 
+                                                    "apcorr", apcorr_model.crds_observatory
+                                                    )
+        apcorr_model.close()
+        tab = QTable.read(apcorr_file)
     print(f"Using apcorr file: {apcorr_file}")
-    apcorr_model.close()
-    tab = QTable.read(apcorr_file)
-    # tab = QTable.read("ApCor/jwst_miri_apcorr_0008.fits")
-    # tab = QTable.read("ApCor/jwst_miri_apcorr_flight_31jul24.fits")
+
+
 
     # repfilter = {
     #     "F1065C": "F1130W",
