@@ -64,7 +64,7 @@ def aper_image(
         targname = "HD 159222"
     else:
         raise BaseException("ERROR: Unknown target name", targname)
-        return None
+    print(f"Working with target {targname}")
     # filter = hdul[0].header["FILTER"]
     # can be incorrect in the header as for coronagraphy and FND,
     # set to the nearest imaging filter to get the pipeline to run image3
