@@ -25,10 +25,12 @@ if __name__ == "__main__":
     # based on calibration factor ratios and dedicated subarray transfer observations
     subarr_cor = {
         "FULL": 1.0,
-        "BRIGHTSKY": 1.005, 
+        "BRIGHTSKY": 1.005,
         "SUB256": 0.98,
-        "SUB128": 1.00, 
+        "SUB128": 1.00,
+        "SUB128_IP": 1.00,
         "SUB64": 0.966,
+        "SUB64_IP": 0.966,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
@@ -95,12 +97,13 @@ if __name__ == "__main__":
         elif cfilter in ["FND"]:
             subarray_values = fndsubarray
         else:
-            subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"]
+            subarray_values = ["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB128_IP", "SUB64", "SUB64_IP", "SLITLESSPRISM"]
 
         # for latex table
         print(f"{cfilter} & {cfac_ave:.4f} & {slope:.4f} & {amp:.4f} & {tau:.1f} & {const:.4f} & {cfac_unc:.5f} & {cfac_unc_per:.2f} & {cfac_npts:.2f} & {repeat_per:.2f} \\\\ ")
 
         for csub in subarray_values:
+            print(csub)
             data_list.append((cfilter, csub, cfac_ave / subarr_cor[csub], cfac_unc / subarr_cor[csub]))
             data_list_time_exp.append((cfilter, csub, amp, tau, startday, const))
             data_list_time_linear.append((cfilter, csub, startday, slope))
@@ -148,7 +151,7 @@ if __name__ == "__main__":
                                   timecoeff_linear=data_time_linear)
     d1 = datetime.datetime
     new_model.meta.date = d1.isoformat(d1.today())
-    new_model.meta.filename = f"jwst_miri_photom_8oct25.fits"
+    new_model.meta.filename = f"jwst_miri_photom_5nov26.fits"
     new_model.meta.telescope = "JWST"
     new_model.meta.instrument.name = "MIRI"
     new_model.meta.instrument.detector = "MIRIMAGE"
@@ -161,11 +164,11 @@ if __name__ == "__main__":
     new_model.meta.reftype = "PHOTOM"
     new_model.meta.author = "Karl Gordon"
     # updates to next 2 lines needed
-    new_model.meta.pedigree = "INFLIGHT 2022-05-21 2025-08-27"
+    new_model.meta.pedigree = "INFLIGHT 2022-05-21 2026-11-05"
     new_model.meta.useafter = "2022-04-01T00:00:00"
     new_model.meta.description = "Photom reference file."
     entry = "The flux calibration factors calculated from exponential + linear"
     new_model.history.append(entry)
     entry = "fits to the time dependent flux calibration factors.  "
     new_model.history.append(entry)
-    new_model.save(f"Photom/jwst_miri_photom_flight_8oct25.fits")
+    new_model.save(f"Photom/jwst_miri_photom_flight_5nov26.fits")

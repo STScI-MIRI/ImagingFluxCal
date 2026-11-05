@@ -34,13 +34,14 @@ if __name__ == "__main__":
              "CalFactors/jwst_miri_photom_0201.fits",
              "CalFactors/jwst_miri_photom_0218.fits",
              "Photom/jwst_miri_photom_flight_10sep25.fits",
+             "Photom/jwst_miri_photom_flight_5nov26.fits"
             ]
     dates = ["2022-06", "2023-09", "2024-08", "2025-09"]
-    cols = ["b", "c", "g", "m"]
+    cols = ["b", "c", "g", "m", "y"]
 
     xtick_num = []
     xtick_txt = []
-    delt = 0.2
+    delt = 0.15
     for ll, cfile in enumerate(files):
         cftab = QTable.read(cfile, hdu=1)
         if ll > 0:

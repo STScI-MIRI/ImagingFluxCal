@@ -232,35 +232,29 @@ def plot_calfactors(
         dirs = ["ADwarfs"]
     pcols = ["b", "g", "r"]
 
-    if legonly:
-        psubsym = {
+    psubsym_img = {
             "FULL": "o",
             "BRIGHTSKY": "s",
             "SUB256": "p",
             "SUB128": "P",
-            "SUB64": "*",
+            "SUB128_IP": "X",
+            "SUB64": "D",
+            "SUB64_IP": "d",
+        }
+    psubsym_coron = {
             "MASK1065": "^",
             "MASK1140": ">",
             "MASK1550": "<",
             "MASKLYOT": "v",
         }
+    if legonly:
+        psubsym = psubsym_img | psubsym_coron
     elif "C" in filter:
-        psubsym = {
-            "MASK1065": "^",
-            "MASK1140": ">",
-            "MASK1550": "<",
-            "MASKLYOT": "v",
-        }
+        psubsym = psubsym_coron
     elif filter == "FND":
         psubsym = {"FULL": "o"}
     else:
-        psubsym = {
-            "FULL": "o",
-            "BRIGHTSKY": "s",
-            "SUB256": "p",
-            "SUB128": "P",
-            "SUB64": "*",
-        }
+        psubsym = psubsym_img
 
     # based on calibration factor ratios and dedicated subarray transfer observations
     subarr_cor = {
@@ -268,7 +262,11 @@ def plot_calfactors(
         "BRIGHTSKY": 1.005,
         "SUB256": 0.98,
         "SUB128": 1.00,
+        "SUB128_IP": 1.00,
+        # "SUB128": 0.941,
+        # "SUB128_IP": 0.941,
         "SUB64": 0.966,
+        "SUB64_IP": 0.966,
         "MASK1065": 1.0,
         "MASK1140": 1.0,
         "MASK1550": 1.0,
@@ -320,11 +318,13 @@ def plot_calfactors(
         "BRIGHTSKY": 1.0,
         "SUB256": 2.0,
         "SUB128": 3.0,
-        "SUB64": 4.0,
-        "MASK1065": 5.0,
-        "MASK1140": 6.0,
-        "MASK1550": 7.0,
-        "MASKLYOT": 8.0,
+        "SUB128_IP": 4.0,
+        "SUB64": 5.0,
+        "SUB64_IP": 6.0,
+        "MASK1065": 7.0,
+        "MASK1140": 8.0,
+        "MASK1550": 9.0,
+        "MASKLYOT": 10.0,
     }
     mu, sigma = 0, 0.12  # mean and standard deviation
     rng = np.random.default_rng()

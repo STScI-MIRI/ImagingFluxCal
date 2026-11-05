@@ -19,12 +19,16 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    ofile = "CalFactors/jwst_miri_photom_0201.fits"
-    nfile = "Photom/jwst_miri_photom_flight_30aug24.fits"
+    # ofile = "CalFactors/jwst_miri_photom_0201.fits"
+    # nfile = "Photom/jwst_miri_photom_flight_30aug24.fits"
+
+    ofile = "Photom/jwst_miri_photom_flight_10sep25.fits"
+    nfile = "Photom/jwst_miri_photom_flight_5nov26.fits"
 
     print("Old")
     tab = QTable.read(ofile, hdu=1)
     tab2 = QTable.read(ofile, hdu=2)
+    print(tab2)
     gvals = tab["filter"] == args.filter
     tab3 = QTable()
     tab3["p amp"] = 100.0 * tab2[gvals]["amplitude"] / tab[gvals]["photmjsr"]

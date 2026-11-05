@@ -14,6 +14,7 @@ from jwstabsfluxcal.Spitzer.read_spitzer import read_irac
 
 
 model_names = {
+    "etauma": "eta UMa",
     "g191b2b": "G 191-B2B",
     "gd71": "GD 71",
     "gd153": "GD 153",
@@ -72,8 +73,8 @@ def compute_bandflux(wave, flux_source, bwave, bandpass):
     flux_source_bp = np.interp(bwave, wave, flux_source)
 
     # compute the the integrals
-    inttop = np.trapz(bwave * bandpass * flux_source_bp, bwave)
-    intbot = np.trapz(bwave * bandpass, bwave)
+    inttop = np.trapezoid(bwave * bandpass * flux_source_bp, bwave)
+    intbot = np.trapezoid(bwave * bandpass, bwave)
 
     return inttop / intbot
 

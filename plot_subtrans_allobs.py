@@ -23,7 +23,7 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=3)
     plt.rc("ytick.major", width=3)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 7))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12, 7))
 
     # subarrs = np.array(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"])
 
@@ -32,9 +32,12 @@ if __name__ == "__main__":
                "BRIGHTSKY": 1.0,
                "SUB256": 2.0,
                "SUB128": 3.0,
-               "SUB64": 4.0}
+               "SUB128_IP": 4.0,
+               "SUB64": 5.0,
+               "SUB64_IP": 6.0}
 
-    adopted_vals = np.array([1.02, 1.025, 1.0, 1.02, 0.985])
+    adopted_vals = np.array([1.02, 1.025, 1.0, 1.02, 1.02, 0.985, 0.985])
+    # adopted_vals = np.array([1.02, 1.025, 1.0, 0.96, 0.96, 0.985, 0.985])
     ax.plot(list(subarrs.keys()), adopted_vals, "*", markersize=20, label="Adopted")
     for cave, csub in zip(adopted_vals / adopted_vals[0], list(subarrs.keys())):
         print(f"{csub} & {cave:.3f} \\\\")
@@ -59,7 +62,7 @@ if __name__ == "__main__":
         tab = QTable.read(f"CalFacs/miri_calfactors_grieke_timecor_{cfilter}_subarr.dat",
                           format="ascii.commented_header")
         # relative to SUB256 as it is the one always present
-        relvals = (tab["calfacs"][2] / tab["calfacs"])  # * atab["FracChange"][2] 
+        relvals = (tab["calfacs"][2] / tab["calfacs"])  # * atab["FracChange"][2]
         relvals_unc = relvals * (tab["calfacs_uncmean"] / tab["calfacs"])
         gvals = relvals > 0.0
         ax.errorbar(subarrs_vals[gvals] + (k+3)*delt, relvals[gvals], 

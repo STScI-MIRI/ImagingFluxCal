@@ -85,7 +85,7 @@ Details
    of the calibration factors.  Copy the values relative to FULL printed to 
    the screen to the `subarr_cor` variable in the `plot_calfacs` function.
 
-   Before this plot is made, the subarray dependence based on the dedicated subarray
+   *Before* this plot is made, the subarray dependence based on the dedicated subarray
    observations need to be measured by running `plot_subtrans.py --filter=F770W`
    and the same again for `F1280W`.  In addition, the subarray dependence based
    on the ratio of calibration factors from all the observations needs to measured
@@ -100,6 +100,7 @@ Details
    Example: `calc_calfactors.py --grieke --applytime --subarrcor --nocurval`
 
    A meta plot for all the filters can be created using `plot_multi_calfacs.py`.
+   Example: `plot_multi_calfacs.py --xaxisval=mflux --grieke --subarrcor`
 
 10. Compute a set of photom reference files accounting for the time dependent
    sensitivity losses using `create_photom_reffile.py`
