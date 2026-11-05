@@ -204,8 +204,8 @@ def aper_image(
 
     # check if a final small shift is needed
     if override_center is None:
-        shift_rad = (np.square(phot_stats.centroid[0] - phot["xcenter"][0])
-                    + np.square(phot_stats.centroid[1] - phot["ycenter"][0]))
+        shift_rad = (np.square(phot_stats.centroid[0] - phot["x_center"][0])
+                    + np.square(phot_stats.centroid[1] - phot["y_center"][0]))
         # fmt: on
         if np.sqrt(shift_rad) > 0.01:
             print(
@@ -304,7 +304,7 @@ def aper_image(
         ax[1].imshow(data, norm=norm, interpolation="nearest", origin="lower")
         aper.plot(ax=ax[1], color="white", lw=2, label="Photometry aperture")
         annulus_aperture.plot(ax=ax[1], color="blue", lw=2, label="Background annulus")
-        ax[1].plot(phot["xcenter"][0], phot["ycenter"][0], "b+")
+        ax[1].plot(phot["x_center"][0], phot["y_center"][0], "b+")
         ax[1].plot([phot_stats.centroid[0]], [phot_stats.centroid[1]], "k+")
 
         fig.suptitle(f"{targname} / {filter}")
