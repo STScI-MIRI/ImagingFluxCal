@@ -82,6 +82,16 @@ if __name__ == "__main__":
         help="specific flat file to use",
         default=None,
     )
+    parser.add_argument(
+        "--dark",
+        help="override dark file for a specific subarray (darks are subarray-specific); "
+        "repeat for multiple subarrays, e.g. --dark SUB128_IP dark1.fits --dark SUB64_IP dark2.fits; "
+        "subarrays not given use the pipeline default dark",
+        nargs=2,
+        metavar=("SUBARRAY", "FILE"),
+        action="append",
+        default=None,
+    )
     parser.add_argument("--nmasks", help="use new bad pixel masks", action="store_true")
     parser.add_argument(
         "--omask", help="use old (ground-based) bad pixel masks", action="store_true"
@@ -122,6 +132,9 @@ if __name__ == "__main__":
     else:
         flatfile = None
 
+    darkfiles = dict(args.dark) if args.dark else {}
+    print("TEST: ", darkfiles)
+
     if args.dir == "all":
         dirlist = ["HotStars", "ADwarfs", "SolarAnalogs"]
     else:
@@ -155,13 +168,20 @@ if __name__ == "__main__":
                     f.write(f"handler = file:{cbase}.log\n")
                     f.write("level = INFO\n")
 
-                print(f"detector1 for {ckey}")
+                # darks are subarray-specific, so look up by the set's actual subarray
+                ckey_subarray = fits.getheader(objsets[ckey][0], 0)["SUBARRAY"]
+                ckey_darkfile = darkfiles.get(ckey_subarray)
+
+                print("TEST 2", ckey_subarray, ckey_darkfile)
+
+                print(f"detector1 for {ckey} (subarray={ckey_subarray})")
                 miri_detector1(
                     objsets[ckey],
                     ndir,
                     logfile=f"{cbase}.cfg",
                     maskfile=maskfile,
                     rscdfile=rscdfile,
+                    darkfile=ckey_darkfile,
                     save_jump_info=True,
                 )
 

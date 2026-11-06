@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+import os
 
 import matplotlib.pyplot as plt
 
@@ -16,6 +17,25 @@ if __name__ == "__main__":
         default="F770W",
         choices=["F770W", "F1280W"]
     )
+
+    # HDL: I'm not sure this is actually the best way to designate data
+    #      could be worth it to have some kind of control file with a list of PIDs and Obs
+    #      to use in the analysis? Would be kind of a big overhaul. Think more about this.
+    parser.add_argument(
+        "--subtrans_pid",
+        help="select the subarray transfer calibrator by pid(s)",
+        default=None,
+        nargs="+",
+        type=int,
+    )
+
+    parser.add_argument(
+        "--startday",
+        help="start day for the observations",
+        default=59720.,
+        type=float,
+    )
+
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -31,14 +51,18 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 5))
 
-    startday = 59720.
+    #startday = 59720.
+
+    # HDL: not sure if this makes sense or meaningfully catches any logical errors
+    assert not (args.subtrans_pid is None and args.startday is None), "Give either PID or startday"
 
     cfacs = get_calfactors(
         "ADwarfs",
         args.filter,
         xaxisval="timemid",
         subtrans=True,
-        startday=startday,
+        subtrans_pid=args.subtrans_pid,
+        startday=args.startday,
         bkgsub=False,
     )
 
@@ -57,7 +81,7 @@ if __name__ == "__main__":
 
     # compute the factors compared to FULL
     aves = []
-    subarrs = np.array(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB64"])
+    subarrs = np.array(["FULL", "BRIGHTSKY", "SUB256", "SUB128", "SUB128_IP", "SUB64", "SUB64_IP"])
     for csub in subarrs:
         fvals = [True if tsub == csub else False for tsub in cfacs[3]]
         aves.append(np.average(yvals[fvals]))
@@ -91,6 +115,9 @@ if __name__ == "__main__":
     otab = QTable()
     otab["name"] = subarrs
     otab["FracChange"] = aves
+
+    
+    if not os.path.isdir("./CalFacs/"): os.makedirs("./CalFacs/")
     otab.write(f"CalFacs/subarray_transfer_{args.filter}.dat",
                overwrite=True,
                format="ascii.commented_header")
@@ -103,8 +130,10 @@ if __name__ == "__main__":
 
     fname = f"subtrans_{args.filter}"
     if args.png:
+        if not os.path.isdir("./Figs/"): os.makedirs("./Figs/")
         fig.savefig(f"Figs/{fname}.png")
     elif args.pdf:
+        if not os.path.isdir("./Figs/"): os.makedirs("./Figs/")
         fig.savefig(f"Figs/{fname}.pdf")
     else:
         plt.show()

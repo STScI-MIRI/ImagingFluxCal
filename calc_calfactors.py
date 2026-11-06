@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import numpy as np
+import os
 
 from statsmodels.stats.weightstats import DescrStatsW
 
@@ -45,6 +46,7 @@ def get_calfactors(
     eefraction=0.7,
     repeat=False,
     subtrans=False,
+    subtrans_pid=None,
     startday=59720.0,
     applytime=False,
     grieke=False,
@@ -62,7 +64,7 @@ def get_calfactors(
         extstr = f"{extstr}_indivcals"
     # read in observed fluxes
     obstab = QTable.read(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
-    # print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
+    print(f"{dir}/{filter}{extstr}_eefrac{eefraction}_phot.fits")
     # read in model fluxes
     if grieke:
         mfilename = "Models/model_phot_grieke.fits"
@@ -89,7 +91,13 @@ def get_calfactors(
         gvals = obstab["name"] == "BD+60 1753"
         obstab = obstab[gvals]
     elif subtrans:
-        if filter == "F1280W":
+        if subtrans_pid is not None:
+            # select the subarray transfer calibrator by pid(s) instead
+            pids = subtrans_pid if isinstance(subtrans_pid, (list, tuple)) else [subtrans_pid]
+            pids = [int(p) for p in pids]
+            gvals = np.isin(np.array([int(p) for p in obstab["program"]]), pids)
+            obstab = obstab[gvals]
+        elif filter == "F1280W":
             gvals = (obstab["name"] == "2MASS J18022716+6043356") & (
                 abs(obstab["timemid"].value - 60177.3) < 1.0
             )
@@ -212,6 +220,7 @@ def plot_calfactors(
     eefraction=0.7,
     repeat=False,
     subtrans=False,
+    subtrans_pid=None,
     applytime=False,
     grieke=False,
     shownames=False,
@@ -314,7 +323,7 @@ def plot_calfactors(
     # used for making srctype and subarr plots have better x distributions
     srctype_vals = {"HotStars": 0.0, "ADwarfs": 1.0, "SolarAnalogs": 2.0}
     subarr_vals = {
-        "FULL": 0.0,
+        "FULL":      0.0,
         "BRIGHTSKY": 1.0,
         "SUB256": 2.0,
         "SUB128": 3.0,
@@ -350,6 +359,7 @@ def plot_calfactors(
                 eefraction=eefraction,
                 repeat=repeat,
                 subtrans=subtrans,
+                subtrans_pid=subtrans_pid,
                 startday=startday,
                 applytime=applytime,
                 grieke=grieke,
@@ -479,12 +489,12 @@ def plot_calfactors(
     perstdmean = 100.0 * meanstdmean / meanval
 
     # compute averages in bins
-    if (xaxisval == "subarr") and "SUB256" in psubsym.keys():
+    if (xaxisval == "subarr") and args.avg_subarray in psubsym.keys():
         txvals = xvals[gvals][~filtered_data.mask]
         tallfacs = allfacs[gvals][~filtered_data.mask]
         tweights = weights[gvals][~filtered_data.mask]
 
-        gvals2 = txvals == "SUB256"
+        gvals2 = txvals == args.avg_subarray
         refres = compute_stats(tallfacs[gvals2], tweights[gvals2], sigcut)
         outvals = np.zeros((len(psubsym.keys()), 3))
         for k, csub in enumerate(psubsym.keys()):
@@ -650,6 +660,7 @@ def plot_calfactors(
 
     # get the current pipeline calibration factor and plot
     if showcurval:
+        if not os.path.isdir("CalFactors/"): os.makedirs("CalFactors/")
         cftab = QTable.read("CalFactors/jwst_miri_photom_0218.fits", hdu=1)
         pipe_endoflife = cftab["photmjsr"][cftab["filter"] == filter.split("_")[0]][0]
         cftab_time = QTable.read("CalFactors/jwst_miri_photom_0218.fits", hdu=2)
@@ -837,6 +848,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--basedir", help="base directory for star type subdirs", default="./"
     )
+
     parser.add_argument(
         "--bkgsub",
         help="use results from background subtraction run",
@@ -900,6 +912,13 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
+        "--subtrans_pid",
+        help="plot the subarray transfer observations designated by pid(s) (requires --subtrans)",
+        default=None,
+        nargs="+",
+        type=int,
+    )
+    parser.add_argument(
         "--applytime",
         help="remove the time dependent variation",
         action="store_true",
@@ -924,6 +943,14 @@ if __name__ == "__main__":
         help="2 panel plot of source characteristics",
         action="store_true",
     )
+    parser.add_argument(
+        "--avg_subarray",
+        help="which subarray to compute an average against (default SUB256)",
+        type=str,
+        default="SUB256",
+    )
+    
+
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -955,6 +982,7 @@ if __name__ == "__main__":
         extstr = f"{extstr}_timecor"
 
     savefacs = f"CalFacs/miri_calfactors{extstr}_{args.filter}.fits"
+    print("TEST, args.basedir", args.basedir)
     if args.detmulti:
         fontsize = 10
         font = {"size": fontsize}
@@ -974,6 +1002,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -993,6 +1022,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -1011,11 +1041,14 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
             basedir=args.basedir,
         )
+        print("TEST 2, args.basedir:", args.basedir)
+        print("TEST 3, ax.shape:", ax.shape)
         plot_calfactors(
             ax[1, 1],
             args.filter,
@@ -1029,6 +1062,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -1054,6 +1088,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -1072,6 +1107,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -1090,6 +1126,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -1108,6 +1145,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             noignore=args.noignore,
@@ -1115,6 +1153,7 @@ if __name__ == "__main__":
         )
         fname = f"miri_calfactors_{args.filter}_sourcemulti"
     else:
+        print("TEST, args.basedir", args.basedir)
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
         plot_calfactors(
             ax,
@@ -1129,6 +1168,7 @@ if __name__ == "__main__":
             eefraction=args.eefrac,
             repeat=args.repeat,
             subtrans=args.subtrans,
+            subtrans_pid=args.subtrans_pid,
             applytime=args.applytime,
             grieke=args.grieke,
             shownames=args.shownames,
@@ -1150,6 +1190,8 @@ if __name__ == "__main__":
         fname = f"{fname}_repeat"
     if args.subtrans:
         fname = f"{fname}_subtrans"
+    if args.subtrans_pid is not None:
+        fname = f"{fname}_pid{'-'.join(str(p) for p in args.subtrans_pid)}"
     if args.grieke:
         fname = f"{fname}_grieke"
     if args.png:
